@@ -1,0 +1,44 @@
+{
+  "name": "fe",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "pnpm lint:js && pnpm lint:styles",
+    "lint:js": "eslint .",
+    "lint:styles": "stylelint \"src/**/*.scss\"",
+    "lint:fix": "pnpm lint:js --fix && pnpm lint:styles --fix",
+    "format": "prettier . --write",
+    "format:check": "prettier . --check",
+    "type-check": "tsc --noEmit",
+    "check": "pnpm format:check && pnpm lint && pnpm type-check"
+  },
+  "dependencies": {
+    "next": "16.3.5",
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.5",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.3.5",
+    "eslint-config-prettier": "10.1.8",
+    "prettier": "3.9.6",
+    "sass": "^1.104.1",
+    "stylelint": "17.15.0",
+    "stylelint-config-standard-scss": "17.0.0",
+    "typescript": "^5"
+  },
+  "packageManager": "pnpm@10.12.1",
+  "engines": {
+    "node": "24.21.0",
+    "pnpm": "10.12.1"
+  },
+  "volta": {
+    "node": "24.21.0"
+  }
+}
