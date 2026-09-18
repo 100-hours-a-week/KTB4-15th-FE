@@ -1,0 +1,52 @@
+@mixin display {
+  font-size: 2rem;
+  font-weight: var(--font-weight-bold);
+  line-height: 2.5rem;
+  letter-spacing: -0.025em;
+}
+
+@mixin heading-large {
+  font-size: 1.75rem;
+  font-weight: var(--font-weight-bold);
+  line-height: 2.25rem;
+  letter-spacing: -0.02em;
+}
+
+@mixin heading-medium {
+  font-size: 1.5rem;
+  font-weight: var(--font-weight-bold);
+  line-height: 2rem;
+  letter-spacing: -0.015em;
+}
+
+@mixin heading-small {
+  font-size: 1.25rem;
+  font-weight: var(--font-weight-semibold);
+  line-height: 1.75rem;
+  letter-spacing: -0.01em;
+}
+
+@mixin body-large {
+  font-size: 1rem;
+  font-weight: var(--font-weight-regular);
+  line-height: 1.5rem;
+  letter-spacing: -0.005em;
+}
+
+@mixin body-medium {
+  font-size: 0.875rem;
+  font-weight: var(--font-weight-regular);
+  line-height: 1.25rem;
+}
+
+@mixin label {
+  font-size: 0.875rem;
+  font-weight: var(--font-weight-medium);
+  line-height: 1.25rem;
+}
+
+@mixin caption {
+  font-size: 0.75rem;
+  font-weight: var(--font-weight-regular);
+  line-height: 1rem;
+}

@@ -1,0 +1,86 @@
+:root {
+  // Brand palette
+  --color-green-50: #f2f8f5;
+  --color-green-100: #e8f2ee;
+  --color-green-200: #cfe3da;
+  --color-green-300: #a7cbbb;
+  --color-green-400: #78aa94;
+  --color-green-500: #528b72;
+  --color-green-600: #356d56;
+  --color-green-700: #114b36;
+  --color-green-800: #0d3c2b;
+  --color-green-900: #082c20;
+
+  // Neutral palette
+  --color-white: #fff;
+  --color-gray-50: #f8f9fb;
+  --color-gray-100: #f2f4f6;
+  --color-gray-200: #e5e8eb;
+  --color-gray-300: #d1d6db;
+  --color-gray-400: #b0b8c1;
+  --color-gray-500: #8b95a1;
+  --color-gray-600: #6b7684;
+  --color-gray-700: #4e5968;
+  --color-gray-800: #333d4b;
+  --color-gray-900: #191f28;
+  --color-black: #000;
+
+  // Destructive palette
+  --color-red-300: #fda29b;
+  --color-red-600: #d92d20;
+  --color-red-700: #b42318;
+  --color-red-800: #912018;
+
+  // Background
+  --color-background-outer: var(--color-green-50);
+  --color-background-page: var(--color-gray-100);
+  --color-background-surface: var(--color-white);
+  --color-background-subtle: var(--color-gray-50);
+  --color-background-hover: var(--color-gray-50);
+  --color-background-pressed: var(--color-gray-100);
+  --color-background-selected: var(--color-green-100);
+  --color-background-overlay: rgb(25 31 40 / 48%);
+
+  // Text
+  --color-text-primary: var(--color-gray-900);
+  --color-text-secondary: var(--color-gray-500);
+  --color-text-placeholder: var(--color-gray-400);
+  --color-text-disabled: var(--color-gray-400);
+  --color-text-inverse: var(--color-white);
+  --color-text-brand: var(--color-green-700);
+
+  // Border and focus
+  --color-border-default: var(--color-gray-200);
+  --color-border-strong: var(--color-gray-300);
+  --color-border-brand: var(--color-green-700);
+  --color-focus-ring: var(--color-green-300);
+  --color-focus-ring-danger: var(--color-red-300);
+
+  // Primary action
+  --color-action-primary-default: var(--color-green-700);
+  --color-action-primary-hover: var(--color-green-800);
+  --color-action-primary-pressed: var(--color-green-900);
+  --color-action-primary-text: var(--color-white);
+
+  // Secondary action
+  --color-action-secondary-default: var(--color-green-100);
+  --color-action-secondary-hover: var(--color-green-200);
+  --color-action-secondary-pressed: var(--color-green-300);
+  --color-action-secondary-text: var(--color-green-800);
+
+  // Neutral action
+  --color-action-neutral-default: var(--color-white);
+  --color-action-neutral-hover: var(--color-gray-50);
+  --color-action-neutral-pressed: var(--color-gray-100);
+  --color-action-neutral-text: var(--color-gray-900);
+
+  // Disabled action
+  --color-action-disabled-background: var(--color-gray-200);
+  --color-action-disabled-text: var(--color-gray-500);
+
+  // Destructive action
+  --color-action-danger-default: var(--color-red-600);
+  --color-action-danger-hover: var(--color-red-700);
+  --color-action-danger-pressed: var(--color-red-800);
+  --color-action-danger-text: var(--color-white);
+}
