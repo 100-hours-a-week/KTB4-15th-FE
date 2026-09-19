@@ -22,6 +22,7 @@
 
 - App Router의 최상위 라우트 그룹은 `(public)`과 `(service)`로 구분한다.
 - `/`는 `/login`으로 이동하고, 로그인 완료 후 진입 화면은 `/chat`으로 한다.
+- 같은 헤더가 여러 하위 경로에서 유지되면 가장 가까운 공통 `layout.tsx`에 배치하고, 한 화면에만 적용되면 `page.tsx`에서 선언한다.
 
 ### 폴더 구조
 
@@ -84,6 +85,17 @@ src/
 - 연한 브랜드 배경의 tonal 버튼은 별도 variant를 추가하지 않고 secondary로 표현한다.
 - 테두리가 있는 중립 버튼은 outlined로 표현한다.
 - 독립 Toggle은 ButtonBase를 사용하지 않고 `role="switch"`와 `aria-checked`로 상태를 표현한다.
+
+### 헤더
+
+- `Header`는 공통 높이와 배경만 담당한다.
+- `left`, `center`, `right` 슬롯은 모두 선택 사항이며 텍스트, 제목, 버튼 등 실제 콘텐츠는 사용하는 쪽에서 전달한다.
+- `center`가 있으면 좌·중·우 3열로 배치하고, 좌우 영역의 너비를 동일하게 유지해 가운데 콘텐츠가 화면 중앙에 위치하도록 한다.
+- `center`가 없으면 좌·우 2열로 배치한다.
+- 내용 없이 헤더 높이만 필요하면 슬롯을 전달하지 않은 `Header`를 렌더링한다.
+- 헤더 아이콘 액션은 일반 `IconButton`을 합성한 `HeaderIconButton`을 사용한다.
+- `HeaderIconButton`은 52px 터치 영역을 유지하면서 24px 아이콘이 화면의 20px 기준선에 정렬되도록 한다.
+- 헤더에서 페이지 이동을 나타내는 아이콘은 `HeaderIconLink`, 현재 화면에서 동작을 실행하는 아이콘은 `HeaderIconButton`을 사용한다.
 
 ### 아이콘
 
