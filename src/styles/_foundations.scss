@@ -9,25 +9,26 @@
   --font-weight-bold: 700;
 
   // Spacing: use for gap, margin, and padding.
-  --space-xs: 0.25rem;
-  --space-sm: 0.5rem;
-  --space-md: 0.75rem;
-  --space-lg: 1rem;
-  --space-xl: 1.5rem;
-  --space-2xl: 2rem;
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-lg: 16px;
+  --space-xl: 24px;
+  --space-2xl: 32px;
 
   // Radius
-  --radius-small: 0.5rem;
-  --radius-medium: 0.75rem;
-  --radius-large: 1.25rem;
-  --radius-sheet: 1.5rem;
+  --radius-small: 8px;
+  --radius-medium: 12px;
+  --radius-large: 20px;
+  --radius-sheet: 24px;
   --radius-full: 9999px;
 
   // Layout and controls
-  --app-max-width: 30rem;
-  --screen-padding: 1.25rem;
-  --control-height: 2.75rem;
-  --control-height-large: 3.25rem;
+  --app-max-width: 480px;
+  --screen-padding: 20px;
+  --control-height: 44px;
+  --control-height-medium: 48px;
+  --control-height-large: 52px;
 
   // Layer order
   --z-sticky: 5;
@@ -40,5 +41,6 @@
   --duration-fast: 120ms;
   --duration-normal: 200ms;
   --duration-slow: 300ms;
+  --duration-spinner: 800ms;
   --easing-standard: cubic-bezier(0.2, 0, 0, 1);
 }
