@@ -37,14 +37,32 @@ pnpm check        # 포맷, lint, 타입 검사 일괄 실행
 
 ```text
 src/
-└── app/
-    ├── (public)/
-    │   └── login/ # /login
-    └── (service)/
-        └── chat/  # /chat
+├── app/                    # Route, Layout, Page와 Route 전용 코드
+├── features/               # 비즈니스 기능별 코드
+│   └── feature-name/
+│       ├── api/            # 해당 기능의 API 요청
+│       ├── hooks/          # 해당 기능에 종속된 React Hook
+│       ├── model/          # 상태, 타입, Schema와 비즈니스 로직
+│       └── ui/             # 해당 기능에 종속된 UI
+├── shared/                 # 비즈니스 기능에 종속되지 않는 공통 코드
+│   ├── api/                # 공통 HTTP Client와 API 기반 코드
+│   ├── ui/                 # 공통 UI와 React 아이콘 컴포넌트
+│   ├── hooks/              # 여러 기능에서 재사용하는 React Hook
+│   ├── lib/                # 외부 라이브러리 설정과 순수 Utility
+│   ├── config/             # 환경변수, Route와 전역 상수
+│   └── styles/             # Design Token과 Mixin
+└── testing/                # Test 설정, Fixture와 Mock
+
+public/
+├── icons/                  # 고정 URL로 제공하는 SVG 원본
+└── images/                 # 고정 URL로 제공하는 정적 이미지
+
+e2e/                        # End-to-End Test
 ```
 
-라우트 그룹 이름은 URL에 포함되지 않습니다. 기능이 늘어나면 합의된 아키텍처에 따라 `features`, `components`, `lib`, `config`, `styles`를 추가합니다.
+기능 전용 Schema는 `features/*/model`, 공통 API Schema는 `shared/api`, 공통 검증 도구는 `shared/lib`에서 관리합니다. 폴더는 실제 코드가 필요해질 때 생성하며 빈 폴더는 만들지 않습니다.
+
+단위 테스트와 컴포넌트 테스트는 대상 코드 가까이에 배치합니다. 공통 테스트 설정, Fixture, Mock과 Utility는 `src/testing`, E2E 테스트는 루트의 `e2e`에서 관리합니다. 구체적인 테스트 도구와 범위는 도입 시점에 확정합니다.
 
 ## 개발 기준
 
@@ -56,6 +74,7 @@ src/
 - 브랜드 초록 팔레트와 용도별 시맨틱 색상 토큰을 사용합니다.
 - 현재 다크 모드는 지원하지 않습니다.
 - 인증은 BE와 HttpOnly Cookie 방식으로 협의합니다.
-- 테스트 도구와 spacing, radius, shadow 토큰은 아직 확정하지 않았습니다.
+- 테스트 도구와 테스트 범위는 아직 확정하지 않았습니다.
+- shadow는 현재 사용하지 않습니다.
 
 확정 사항과 보류 항목은 [프로젝트 결정 사항](./docs/project-decisions.md)에서 관리합니다.
