@@ -1,6 +1,6 @@
 .header {
   display: grid;
-  min-height: 68px;
+  min-height: var(--header-height);
   width: calc(100% + var(--screen-padding) * 2);
   align-items: center;
   margin-inline: calc(var(--screen-padding) * -1);

@@ -18,6 +18,6 @@
 
 .items {
   display: flex;
-  min-height: 72px;
+  min-height: var(--navigation-height);
   padding-inline: var(--space-sm);
 }
