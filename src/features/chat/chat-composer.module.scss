@@ -1,0 +1,112 @@
+@use "@/styles/typography" as type;
+
+.composerArea {
+  width: 100%;
+}
+
+.composer {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: var(--space-sm);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-full);
+  padding: 5px;
+  background: var(--color-background-surface);
+
+  &:focus-within {
+    border-color: var(--color-border-strong);
+  }
+}
+
+.multiline {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-large);
+  padding: 12px 8px 8px 20px;
+
+  .inputArea {
+    grid-column: 1 / -1;
+    padding: 0 8px 0 0;
+  }
+
+  .actions {
+    grid-column: 2;
+  }
+}
+
+.inputArea {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  padding: 4px 4px 4px 14px;
+}
+
+.textarea {
+  @include type.body-large;
+
+  width: 100%;
+  min-height: 24px;
+  max-height: 104px;
+  resize: none;
+  overflow-y: auto;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--color-text-primary);
+  outline: none;
+
+  &::placeholder {
+    color: var(--color-text-placeholder);
+  }
+
+  &:disabled {
+    color: var(--color-text-disabled);
+  }
+
+  &:focus-visible {
+    outline: none;
+  }
+}
+
+.counter {
+  @include type.caption;
+
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.submitButton {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  align-self: flex-end;
+  flex: 0 0 44px;
+  place-items: center;
+  border: 0;
+  border-radius: var(--radius-full);
+  padding: 0;
+  background: var(--color-gray-900);
+  color: var(--color-white);
+
+  svg {
+    position: relative;
+    z-index: 2;
+    width: 24px;
+    height: 24px;
+  }
+
+  &:disabled {
+    background: var(--color-gray-100);
+    color: var(--color-white);
+  }
+}

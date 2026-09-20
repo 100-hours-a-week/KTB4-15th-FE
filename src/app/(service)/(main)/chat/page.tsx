@@ -1,5 +1,5 @@
 import { connection } from "next/server";
-import { ChatLanding } from "@/features/chat";
+import { ChatHome } from "@/features/chat";
 import {
   ConversationListButton,
   Header,
@@ -28,7 +28,7 @@ export default async function ChatPage() {
         right={<NotificationLink />}
       />
       <main className={styles.main}>
-        <ChatLanding date={getCurrentDate()} />
+        <ChatHome date={getCurrentDate()} />
       </main>
     </>
   );
