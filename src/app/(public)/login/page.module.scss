@@ -1,12 +1,5 @@
-.page {
+.main {
+  width: 100%;
   min-height: 100dvh;
-  margin-inline: calc(var(--screen-padding) * -1);
-  background: var(--color-background-surface);
   padding-block: var(--header-height) 24px;
-  padding-inline: var(--screen-padding);
-}
-
-.page>* {
-  max-width: 400px;
-  margin-inline: auto;
 }

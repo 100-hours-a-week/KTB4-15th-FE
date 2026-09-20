@@ -1,0 +1,13 @@
+.shell {
+  width: 100%;
+  min-height: 100dvh;
+  padding-inline: var(--screen-padding);
+}
+
+.page {
+  background: var(--color-background-page);
+}
+
+.surface {
+  background: var(--color-background-surface);
+}
