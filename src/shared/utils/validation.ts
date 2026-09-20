@@ -39,3 +39,18 @@ export function validatePassword(value: string) {
 
   return undefined;
 }
+
+export function validatePasswordConfirmation(
+  password: string,
+  confirmation: string,
+) {
+  if (!confirmation) {
+    return "비밀번호 확인을 입력해주세요.";
+  }
+
+  if (password !== confirmation) {
+    return "비밀번호가 일치하지 않습니다.";
+  }
+
+  return undefined;
+}

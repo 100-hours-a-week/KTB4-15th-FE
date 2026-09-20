@@ -9,6 +9,7 @@ import styles from "./input-field.module.scss";
 export type InputFieldProps = InputHTMLAttributes<HTMLInputElement> & {
   label: string;
   helperText?: string;
+  success?: string;
   reserveHelperSpace?: boolean;
   showRequiredMark?: boolean;
   error?: string;
@@ -28,6 +29,7 @@ export const InputField = forwardRef<HTMLInputElement, InputFieldProps>(
       required,
       reserveHelperSpace = true,
       showRequiredMark = true,
+      success,
       suffix,
       endAdornment,
       ...props
@@ -36,7 +38,7 @@ export const InputField = forwardRef<HTMLInputElement, InputFieldProps>(
   ) {
     const generatedId = useId();
     const inputId = id ?? `input-field-${generatedId}`;
-    const message = error || helperText;
+    const message = error || success || helperText;
     const shouldRenderMessage = Boolean(message) || reserveHelperSpace;
     const messageId = `${inputId}-message`;
     const suffixId = `${inputId}-suffix`;
@@ -84,7 +86,13 @@ export const InputField = forwardRef<HTMLInputElement, InputFieldProps>(
         </div>
         {shouldRenderMessage && (
           <p
-            className={error ? styles.errorMessage : styles.helperText}
+            className={
+              error
+                ? styles.errorMessage
+                : success
+                  ? styles.successMessage
+                  : styles.helperText
+            }
             id={messageId}
           >
             {message}

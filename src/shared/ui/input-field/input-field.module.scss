@@ -86,7 +86,8 @@
 }
 
 .helperText,
-.errorMessage {
+.errorMessage,
+.successMessage {
   @include type.caption;
 
   min-height: 2rem;
@@ -100,6 +101,10 @@
 
 .errorMessage {
   color: var(--color-red-600);
+}
+
+.successMessage {
+  color: var(--color-green-600);
 }
 
 @media (prefers-reduced-motion: reduce) {

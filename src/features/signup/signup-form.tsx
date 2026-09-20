@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { Button, IconButton } from "@/shared/ui/button";
 import { PasswordVisibilityIcon } from "@/shared/ui/icon";
 import { InputField } from "@/shared/ui/input-field";
@@ -10,31 +10,39 @@ import {
   normalizeEmail,
   validateEmail,
   validatePassword,
+  validatePasswordConfirmation,
 } from "@/shared/utils/validation";
-import styles from "./login-form.module.scss";
+import styles from "./signup-form.module.scss";
 
-type LoginFormValues = {
+type SignupFormValues = {
   email: string;
   password: string;
+  confirmPassword: string;
 };
 
-export function LoginForm() {
+export function SignupForm() {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const [isConfirmPasswordVisible, setIsConfirmPasswordVisible] = useState(false);
   const {
+    control,
     formState: { errors, isValid, touchedFields },
+    getValues,
     handleSubmit,
     register,
-  } = useForm<LoginFormValues>({
+  } = useForm<SignupFormValues>({
     mode: "onBlur",
     reValidateMode: "onChange",
   });
+  const password = useWatch({ control, name: "password", defaultValue: "" });
+  const confirmation = useWatch({
+    control,
+    name: "confirmPassword",
+    defaultValue: "",
+  });
+  const confirmationError = validatePasswordConfirmation(password, confirmation);
 
   return (
-    <form
-      className={styles.form}
-      noValidate
-      onSubmit={handleSubmit(() => undefined)}
-    >
+    <form className={styles.form} noValidate onSubmit={handleSubmit(() => undefined)}>
       <div className={styles.fields}>
         <InputField
           {...register("email", {
@@ -49,23 +57,16 @@ export function LoginForm() {
               : "가입하신 이메일 주소를 입력해주세요."
           }
           label="이메일"
-          name="email"
-          placeholder="looker@lookddak.com"
           required
           showRequiredMark={false}
-          reserveHelperSpace
           type="email"
         />
         <InputField
-          {...register("password", {
-            validate: validatePassword,
-          })}
-          autoComplete="current-password"
+          {...register("password", { validate: validatePassword })}
+          autoComplete="new-password"
           endAdornment={
             <IconButton
-              aria-label={
-                isPasswordVisible ? "비밀번호 숨기기" : "비밀번호 표시"
-              }
+              aria-label={isPasswordVisible ? "비밀번호 숨기기" : "비밀번호 표시"}
               onClick={() => setIsPasswordVisible((visible) => !visible)}
               size="medium"
             >
@@ -82,19 +83,46 @@ export function LoginForm() {
               : "영문, 숫자, 대문자, 소문자, 특수문자를 포함해 8자 이상 입력해주세요."
           }
           label="비밀번호"
-          name="password"
           required
-          reserveHelperSpace
           showRequiredMark={false}
           type={isPasswordVisible ? "text" : "password"}
+        />
+        <InputField
+          {...register("confirmPassword", {
+            validate: (value) =>
+              validatePasswordConfirmation(getValues("password"), value),
+          })}
+          autoComplete="new-password"
+          endAdornment={
+            <IconButton
+              aria-label={
+                isConfirmPasswordVisible
+                  ? "비밀번호 확인 숨기기"
+                  : "비밀번호 확인 표시"
+              }
+              onClick={() => setIsConfirmPasswordVisible((visible) => !visible)}
+              size="medium"
+            >
+              <PasswordVisibilityIcon
+                isVisible={isConfirmPasswordVisible}
+                key={String(isConfirmPasswordVisible)}
+              />
+            </IconButton>
+          }
+          error={errors.confirmPassword?.message}
+          label="비밀번호 확인"
+          required
+          showRequiredMark={false}
+          success={!confirmationError && confirmation ? "비밀번호가 일치해요." : undefined}
+          type={isConfirmPasswordVisible ? "text" : "password"}
         />
       </div>
       <div className={styles.actions}>
         <Button disabled={!isValid} fullWidth size="medium" type="submit">
-          로그인
+          회원가입
         </Button>
-        <p className={styles.signupPrompt}>
-          아직 계정이 없으신가요? <Link href="/signup">회원가입</Link>
+        <p className={styles.loginPrompt}>
+          이미 회원이신가요? <Link href="/login">로그인</Link>
         </p>
       </div>
     </form>
