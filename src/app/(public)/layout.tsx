@@ -1,3 +1,5 @@
+import { PageShell } from "@/shared/ui/page-shell";
+
 export default function PublicLayout({ children }: LayoutProps<"/">) {
-  return children;
+  return <PageShell surface="surface">{children}</PageShell>;
 }

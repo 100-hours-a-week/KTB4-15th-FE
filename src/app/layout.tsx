@@ -12,8 +12,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="ko">
       <body>
-        <div className={styles.appShell}>
-          <div className={styles.pageContent}>{children}</div>
+        <div className={styles.appFrame}>
+          {children}
         </div>
       </body>
     </html>
