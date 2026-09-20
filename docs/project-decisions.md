@@ -22,6 +22,8 @@
 
 - App Router의 최상위 라우트 그룹은 `(public)`과 `(service)`로 구분한다.
 - `/`는 `/login`으로 이동하고, 로그인 완료 후 진입 화면은 `/chat`으로 한다.
+- 회원가입 직후 기본 정보 입력 화면은 `/profile/setup`을 사용한다.
+- 인증이 필요한 화면은 `(service)`에 배치한다. 주요 탭 화면은 하단 내비게이션을 제공하는 `(main)`에, 기본 정보 입력처럼 독립된 흐름은 `(standalone)`에 배치한다.
 - 같은 헤더가 여러 하위 경로에서 유지되면 가장 가까운 공통 `layout.tsx`에 배치하고, 한 화면에만 적용되면 `page.tsx`에서 선언한다.
 
 ### 폴더 구조
@@ -114,6 +116,11 @@ src/
 - 로딩 spinner의 회전 시간은 800ms를 사용한다.
 - `prefers-reduced-motion` 설정을 지원한다.
 - z-index는 sticky 5, dropdown 10, overlay 15, modal 20, toast 25 단계로 관리한다.
+- 공통 BottomSheet는 Radix Dialog를 기반으로 구현하며 Portal은 Radix의 기본 동작을 사용한다. Backdrop과 Content는 CSS로 App Shell 최대 너비에 맞춘다.
+- BottomSheet, Modal, AlertDialog의 open/close lifecycle은 OverlayKit으로 관리하고 각 UI 컴포넌트의 접근성과 Portal은 Radix가 담당한다.
+- Toast는 노출 시간과 큐 정책이 별도로 필요하므로 OverlayKit 관리 범위에 포함하지 않는다.
+- BottomSheet는 콘텐츠 높이에 맞추는 `content`와 화면 높이의 60%를 사용하는 `large` 크기를 제공한다.
+- BottomSheet는 배경 클릭, 닫기 버튼, Escape 키로 닫을 수 있으며 drag-to-close와 snap point는 현재 지원하지 않는다.
 
 ## 인증
 

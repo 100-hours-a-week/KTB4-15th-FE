@@ -1,0 +1,142 @@
+@use "@/styles/typography" as type;
+
+.backdrop,
+.bottomSheet {
+  position: fixed;
+  z-index: var(--z-overlay);
+  width: 100%;
+  max-width: var(--app-max-width);
+  left: 50%;
+}
+
+.backdrop {
+  background: var(--color-background-overlay);
+  bottom: 0;
+  top: 0;
+  transform: translateX(-50%);
+
+  &[data-state="open"] {
+    animation: backdrop-in var(--duration-normal) var(--easing-standard);
+  }
+
+  &[data-state="closed"] {
+    animation: backdrop-out var(--duration-normal) var(--easing-standard);
+  }
+}
+
+.bottomSheet {
+  display: flex;
+  max-height: calc(100dvh - var(--space-2xl));
+  flex-direction: column;
+  border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;
+  background: var(--color-background-surface);
+  bottom: 0;
+  outline: none;
+  transform: translateX(-50%);
+
+  &[data-state="open"] {
+    animation: sheet-in var(--duration-slow) var(--easing-standard);
+  }
+
+  &[data-state="closed"] {
+    animation: sheet-out var(--duration-normal) var(--easing-standard);
+  }
+}
+
+.large {
+  height: 60dvh;
+}
+
+.header {
+  display: grid;
+  flex: 0 0 auto;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: var(--space-md);
+  padding: var(--space-xl) var(--screen-padding) var(--space-lg);
+}
+
+.heading {
+  min-width: 0;
+}
+
+.eyebrow {
+  @include type.label;
+
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin: 0 0 var(--space-lg);
+  color: var(--color-text-brand);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.04em;
+
+  &::before {
+    width: 8px;
+    height: 8px;
+    border-radius: var(--radius-full);
+    background: var(--color-action-primary-default);
+    content: "";
+  }
+}
+
+.title {
+  @include type.heading-medium;
+
+  margin: 0;
+}
+
+.description {
+  @include type.body-medium;
+
+  margin: var(--space-md) 0 0;
+  color: var(--color-text-secondary);
+}
+
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.body {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0 var(--screen-padding)
+    calc(var(--space-xl) + env(safe-area-inset-bottom));
+}
+
+@keyframes backdrop-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes backdrop-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes sheet-in {
+  from {
+    transform: translate(-50%, 100%);
+  }
+}
+
+@keyframes sheet-out {
+  to {
+    transform: translate(-50%, 100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .backdrop,
+  .bottomSheet {
+    animation: none;
+  }
+}
