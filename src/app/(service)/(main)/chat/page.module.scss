@@ -1,0 +1,18 @@
+@use "@/styles/typography" as type;
+
+.title {
+  @include type.heading-small;
+
+  overflow: hidden;
+  margin: 0;
+  color: var(--color-text-primary);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.main {
+  width: 100%;
+  min-height: calc(100dvh - var(--header-height));
+  padding-block: var(--space-xl)
+    calc(var(--navigation-height) + var(--space-xl));
+}
