@@ -1,0 +1,66 @@
+.button {
+  display: inline-grid;
+  place-items: center;
+  border: 0;
+  border-radius: var(--radius-full);
+  padding: 0;
+
+  &:disabled {
+    background: var(--color-action-disabled-background);
+    color: var(--color-action-disabled-text);
+  }
+}
+
+.icon {
+  display: block;
+  width: var(--icon-size);
+  height: var(--icon-size);
+
+  svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.small {
+  --icon-size: 16px;
+
+  width: var(--control-height);
+  height: var(--control-height);
+}
+
+.medium {
+  --icon-size: 20px;
+
+  width: var(--control-height-medium);
+  height: var(--control-height-medium);
+}
+
+.large {
+  --icon-size: 24px;
+
+  width: var(--control-height-large);
+  height: var(--control-height-large);
+}
+
+.standard {
+  background: transparent;
+  color: var(--color-text-primary);
+}
+
+.outlined {
+  border: 1px solid var(--color-border-default);
+  background: var(--color-background-surface);
+  color: var(--color-text-primary);
+}
+
+.primary {
+  background: var(--color-action-primary-default);
+  color: var(--color-action-primary-text);
+}
+
+.secondary {
+  background: var(--color-action-secondary-default);
+  color: var(--color-action-secondary-text);
+}

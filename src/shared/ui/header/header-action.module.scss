@@ -1,0 +1,17 @@
+.notification {
+  position: relative;
+
+  &::before {
+    position: absolute;
+    z-index: 2;
+    width: 7px;
+    height: 7px;
+    border: 2px solid var(--color-background-surface);
+    border-radius: var(--radius-full);
+    background: var(--color-red-600);
+    content: "";
+    pointer-events: none;
+    right: 10px;
+    top: 9px;
+  }
+}
