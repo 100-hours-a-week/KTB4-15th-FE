@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css";
 import styles from "./layout.module.scss";
 import "./globals.scss";
+import { Providers } from "./providers";
 
 export const metadata: Metadata = {
   title: "LOOK DDAK",
@@ -12,9 +13,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="ko">
       <body>
-        <div className={styles.appFrame}>
-          {children}
-        </div>
+        <Providers>
+          <div className={styles.appFrame}>{children}</div>
+        </Providers>
       </body>
     </html>
   );

@@ -3,6 +3,7 @@
 .field {
   display: grid;
   gap: var(--space-xs);
+  scroll-margin-block: var(--space-2xl);
 }
 
 .label {

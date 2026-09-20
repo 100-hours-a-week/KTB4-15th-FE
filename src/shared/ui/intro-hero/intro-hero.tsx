@@ -5,10 +5,18 @@ export type IntroHeroProps = {
   title: ReactNode;
   description: ReactNode;
   className?: string;
+  size?: "default" | "compact";
 };
 
-export function IntroHero({ className, description, title }: IntroHeroProps) {
-  const classNames = [styles.hero, className].filter(Boolean).join(" ");
+export function IntroHero({
+  className,
+  description,
+  size = "default",
+  title,
+}: IntroHeroProps) {
+  const classNames = [styles.hero, styles[size], className]
+    .filter(Boolean)
+    .join(" ");
 
   return (
     <section className={classNames}>

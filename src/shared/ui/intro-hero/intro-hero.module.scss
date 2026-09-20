@@ -17,3 +17,13 @@
     white-space: pre-line;
   }
 }
+
+.compact {
+  h1 {
+    @include type.heading-small;
+  }
+
+  p {
+    margin-top: var(--space-xs);
+  }
+}
