@@ -1,7 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { ChatMessageResponse } from "./api/chat-api.types";
+import type {
+  ChatMessageResponse,
+  ChatSourceType,
+  CreateChatRoomRequest,
+} from "./api/chat-api.types";
 import styles from "./chat-screen.module.scss";
 import { AI_MESSAGE_FIXTURE } from "./fixtures/chat.fixture";
 import { ChatComposer } from "./ui/composer/chat-composer";
@@ -25,13 +29,21 @@ export function ChatScreen({ date, initialMessages = [] }: ChatScreenProps) {
     return () => window.clearTimeout(generationTimerRef.current);
   }, []);
 
-  const handleSubmit = async (content: string) => {
+  const handleSubmit = async (
+    content: string,
+    sourceType: ChatSourceType = "GENERAL",
+  ) => {
+    const request = {
+      content,
+      sourceType,
+    } satisfies CreateChatRoomRequest;
+
     setMessages((currentMessages) => [
       ...currentMessages,
       {
         messageId: Date.now(),
         senderType: "USER",
-        content,
+        content: request.content,
         createdAt: new Date().toISOString(),
       },
     ]);
@@ -53,7 +65,7 @@ export function ChatScreen({ date, initialMessages = [] }: ChatScreenProps) {
   return (
     <>
       {messages.length === 0 && date != null ? (
-        <ChatIntro date={date} />
+        <ChatIntro date={date} onSelectQuestion={handleSubmit} />
       ) : (
         <ChatMessageList isGenerating={isGenerating} messages={messages} />
       )}
