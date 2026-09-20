@@ -1,15 +1,12 @@
 .page {
-  display: grid;
-  min-height: calc(100dvh - 68px);
-  place-content: center;
-  text-align: center;
+  min-height: 100dvh;
+  margin-inline: calc(var(--screen-padding) * -1);
+  background: var(--color-background-surface);
+  padding-block: var(--header-height) 24px;
+  padding-inline: var(--screen-padding);
+}
 
-  h1 {
-    margin: 0 0 8px;
-  }
-
-  p {
-    margin: 0;
-    color: var(--color-muted);
-  }
+.page>* {
+  max-width: 400px;
+  margin-inline: auto;
 }
