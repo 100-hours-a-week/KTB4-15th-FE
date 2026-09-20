@@ -1,4 +1,20 @@
-export { ChatComposer } from "./chat-composer";
-export type { ChatComposerProps } from "./chat-composer";
-export { ChatHome } from "./chat-home";
-export { ChatLanding } from "./chat-landing";
+export { ChatScreen } from "./chat-screen";
+export { ChatComposer } from "./ui/composer/chat-composer";
+export type { ChatComposerProps } from "./ui/composer/chat-composer";
+export { ChatIntro } from "./ui/intro/chat-intro";
+export { AIChatMessageLoading } from "./ui/message/ai-chat-message-loading";
+export { ChatMessageList } from "./ui/message/chat-message-list";
+export type {
+  AIMessageResponse,
+  ChatMessageResponse,
+  ChatGenerationErrorCode,
+  ChatGenerationErrorResponse,
+  ChatGenerationResponse,
+  ChatGenerationStatus,
+  ChatSourceType,
+  CreateChatRoomRequest,
+  RecommendationResponse,
+  RecommendedProductResponse,
+  SendChatMessageRequest,
+  UserMessageResponse,
+} from "./api/chat-api.types";

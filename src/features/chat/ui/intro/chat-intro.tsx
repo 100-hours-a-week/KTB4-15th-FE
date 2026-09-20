@@ -1,10 +1,10 @@
 import Image, { type StaticImageData } from "next/image";
-import aiImage from "./icon/ai.png";
-import knitImage from "./icon/knit.png";
-import likeImage from "./icon/like.png";
-import shirtImage from "./icon/shirt.png";
-import suitImage from "./icon/suit.png";
-import styles from "./chat-landing.module.scss";
+import aiImage from "../../icon/ai.png";
+import knitImage from "../../icon/knit.png";
+import likeImage from "../../icon/like.png";
+import shirtImage from "../../icon/shirt.png";
+import suitImage from "../../icon/suit.png";
+import styles from "./chat-intro.module.scss";
 
 type SuggestedQuestion = {
   title: string;
@@ -35,7 +35,7 @@ const SUGGESTED_QUESTIONS: SuggestedQuestion[] = [
   },
 ];
 
-type ChatLandingProps = {
+type ChatIntroProps = {
   date: string;
 };
 
@@ -53,7 +53,7 @@ function ChevronRightIcon() {
   );
 }
 
-export function ChatLanding({ date }: ChatLandingProps) {
+export function ChatIntro({ date }: ChatIntroProps) {
   return (
     <div className={styles.landing}>
       <time className={styles.date}>{date}</time>

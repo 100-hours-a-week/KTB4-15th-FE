@@ -1,16 +1,13 @@
-import { connection } from "next/server";
 import { ChatScreen } from "@/features/chat";
-import { formatKoreanDate } from "@/shared/utils/date-format";
+import { CHAT_MESSAGE_FIXTURE } from "@/features/chat/fixtures/chat.fixture";
 import {
   ConversationListButton,
   Header,
   NotificationLink,
 } from "@/shared/ui/header";
-import styles from "./page.module.scss";
+import styles from "../chat-page.module.scss";
 
-export default async function ChatPage() {
-  await connection();
-
+export default function ChatRoomPage() {
   return (
     <>
       <Header
@@ -19,7 +16,7 @@ export default async function ChatPage() {
         right={<NotificationLink />}
       />
       <main className={styles.main}>
-        <ChatScreen date={formatKoreanDate(new Date())} />
+        <ChatScreen initialMessages={CHAT_MESSAGE_FIXTURE} />
       </main>
     </>
   );
