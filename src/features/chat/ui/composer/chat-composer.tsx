@@ -7,7 +7,7 @@ import {
   type FormEvent,
   type KeyboardEvent,
 } from "react";
-import { ButtonBase } from "@/shared/ui/button/button-base";
+import { IconButton } from "@/shared/ui/button";
 import styles from "./chat-composer.module.scss";
 
 const MAX_LENGTH = 500;
@@ -116,14 +116,16 @@ export function ChatComposer({
               {content.length}/{MAX_LENGTH}
             </span>
           )}
-          <ButtonBase
+          <IconButton
             aria-label={isSubmitting ? "메시지 전송 중" : "메시지 전송"}
             className={styles.submitButton}
             disabled={!canSubmit}
+            size="small"
             type="submit"
+            variant="standard"
           >
             <SendIcon />
-          </ButtonBase>
+          </IconButton>
         </div>
       </form>
     </div>

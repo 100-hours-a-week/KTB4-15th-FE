@@ -6,6 +6,7 @@ import type {
 import aiImage from "../../icon/ai.png";
 import { formatKoreanTime } from "@/shared/utils/date-format";
 import styles from "./chat-message.module.scss";
+import { RecommendedProductList } from "../product/recommended-product-list";
 
 type UserChatMessageProps = {
   message: UserMessageResponse;
@@ -42,6 +43,9 @@ export function AIChatMessage({ message }: AIChatMessageProps) {
           </time>
         </div>
         <p className={styles.aiBubble}>{message.content}</p>
+        {message.recommendation && (
+          <RecommendedProductList products={message.recommendation.products} />
+        )}
       </div>
     </article>
   );

@@ -86,17 +86,15 @@
 }
 
 .submitButton {
-  display: grid;
-  width: 44px;
-  height: 44px;
   align-self: flex-end;
   flex: 0 0 44px;
-  place-items: center;
-  border: 0;
-  border-radius: var(--radius-full);
-  padding: 0;
   background: var(--color-gray-900);
   color: var(--color-white);
+
+  > span {
+    width: 24px;
+    height: 24px;
+  }
 
   svg {
     position: relative;
