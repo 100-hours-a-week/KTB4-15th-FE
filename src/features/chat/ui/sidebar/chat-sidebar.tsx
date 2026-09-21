@@ -5,15 +5,40 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button, IconButton } from "@/shared/ui/button";
+import { Dropdown, DropdownItem } from "@/shared/ui/dropdown";
 import styles from "./chat-sidebar.module.scss";
 
 const CONVERSATIONS = [
-  { chatRoomId: 501, title: "5만원대 캐주얼 니트 추천", lastMessageAt: "오전 10:24" },
-  { chatRoomId: 502, title: "검정 슬랙스에 어울리는 상의", lastMessageAt: "오전 08:12" },
-  { chatRoomId: 503, title: "청바지에 어울리는 아우터", lastMessageAt: "10월 22일" },
-  { chatRoomId: 504, title: "흰 블라우스에 어울리는 하의", lastMessageAt: "10월 20일" },
-  { chatRoomId: 505, title: "결혼식 하객 8만원대 셋업", lastMessageAt: "10월 18일" },
-  { chatRoomId: 506, title: "주말 데이트용 미니멀 셔츠", lastMessageAt: "10월 15일" },
+  {
+    chatRoomId: 501,
+    title: "5만원대 캐주얼 니트 추천",
+    lastMessageAt: "오전 10:24",
+  },
+  {
+    chatRoomId: 502,
+    title: "검정 슬랙스에 어울리는 상의",
+    lastMessageAt: "오전 08:12",
+  },
+  {
+    chatRoomId: 503,
+    title: "청바지에 어울리는 아우터",
+    lastMessageAt: "10월 22일",
+  },
+  {
+    chatRoomId: 504,
+    title: "흰 블라우스에 어울리는 하의",
+    lastMessageAt: "10월 20일",
+  },
+  {
+    chatRoomId: 505,
+    title: "결혼식 하객 8만원대 셋업",
+    lastMessageAt: "10월 18일",
+  },
+  {
+    chatRoomId: 506,
+    title: "주말 데이트용 미니멀 셔츠",
+    lastMessageAt: "10월 15일",
+  },
 ] as const;
 
 function CloseIcon() {
@@ -62,6 +87,34 @@ function MoreIcon() {
       <circle cx="5" cy="12" r="1.7" />
       <circle cx="12" cy="12" r="1.7" />
       <circle cx="19" cy="12" r="1.7" />
+    </svg>
+  );
+}
+
+function EditIcon() {
+  return (
+    <svg fill="none" viewBox="0 0 24 24">
+      <path
+        d="m14.5 5.5 4 4M5 19l3.3-.7L18 8.6a1.4 1.4 0 0 0 0-2l-.6-.6a1.4 1.4 0 0 0-2 0l-9.7 9.7L5 19Z"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.8"
+      />
+    </svg>
+  );
+}
+
+function DeleteIcon() {
+  return (
+    <svg fill="none" viewBox="0 0 24 24">
+      <path
+        d="M4 7h16M9 7V4h6v3m3 0-1 13H7L6 7m4 4v5m4-5v5"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.8"
+      />
     </svg>
   );
 }
@@ -147,13 +200,22 @@ export function ChatSidebar({ open, onOpenChange }: ChatSidebarProps) {
                     <strong>{conversation.title}</strong>
                     <span>{conversation.lastMessageAt}</span>
                   </Link>
-                  <IconButton
-                    aria-label={`${conversation.title} 메뉴`}
-                    className={styles.moreButton}
-                    size="small"
+                  <Dropdown
+                    trigger={
+                      <IconButton
+                        aria-label={`${conversation.title} 메뉴 열기`}
+                        className={styles.moreButton}
+                        size="small"
+                      >
+                        <MoreIcon />
+                      </IconButton>
+                    }
                   >
-                    <MoreIcon />
-                  </IconButton>
+                    <DropdownItem icon={<EditIcon />}>이름 수정</DropdownItem>
+                    <DropdownItem destructive icon={<DeleteIcon />}>
+                      삭제하기
+                    </DropdownItem>
+                  </Dropdown>
                 </div>
               );
             })}
