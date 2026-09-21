@@ -6,6 +6,7 @@ import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { useForm } from "react-hook-form";
 import { BottomSheet } from "@/shared/ui/bottom-sheet";
 import { Button, Toggle } from "@/shared/ui/button";
+import { InfoIcon } from "@/shared/ui/icon";
 import { InputField } from "@/shared/ui/input-field";
 import {
   normalizeName,
@@ -24,20 +25,6 @@ type ProfileSetupFormValues = {
   height: string;
   weight: string;
 };
-
-function InfoIcon() {
-  return (
-    <svg aria-hidden="true" fill="none" viewBox="0 0 20 20">
-      <circle cx="10" cy="10" r="7" stroke="currentColor" strokeWidth="1.5" />
-      <path
-        d="M10 9v4M10 6.7h.01"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeWidth="1.5"
-      />
-    </svg>
-  );
-}
 
 export function ProfileSetupForm() {
   const [isNotificationEnabled, setIsNotificationEnabled] = useState(true);

@@ -3,6 +3,7 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import { useEffect, useRef, type ReactNode } from "react";
 import { IconButton } from "@/shared/ui/button";
+import { CloseIcon } from "@/shared/ui/icon";
 import styles from "./bottom-sheet.module.scss";
 
 type BottomSheetSize = "content" | "large";
@@ -18,19 +19,6 @@ export type BottomSheetProps = {
   size?: BottomSheetSize;
   title?: string;
 };
-
-function CloseIcon() {
-  return (
-    <svg aria-hidden="true" fill="none" viewBox="0 0 24 24">
-      <path
-        d="m6 6 12 12M18 6 6 18"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeWidth="2"
-      />
-    </svg>
-  );
-}
 
 export function BottomSheet({
   children,

@@ -1,5 +1,5 @@
-import { BackIcon } from "@/shared/ui/header/header-icons";
 import { Header, HeaderIconLink } from "@/shared/ui/header";
+import { BackIcon } from "@/shared/ui/icon";
 import { IntroHero } from "@/shared/ui/intro-hero/intro-hero";
 import { SignupForm } from "@/features/signup/signup-form";
 import styles from "./page.module.scss";
@@ -25,4 +25,4 @@ export default function SignupPage() {
       </main>
     </>
   );
-} 
+}

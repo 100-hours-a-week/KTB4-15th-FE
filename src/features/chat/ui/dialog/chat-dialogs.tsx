@@ -8,6 +8,7 @@ import {
   DialogDescription,
   DialogTitle,
 } from "@/shared/ui/dialog";
+import { ClearIcon } from "@/shared/ui/icon";
 import styles from "./chat-dialogs.module.scss";
 
 type DialogLifecycleProps = {
@@ -15,19 +16,6 @@ type DialogLifecycleProps = {
   onOpenChange: (open: boolean) => void;
   open: boolean;
 };
-
-function ClearIcon() {
-  return (
-    <svg aria-hidden="true" fill="none" viewBox="0 0 24 24">
-      <path
-        d="m7 7 10 10M17 7 7 17"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeWidth="2"
-      />
-    </svg>
-  );
-}
 
 type RenameChatDialogProps = DialogLifecycleProps & {
   initialTitle: string;

@@ -2,7 +2,6 @@
 
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import styles from "./navigation-bar.module.scss";
 import {
   ChatActiveIcon,
   ChatIcon,
@@ -15,6 +14,7 @@ import {
   WishlistActiveIcon,
   WishlistIcon,
 } from "./navigation-icons";
+import styles from "./navigation-bar.module.scss";
 import { NavigationItem } from "./navigation-item";
 
 const SCROLL_THRESHOLD = 8;

@@ -8,6 +8,14 @@ import { overlay } from "overlay-kit";
 import { Button, IconButton } from "@/shared/ui/button";
 import { Dropdown, DropdownItem } from "@/shared/ui/dropdown";
 import {
+  CloseIcon,
+  DeleteIcon,
+  EditIcon,
+  MoreIcon,
+  PlusIcon,
+  SearchIcon,
+} from "@/shared/ui/icon";
+import {
   DeleteChatDialog,
   RenameChatDialog,
 } from "@/features/chat/ui/dialog/chat-dialogs";
@@ -47,84 +55,6 @@ const INITIAL_CONVERSATIONS = [
 ];
 
 type Conversation = (typeof INITIAL_CONVERSATIONS)[number];
-
-function CloseIcon() {
-  return (
-    <svg aria-hidden="true" fill="none" viewBox="0 0 24 24">
-      <path
-        d="m6 6 12 12M18 6 6 18"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeWidth="2"
-      />
-    </svg>
-  );
-}
-
-function SearchIcon() {
-  return (
-    <svg aria-hidden="true" fill="none" viewBox="0 0 24 24">
-      <circle cx="11" cy="11" r="6" stroke="currentColor" strokeWidth="2" />
-      <path
-        d="m16 16 4 4"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeWidth="2"
-      />
-    </svg>
-  );
-}
-
-function PlusIcon() {
-  return (
-    <svg aria-hidden="true" fill="none" viewBox="0 0 24 24">
-      <path
-        d="M12 5v14M5 12h14"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeWidth="2"
-      />
-    </svg>
-  );
-}
-
-function MoreIcon() {
-  return (
-    <svg aria-hidden="true" fill="currentColor" viewBox="0 0 24 24">
-      <circle cx="5" cy="12" r="1.7" />
-      <circle cx="12" cy="12" r="1.7" />
-      <circle cx="19" cy="12" r="1.7" />
-    </svg>
-  );
-}
-
-function EditIcon() {
-  return (
-    <svg fill="none" viewBox="0 0 24 24">
-      <path
-        d="m14.5 5.5 4 4M5 19l3.3-.7L18 8.6a1.4 1.4 0 0 0 0-2l-.6-.6a1.4 1.4 0 0 0-2 0l-9.7 9.7L5 19Z"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="1.8"
-      />
-    </svg>
-  );
-}
-
-function DeleteIcon() {
-  return (
-    <svg fill="none" viewBox="0 0 24 24">
-      <path
-        d="M4 7h16M9 7V4h6v3m3 0-1 13H7L6 7m4 4v5m4-5v5"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="1.8"
-      />
-    </svg>
-  );
-}
 
 type ChatSidebarProps = {
   onOpenChange: (open: boolean) => void;

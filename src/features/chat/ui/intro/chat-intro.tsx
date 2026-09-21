@@ -1,6 +1,7 @@
 "use client";
 
 import Image, { type StaticImageData } from "next/image";
+import { ChevronRightIcon } from "@/shared/ui/icon";
 import type { ChatSourceType } from "../../api/chat-api.types";
 import aiImage from "../../icon/ai.png";
 import knitImage from "../../icon/knit.png";
@@ -55,20 +56,6 @@ type ChatIntroProps = {
     sourceType: ChatSourceType,
   ) => Promise<void>;
 };
-
-function ChevronRightIcon() {
-  return (
-    <svg aria-hidden="true" fill="none" viewBox="0 0 24 24">
-      <path
-        d="m9 5 7 7-7 7"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="2"
-      />
-    </svg>
-  );
-}
 
 export function ChatIntro({ date, onSelectQuestion }: ChatIntroProps) {
   return (

@@ -4,6 +4,7 @@ import Image, { type ImageLoaderProps } from "next/image";
 import { useRef, useState, type UIEvent } from "react";
 import type { RecommendedProductResponse } from "../../api/chat-api.types";
 import { Button, IconButton } from "@/shared/ui/button";
+import { HeartIcon } from "@/shared/ui/icon";
 import styles from "./recommended-product-list.module.scss";
 
 type RecommendedProductListProps = {
@@ -21,24 +22,6 @@ function passthroughImageLoader({ src }: ImageLoaderProps) {
 
 function formatPrice(price: number) {
   return `${new Intl.NumberFormat("ko-KR").format(price)}원`;
-}
-
-function HeartIcon({ filled }: { filled: boolean }) {
-  return (
-    <svg
-      aria-hidden="true"
-      fill={filled ? "currentColor" : "none"}
-      viewBox="0 0 24 24"
-    >
-      <path
-        d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78Z"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="1.8"
-      />
-    </svg>
-  );
 }
 
 function RecommendedProductCard({
