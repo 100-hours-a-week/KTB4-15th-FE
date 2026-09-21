@@ -1,6 +1,6 @@
 # FE 프로젝트 결정 사항
 
-마지막 업데이트: 2026-09-19
+마지막 업데이트: 2026-09-21
 
 ## 개발 환경
 
@@ -30,18 +30,44 @@
 
 - 폴더는 실제 코드가 필요해지는 시점에 생성한다.
 - 빈 폴더를 유지하기 위한 `.gitkeep`은 추가하지 않는다.
-- `components`에는 둘 이상의 Feature에서 동일하게 사용하는 UI만 배치한다.
+- `app`에는 Route, Layout, Page와 해당 라우트에서만 사용하는 코드를 배치한다.
+- `features`에는 비즈니스 기능별 UI, API 타입, Fixture를 배치한다.
+- `shared/ui`에는 둘 이상의 Feature에서 동일하게 사용하는 공통 UI를 배치한다.
+- `shared/utils`에는 특정 비즈니스 기능에 종속되지 않는 Utility를 배치한다.
+- 공통 UI는 컴포넌트별 폴더에 스타일과 함께 배치하고 `index.ts`를 통해 공개한다.
 
 ```text
 src/
-├── app/        # Route, Layout, Page와 Route 전용 코드
-├── features/   # 비즈니스 기능별 코드
-├── components/ # 비즈니스 도메인에 종속되지 않는 공통 UI
-├── lib/        # API Client, 외부 라이브러리 설정과 범용 Utility
-├── config/     # 환경변수, Route와 전역 상수
-├── styles/     # 전역 Style, Design Token과 Mixin
-└── testing/    # Test 설정, Fixture와 Mock
+├── app/           # Route, Layout, Page와 Route 전용 코드
+├── features/      # 비즈니스 기능별 UI, API 타입, Fixture
+├── shared/
+│   ├── api/        # 공통 API 응답 타입과 요청 설정
+│   ├── ui/         # 비즈니스 도메인에 종속되지 않는 공통 UI
+│   └── utils/      # 범용 Utility
+└── styles/         # 전역 Style, Design Token과 Mixin
 ```
+
+## API 통신
+
+### 공통 응답
+
+- BE의 공통 응답은 `code`, `data`, `message`를 갖는 `ApiResponse<T>`로 표현한다.
+- 도메인별 요청·응답 타입은 `features/<domain>/api`에, 여러 도메인이 공유하는 API 설정과 응답 타입은 `shared/api`에 배치한다.
+
+### 브라우저 요청
+
+- 브라우저 API Client는 Ky를 사용하고 기준 URL은 `NEXT_PUBLIC_API_BASE_URL`로 설정한다.
+- HttpOnly Cookie 기반 인증을 위해 `credentials: 'include'`를 적용한다.
+- timeout은 10초, retry 한도는 2회로 설정한다.
+- `NEXT_PUBLIC_` 접두사가 붙은 환경 변수는 브라우저에 공개되므로 비밀 값을 저장하지 않는다.
+
+### 서버 요청
+
+- 서버 전용 API Client는 Next.js의 `fetch`를 사용하며 `server-only`로 클라이언트 번들 포함을 방지한다.
+- 기준 URL은 서버 전용 `API_BASE_URL`로 설정하고, 환경 변수가 없으면 초기화 단계에서 오류를 발생시킨다.
+- Next.js `cookies()`로 읽은 현재 요청의 Cookie를 `Cookie` 헤더로 BE에 전달한다.
+- 호출부가 `signal`을 제공하지 않으면 10초 timeout을 적용하고, 제공하면 해당 `signal`을 우선한다.
+- 2xx가 아닌 응답은 status를 포함한 오류로 변환하여 호출부에 전파하며, 서버 공통 로직에서는 자동 retry를 적용하지 않는다.
 
 ## 디자인 시스템
 
@@ -81,7 +107,7 @@ src/
 
 - 버튼은 small 44px, medium 48px, large 52px 높이를 사용한다.
 - 버튼 너비는 size와 분리하고 `fullWidth` 속성으로 제어한다.
-- 버튼 계열은 `components/button`에서 관리한다.
+- 버튼 계열은 `shared/ui/button`에서 관리한다.
 - 저수준 ButtonBase를 Button과 IconButton이 합성해 사용한다.
 - Button variant는 primary, secondary, outlined, text, danger로 구분한다.
 - 연한 브랜드 배경의 tonal 버튼은 별도 variant를 추가하지 않고 secondary로 표현한다.
@@ -118,6 +144,7 @@ src/
 - z-index는 sticky 5, dropdown 10, overlay 15, modal 20, toast 25 단계로 관리한다.
 - 공통 BottomSheet는 Radix Dialog를 기반으로 구현하며 Portal은 Radix의 기본 동작을 사용한다. Backdrop과 Content는 CSS로 App Shell 최대 너비에 맞춘다.
 - BottomSheet, Modal, AlertDialog의 open/close lifecycle은 OverlayKit으로 관리하고 각 UI 컴포넌트의 접근성과 Portal은 Radix가 담당한다.
+- Dropdown은 Radix DropdownMenu를 기반으로 구현하며 open/close, 키보드 탐색, focus와 위치 계산은 Radix가 담당한다. Dropdown 내부에서는 API 요청이나 도메인 상태를 처리하지 않고 선택 콜백만 상위에 전달한다.
 - Toast는 노출 시간과 큐 정책이 별도로 필요하므로 OverlayKit 관리 범위에 포함하지 않는다.
 - BottomSheet는 콘텐츠 높이에 맞추는 `content`와 화면 높이의 60%를 사용하는 `large` 크기를 제공한다.
 - BottomSheet는 배경 클릭, 닫기 버튼, Escape 키로 닫을 수 있으며 drag-to-close와 snap point는 현재 지원하지 않는다.
