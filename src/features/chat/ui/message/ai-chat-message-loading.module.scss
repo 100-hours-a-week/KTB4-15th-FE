@@ -1,0 +1,61 @@
+.loadingMessage {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.avatar {
+  width: 48px;
+  height: 48px;
+  flex: 0 0 48px;
+  border-radius: var(--radius-full);
+  object-fit: cover;
+}
+
+.bubble {
+  display: flex;
+  min-width: 88px;
+  min-height: 56px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border-radius: 0 var(--radius-large) var(--radius-large) var(--radius-large);
+  background: var(--color-background-surface);
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: var(--radius-full);
+  animation: typing 1.2s ease-in-out infinite;
+  background: var(--color-gray-900);
+
+  &:nth-child(2) {
+    animation-delay: 150ms;
+  }
+
+  &:nth-child(3) {
+    animation-delay: 300ms;
+  }
+}
+
+@keyframes typing {
+  0%,
+  60%,
+  100% {
+    opacity: 0.35;
+    transform: translateY(0);
+  }
+
+  30% {
+    opacity: 1;
+    transform: translateY(-4px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dot {
+    animation: none;
+    opacity: 0.65;
+  }
+}

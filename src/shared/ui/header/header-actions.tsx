@@ -1,18 +1,22 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import type { MouseEventHandler } from "react";
+import { BackIcon } from "@/shared/ui/icon";
 import styles from "./header-action.module.scss";
-import {
-  BackIcon,
-  ConversationListIcon,
-  NotificationIcon,
-} from "./header-icons";
+import { ConversationListIcon, NotificationIcon } from "./header-icons";
 import { HeaderIconButton } from "./header-icon-button";
 import { HeaderIconLink } from "./header-icon-link";
 
-export function ConversationListButton() {
+type ConversationListButtonProps = {
+  onClick: MouseEventHandler<HTMLButtonElement>;
+};
+
+export function ConversationListButton({
+  onClick,
+}: ConversationListButtonProps) {
   return (
-    <HeaderIconButton aria-label="대화 목록 열기">
+    <HeaderIconButton aria-label="대화 목록 열기" onClick={onClick}>
       <ConversationListIcon />
     </HeaderIconButton>
   );

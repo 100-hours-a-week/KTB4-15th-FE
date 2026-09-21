@@ -1,0 +1,88 @@
+@use "@/styles/typography" as type;
+
+.time {
+  @include type.caption;
+
+  flex: 0 0 auto;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.userMessage {
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  gap: var(--space-md);
+}
+
+.userBubble {
+  @include type.body-large;
+
+  min-width: 0;
+  max-width: 78%;
+  border-radius: var(--radius-large) var(--radius-small) var(--radius-large)
+    var(--radius-large);
+  padding: 14px 18px;
+  background: var(--color-action-primary-default);
+  color: var(--color-text-inverse);
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.aiMessage {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-md);
+}
+
+.avatar {
+  width: 48px;
+  height: 48px;
+  flex: 0 0 48px;
+  border-radius: var(--radius-full);
+  object-fit: cover;
+}
+
+.aiContent {
+  min-width: 0;
+  flex: 1;
+}
+
+.aiMeta {
+  display: flex;
+  min-height: 28px;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-sm);
+}
+
+.aiName {
+  @include type.label;
+
+  color: var(--color-text-primary);
+}
+
+.aiBadge {
+  @include type.caption;
+
+  border-radius: var(--radius-full);
+  padding: 4px 10px;
+  background: var(--color-gray-100);
+  color: var(--color-text-secondary);
+}
+
+.aiTime {
+  margin-left: auto;
+}
+
+.aiBubble {
+  @include type.body-large;
+
+  margin: 0;
+  border-radius: 0 var(--radius-large) var(--radius-large) var(--radius-large);
+  padding: var(--space-lg);
+  background: var(--color-background-surface);
+  color: var(--color-text-primary);
+  white-space: pre-line;
+  word-break: keep-all;
+}
