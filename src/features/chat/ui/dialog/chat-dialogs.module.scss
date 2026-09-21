@@ -1,0 +1,98 @@
+@use "@/styles/typography" as type;
+
+.dialog {
+  padding: var(--space-xl);
+}
+
+.renameDialog {
+  .description {
+    margin-top: var(--space-sm);
+  }
+}
+
+.title {
+  @include type.heading-small;
+
+  margin: 0;
+  color: var(--color-text-primary);
+}
+
+.description {
+  @include type.body-medium;
+
+  margin: var(--space-md) 0 0;
+  color: var(--color-text-secondary);
+}
+
+.inputField {
+  position: relative;
+  margin-top: var(--space-xl);
+
+  input {
+    @include type.body-large;
+
+    width: 100%;
+    height: var(--control-height-large);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-medium);
+    padding: 0 48px 0 var(--space-lg);
+    background: var(--color-background-surface);
+    outline: none;
+
+    &:focus {
+      border-color: var(--color-border-brand);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--color-focus-ring);
+      outline-offset: 1px;
+    }
+  }
+}
+
+.clearButton {
+  position: absolute;
+  top: 50%;
+  right: var(--space-sm);
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border: 0;
+  border-radius: var(--radius-full);
+  padding: 0;
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transform: translateY(-50%);
+
+  svg {
+    width: 22px;
+    height: 22px;
+  }
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-md);
+  margin-top: var(--space-xl);
+}
+
+.deleteDialog {
+  text-align: center;
+
+  .description {
+    max-width: 270px;
+    margin-inline: auto;
+  }
+}
+
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

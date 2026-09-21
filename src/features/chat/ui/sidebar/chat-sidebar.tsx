@@ -4,11 +4,16 @@ import * as Dialog from "@radix-ui/react-dialog";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
+import { overlay } from "overlay-kit";
 import { Button, IconButton } from "@/shared/ui/button";
 import { Dropdown, DropdownItem } from "@/shared/ui/dropdown";
+import {
+  DeleteChatDialog,
+  RenameChatDialog,
+} from "@/features/chat/ui/dialog/chat-dialogs";
 import styles from "./chat-sidebar.module.scss";
 
-const CONVERSATIONS = [
+const INITIAL_CONVERSATIONS = [
   {
     chatRoomId: 501,
     title: "5만원대 캐주얼 니트 추천",
@@ -39,7 +44,9 @@ const CONVERSATIONS = [
     title: "주말 데이트용 미니멀 셔츠",
     lastMessageAt: "10월 15일",
   },
-] as const;
+];
+
+type Conversation = (typeof INITIAL_CONVERSATIONS)[number];
 
 function CloseIcon() {
   return (
@@ -125,17 +132,67 @@ type ChatSidebarProps = {
 };
 
 export function ChatSidebar({ open, onOpenChange }: ChatSidebarProps) {
+  const [conversations, setConversations] = useState<Conversation[]>(() => [
+    ...INITIAL_CONVERSATIONS,
+  ]);
   const [query, setQuery] = useState("");
   const pathname = usePathname();
   const router = useRouter();
   const normalizedQuery = query.trim().toLocaleLowerCase("ko-KR");
-  const filteredConversations = CONVERSATIONS.filter((conversation) =>
+  const filteredConversations = conversations.filter((conversation) =>
     conversation.title.toLocaleLowerCase("ko-KR").includes(normalizedQuery),
   );
 
   const startNewChat = () => {
     onOpenChange(false);
     router.push("/chat");
+  };
+
+  const openRenameDialog = (chatRoomId: number, currentTitle: string) => {
+    overlay.open(({ close, isOpen, unmount }) => (
+      <RenameChatDialog
+        initialTitle={currentTitle}
+        onConfirm={(title) => {
+          setConversations((currentConversations) =>
+            currentConversations.map((conversation) =>
+              conversation.chatRoomId === chatRoomId
+                ? { ...conversation, title }
+                : conversation,
+            ),
+          );
+          close();
+        }}
+        onExit={unmount}
+        onOpenChange={(nextOpen) => {
+          if (!nextOpen) close();
+        }}
+        open={isOpen}
+      />
+    ));
+  };
+
+  const openDeleteDialog = (chatRoomId: number) => {
+    overlay.open(({ close, isOpen, unmount }) => (
+      <DeleteChatDialog
+        onConfirm={() => {
+          setConversations((currentConversations) =>
+            currentConversations.filter(
+              (conversation) => conversation.chatRoomId !== chatRoomId,
+            ),
+          );
+          close();
+
+          if (pathname === `/chat/${chatRoomId}`) {
+            router.push("/chat");
+          }
+        }}
+        onExit={unmount}
+        onOpenChange={(nextOpen) => {
+          if (!nextOpen) close();
+        }}
+        open={isOpen}
+      />
+    ));
   };
 
   return (
@@ -211,8 +268,22 @@ export function ChatSidebar({ open, onOpenChange }: ChatSidebarProps) {
                       </IconButton>
                     }
                   >
-                    <DropdownItem icon={<EditIcon />}>이름 수정</DropdownItem>
-                    <DropdownItem destructive icon={<DeleteIcon />}>
+                    <DropdownItem
+                      icon={<EditIcon />}
+                      onSelect={() =>
+                        openRenameDialog(
+                          conversation.chatRoomId,
+                          conversation.title,
+                        )
+                      }
+                    >
+                      이름 수정
+                    </DropdownItem>
+                    <DropdownItem
+                      destructive
+                      icon={<DeleteIcon />}
+                      onSelect={() => openDeleteDialog(conversation.chatRoomId)}
+                    >
                       삭제하기
                     </DropdownItem>
                   </Dropdown>
