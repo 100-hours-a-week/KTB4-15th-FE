@@ -6,41 +6,39 @@ import { useForm } from "react-hook-form";
 import { Button, IconButton } from "@/shared/ui/button";
 import { PasswordVisibilityIcon } from "@/shared/ui/icon";
 import { InputField } from "@/shared/ui/input-field";
-import {
-  normalizeEmail,
-  validateEmail,
-  validatePassword,
-} from "@/shared/utils/validation";
 import styles from "./login-form.module.scss";
-
-type LoginFormValues = {
-  email: string;
-  password: string;
-};
+import { loginSchema, type LoginRequest } from "../schema/auth";
+import { login } from "../api/auth";
+import { useRouter } from "next/navigation";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 export function LoginForm() {
+  const router = useRouter();
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const {
-    formState: { errors, isValid, touchedFields },
+    formState: { errors, isValid, touchedFields, isSubmitting },
     handleSubmit,
     register,
-  } = useForm<LoginFormValues>({
+  } = useForm<LoginRequest>({
     mode: "onBlur",
     reValidateMode: "onChange",
+    resolver: zodResolver(loginSchema),
   });
+
+  const handleLogin = async ({ email, password }: LoginRequest) => {
+    const { profileCompleted } = await login({ email, password });
+    router.replace(profileCompleted ? "/chat" : "/profile/setup");
+  };
 
   return (
     <form
       className={styles.form}
       noValidate
-      onSubmit={handleSubmit(() => undefined)}
+      onSubmit={handleSubmit(handleLogin)}
     >
       <div className={styles.fields}>
         <InputField
-          {...register("email", {
-            setValueAs: normalizeEmail,
-            validate: validateEmail,
-          })}
+          {...register("email")}
           autoComplete="email"
           error={errors.email?.message}
           helperText={
@@ -49,7 +47,6 @@ export function LoginForm() {
               : "가입하신 이메일 주소를 입력해주세요."
           }
           label="이메일"
-          name="email"
           placeholder="looker@lookddak.com"
           required
           showRequiredMark={false}
@@ -57,9 +54,7 @@ export function LoginForm() {
           type="email"
         />
         <InputField
-          {...register("password", {
-            validate: validatePassword,
-          })}
+          {...register("password")}
           autoComplete="current-password"
           endAdornment={
             <IconButton
@@ -82,7 +77,6 @@ export function LoginForm() {
               : "영문, 숫자, 대문자, 소문자, 특수문자를 포함해 8자 이상 입력해주세요."
           }
           label="비밀번호"
-          name="password"
           required
           reserveHelperSpace
           showRequiredMark={false}
@@ -90,8 +84,13 @@ export function LoginForm() {
         />
       </div>
       <div className={styles.actions}>
-        <Button disabled={!isValid} fullWidth size="medium" type="submit">
-          로그인
+        <Button
+          disabled={!isValid || isSubmitting}
+          fullWidth
+          size="medium"
+          type="submit"
+        >
+          {isSubmitting ? "로그인 중..." : "로그인"}
         </Button>
         <p className={styles.signupPrompt}>
           아직 계정이 없으신가요? <Link href="/signup">회원가입</Link>

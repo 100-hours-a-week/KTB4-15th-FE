@@ -39,5 +39,15 @@ export const signupResponse = z.object({
   memberId: z.number().int().positive().max(Number.MAX_SAFE_INTEGER),
 });
 
+export const loginSchema = z.object({
+  email: emailSchema,
+  password: z.string().min(1, "비밀번호를 입력해주세요")
+});
+
+export const loginResponse = z.object({
+  profileCompleted: z.boolean(),
+})
+
 export type SignupFormValues = z.infer<typeof signupFormSchema>;
 export type SignupRequest = Pick<SignupFormValues, "email" | "password">;
+export type LoginRequest = z.infer<typeof loginSchema>;
