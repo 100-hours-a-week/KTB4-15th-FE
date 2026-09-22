@@ -1,4 +1,4 @@
-import { LoginForm } from "@/features/auth/ui";
+import { LoginForm } from "@/features/auth";
 import { IntroHero } from "@/shared/ui/intro-hero";
 import styles from "./page.module.scss";
 
