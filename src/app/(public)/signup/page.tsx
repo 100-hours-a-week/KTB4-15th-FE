@@ -1,7 +1,7 @@
 import { Header, HeaderIconLink } from "@/shared/ui/header";
 import { BackIcon } from "@/shared/ui/icon";
 import { IntroHero } from "@/shared/ui/intro-hero/intro-hero";
-import { SignupForm } from "@/features/signup/signup-form";
+import { SignupForm } from "@/features/auth";
 import styles from "./page.module.scss";
 
 export default function SignupPage() {
