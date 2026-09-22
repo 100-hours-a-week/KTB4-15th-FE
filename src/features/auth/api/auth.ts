@@ -1,6 +1,11 @@
 import { apiClient } from "@/shared/api/client";
 import { parseResponse } from "@/shared/api/response";
-import { signupResponse, type SignupRequest, loginResponse, type LoginRequest } from "../schema/auth";
+import {
+  signupResponse,
+  type SignupRequest,
+  loginResponse,
+  type LoginRequest,
+} from "../schema/auth";
 
 export async function signup(payload: SignupRequest) {
   const response = await apiClient.post("auth/signup", {

@@ -2,7 +2,7 @@ name: Lookddack Frontend CI
 
 on:
   pull_request:
-    branches: [ "develop", "main" ]
+    branches: ["develop", "main"]
 
 concurrency:
   group: fe-ci-${{ github.head_ref }}

@@ -3,7 +3,10 @@ import styles from "./page-shell.module.scss";
 
 type PageShellSurface = "page" | "surface";
 
-export type PageShellProps = Omit<HTMLAttributes<HTMLDivElement>, "children"> & {
+export type PageShellProps = Omit<
+  HTMLAttributes<HTMLDivElement>,
+  "children"
+> & {
   children: ReactNode;
   surface?: PageShellSurface;
 };

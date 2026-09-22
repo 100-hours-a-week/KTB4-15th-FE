@@ -17,7 +17,7 @@ RUN pnpm install --frozen-lockfile
 COPY . .
 
 # (3) 린트 → 빌드(타입 검사 포함). 하나라도 실패하면 이미지가 안 만들어짐
-RUN pnpm lint
+RUN pnpm check
 RUN pnpm build
 
 # ============ 2단계: 런타임 ============
@@ -30,7 +30,7 @@ ENV NODE_ENV=production \
     HOSTNAME=0.0.0.0
 
 RUN groupadd --system --gid 1001 nextjs \
- && useradd  --system --uid 1001 --gid nextjs nextjs
+    && useradd  --system --uid 1001 --gid nextjs nextjs
 
 # standalone = 실행에 필요한 파일만 추려진 폴더
 COPY --from=builder /app/.next/standalone ./
