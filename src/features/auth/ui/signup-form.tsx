@@ -6,49 +6,47 @@ import { useForm, useWatch } from "react-hook-form";
 import { Button, IconButton } from "@/shared/ui/button";
 import { PasswordVisibilityIcon } from "@/shared/ui/icon";
 import { InputField } from "@/shared/ui/input-field";
-import {
-  normalizeEmail,
-  validateEmail,
-  validatePassword,
-  validatePasswordConfirmation,
-} from "@/shared/utils/validation";
+import { signupFormSchema, type SignupFormValues } from "../schema/auth";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { signup } from "../api/auth";
 import styles from "./signup-form.module.scss";
-
-type SignupFormValues = {
-  email: string;
-  password: string;
-  confirmPassword: string;
-};
 
 export function SignupForm() {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
-  const [isConfirmPasswordVisible, setIsConfirmPasswordVisible] = useState(false);
+  const [isConfirmPasswordVisible, setIsConfirmPasswordVisible] =
+    useState(false);
   const {
     control,
     formState: { errors, isValid, touchedFields },
-    getValues,
     handleSubmit,
     register,
   } = useForm<SignupFormValues>({
     mode: "onBlur",
     reValidateMode: "onChange",
+    resolver: zodResolver(signupFormSchema),
   });
+
   const password = useWatch({ control, name: "password", defaultValue: "" });
+
   const confirmation = useWatch({
     control,
     name: "confirmPassword",
     defaultValue: "",
   });
-  const confirmationError = validatePasswordConfirmation(password, confirmation);
+
+  const handleSignup = async ({ email, password }: SignupFormValues) => {
+    await signup({ email, password });
+  };
 
   return (
-    <form className={styles.form} noValidate onSubmit={handleSubmit(() => undefined)}>
+    <form
+      className={styles.form}
+      noValidate
+      onSubmit={handleSubmit(handleSignup)}
+    >
       <div className={styles.fields}>
         <InputField
-          {...register("email", {
-            setValueAs: normalizeEmail,
-            validate: validateEmail,
-          })}
+          {...register("email")}
           autoComplete="email"
           error={errors.email?.message}
           helperText={
@@ -62,11 +60,13 @@ export function SignupForm() {
           type="email"
         />
         <InputField
-          {...register("password", { validate: validatePassword })}
+          {...register("password")}
           autoComplete="new-password"
           endAdornment={
             <IconButton
-              aria-label={isPasswordVisible ? "비밀번호 숨기기" : "비밀번호 표시"}
+              aria-label={
+                isPasswordVisible ? "비밀번호 숨기기" : "비밀번호 표시"
+              }
               onClick={() => setIsPasswordVisible((visible) => !visible)}
               size="medium"
             >
@@ -88,10 +88,7 @@ export function SignupForm() {
           type={isPasswordVisible ? "text" : "password"}
         />
         <InputField
-          {...register("confirmPassword", {
-            validate: (value) =>
-              validatePasswordConfirmation(getValues("password"), value),
-          })}
+          {...register("confirmPassword")}
           autoComplete="new-password"
           endAdornment={
             <IconButton
@@ -113,7 +110,11 @@ export function SignupForm() {
           label="비밀번호 확인"
           required
           showRequiredMark={false}
-          success={!confirmationError && confirmation ? "비밀번호가 일치해요." : undefined}
+          success={
+            confirmation && password === confirmation && !errors.confirmPassword
+              ? "비밀번호가 일치해요."
+              : undefined
+          }
           type={isConfirmPasswordVisible ? "text" : "password"}
         />
       </div>
