@@ -48,7 +48,7 @@
     background: var(--color-text-primary);
     color: var(--color-white);
 
-    >svg {
+    > svg {
       width: 24px;
       height: 24px;
       margin-top: 0;
@@ -73,7 +73,7 @@
   transition: transform var(--duration-fast) var(--easing-standard);
   will-change: transform;
 
-  >svg {
+  > svg {
     display: block;
     width: 24px;
     height: 24px;
