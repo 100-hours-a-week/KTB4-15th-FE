@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 export type ChatGenerationStatus = "GENERATING" | "COMPLETED" | "FAILED";
 export type ChatSourceType = "GENERAL" | "WISHLIST";
 
@@ -5,6 +7,13 @@ export type CreateChatRoomRequest = {
   content: string;
   sourceType: ChatSourceType;
 };
+
+export const createChatRoomResponse = z.object({
+  chatRoomId: z.number().int().positive(),
+  messageId: z.number().int().positive(),
+});
+
+export type CreateChatRoomResponse = z.infer<typeof createChatRoomResponse>;
 
 export type SendChatMessageRequest = {
   content: string;

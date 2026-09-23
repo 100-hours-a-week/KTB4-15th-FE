@@ -15,8 +15,9 @@ export type {
   ChatGenerationStatus,
   ChatSourceType,
   CreateChatRoomRequest,
+  CreateChatRoomResponse,
   RecommendationResponse,
   RecommendedProductResponse,
   SendChatMessageRequest,
   UserMessageResponse,
-} from "./api/chat-api.types";
+} from "./api/chat";
