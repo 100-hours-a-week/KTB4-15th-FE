@@ -2,7 +2,7 @@
 
 import Image, { type ImageLoaderProps } from "next/image";
 import { useRef, useState, type UIEvent } from "react";
-import type { RecommendedProductResponse } from "../../api/chat-api.types";
+import type { RecommendedProductResponse } from "../../api/chat";
 import { Button, IconButton } from "@/shared/ui/button";
 import { HeartIcon } from "@/shared/ui/icon";
 import styles from "./recommended-product-list.module.scss";
@@ -47,7 +47,7 @@ function RecommendedProductCard({
         <span className={styles.rank}>
           추천 {String(index + 1).padStart(2, "0")}
         </span>
-        <IconButton
+        {/* <IconButton
           aria-label={`${product.productName} 찜 ${isWishlisted ? "해제" : "하기"}`}
           aria-pressed={isWishlisted}
           className={styles.wishlistButton}
@@ -56,7 +56,7 @@ function RecommendedProductCard({
           variant="standard"
         >
           <HeartIcon filled={isWishlisted} />
-        </IconButton>
+        </IconButton> */}
       </div>
 
       <div className={styles.details}>
