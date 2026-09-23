@@ -89,3 +89,18 @@ export type ChatGenerationErrorResponse = {
   data: null;
   message: string;
 };
+
+export const chatRoomItem = z.object({
+  chatRoomId: z.number().int().positive(),
+  title: z.string(),
+  lastMessageAt: z.string(),
+});
+
+export const chatRoomListResponse = z.object({
+  items: z.array(chatRoomItem),
+  nextCursor: z.number().int().nullable(),
+  hasNext: z.boolean(),
+});
+
+export type ChatRoomItem = z.infer<typeof chatRoomItem>;
+export type ChatRoomListResponse = z.infer<typeof chatRoomListResponse>;
