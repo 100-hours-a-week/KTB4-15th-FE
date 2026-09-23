@@ -23,7 +23,7 @@ import {
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query";
-import { getChatRooms, renameChatRoom } from "../../api/chat";
+import { deleteChatRoom, getChatRooms, renameChatRoom } from "../../api/chat";
 import styles from "./chat-sidebar.module.scss";
 
 const CHAT_ROOMS_QUERY_KEY = ["chatRooms"] as const;
@@ -59,6 +59,12 @@ export function ChatSidebar({ open, onOpenChange }: ChatSidebarProps) {
       queryClient.invalidateQueries({ queryKey: CHAT_ROOMS_QUERY_KEY }),
   });
 
+  const deleteChatRoomMutation = useMutation({
+    mutationFn: deleteChatRoom,
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: CHAT_ROOMS_QUERY_KEY }),
+  });
+
   const chatRooms =
     chatRoomQuery.data?.pages.flatMap((page) => page.items) ?? [];
 
@@ -90,9 +96,15 @@ export function ChatSidebar({ open, onOpenChange }: ChatSidebarProps) {
     overlay.open(({ close, isOpen, unmount }) => (
       <DeleteChatDialog
         onConfirm={() => {
-          if (pathname === `/chat/${chatRoomId}`) {
-            router.push("/chat");
-          }
+          deleteChatRoomMutation.mutate(chatRoomId, {
+            onSuccess: () => {
+              close();
+
+              if (pathname === `/chat/${chatRoomId}`) {
+                router.push("/chat");
+              }
+            },
+          });
         }}
         onExit={unmount}
         onOpenChange={(nextOpen) => {

@@ -51,3 +51,7 @@ export async function renameChatRoom(
 
   return parseResponse(response, renameChatRoomResponse);
 }
+
+export async function deleteChatRoom(chatRoomId: number) {
+  await apiClient.delete(`chat-rooms/${chatRoomId}`);
+}

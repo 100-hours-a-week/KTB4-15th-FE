@@ -131,7 +131,7 @@ export function DeleteChatDialog({
         채팅을 삭제하시겠습니까?
       </DialogTitle>
       <DialogDescription className={styles.description}>
-        삭제된 대화 내역과 추천 코드는 복구할 수 없습니다.
+        삭제된 대화 내역은 복구할 수 없습니다.
       </DialogDescription>
 
       <div className={styles.actions}>
