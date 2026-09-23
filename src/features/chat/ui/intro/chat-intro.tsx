@@ -2,10 +2,10 @@
 
 import Image, { type StaticImageData } from "next/image";
 import { ChevronRightIcon } from "@/shared/ui/icon";
-import type { ChatSourceType } from "../../api/chat";
+import type { ChatSourceType } from "../../schema/chat";
 import aiImage from "../../icon/ai.png";
 import knitImage from "../../icon/knit.png";
-import likeImage from "../../icon/like.png";
+//import likeImage from "../../icon/like.png";
 import shirtImage from "../../icon/shirt.png";
 import suitImage from "../../icon/suit.png";
 import styles from "./chat-intro.module.scss";

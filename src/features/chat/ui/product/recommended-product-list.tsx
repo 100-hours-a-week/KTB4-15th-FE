@@ -2,9 +2,10 @@
 
 import Image, { type ImageLoaderProps } from "next/image";
 import { useRef, useState, type UIEvent } from "react";
-import type { RecommendedProductResponse } from "../../api/chat";
-import { Button, IconButton } from "@/shared/ui/button";
-import { HeartIcon } from "@/shared/ui/icon";
+import type { RecommendedProductResponse } from "../../schema/chat";
+import { Button } from "@/shared/ui/button";
+//import { Button, IconButton } from "@/shared/ui/button";
+//import { HeartIcon } from "@/shared/ui/icon";
 import styles from "./recommended-product-list.module.scss";
 
 type RecommendedProductListProps = {

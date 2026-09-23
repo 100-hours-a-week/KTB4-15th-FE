@@ -1,5 +1,5 @@
 import Image from "next/image";
-import type { AIMessageResponse, UserMessageResponse } from "../../api/chat";
+import type { AIMessageResponse, UserMessageResponse } from "../../schema/chat";
 import aiImage from "../../icon/ai.png";
 import { formatKoreanTime } from "@/shared/utils/date-format";
 import styles from "./chat-message.module.scss";

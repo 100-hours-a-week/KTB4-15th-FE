@@ -21,4 +21,4 @@ export type {
   SendChatMessageRequest,
   SendChatMessageResponse,
   UserMessageResponse,
-} from "./api/chat";
+} from "./schema/chat";
