@@ -19,6 +19,14 @@ export type SendChatMessageRequest = {
   content: string;
 };
 
+export const sendChatMessageResponse = z.object({
+  chatRoomId: z.number().int().positive(),
+  messageId: z.number().int().positive(),
+  content: z.string(),
+});
+
+export type SendChatMessageResponse = z.infer<typeof sendChatMessageResponse>;
+
 export type RecommendedProductResponse = {
   productId: number;
   productName: string;

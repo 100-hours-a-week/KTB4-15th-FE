@@ -19,5 +19,6 @@ export type {
   RecommendationResponse,
   RecommendedProductResponse,
   SendChatMessageRequest,
+  SendChatMessageResponse,
   UserMessageResponse,
 } from "./api/chat";

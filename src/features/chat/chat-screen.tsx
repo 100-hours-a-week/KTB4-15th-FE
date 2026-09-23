@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
-import { createChatRoom } from "./api/chat";
+import { createChatRoom, sendChatMessage } from "./api/chat";
 import type { ChatMessageResponse, ChatSourceType } from "./schema/chat";
 import styles from "./chat-screen.module.scss";
 import { ChatComposer } from "./ui/composer/chat-composer";
@@ -11,11 +11,16 @@ import { ChatIntro } from "./ui/intro/chat-intro";
 import { ChatMessageList } from "./ui/message/chat-message-list";
 
 type ChatScreenProps = {
+  chatRoomId?: number;
   date?: string;
   initialMessages?: ChatMessageResponse[];
 };
 
-export function ChatScreen({ date, initialMessages = [] }: ChatScreenProps) {
+export function ChatScreen({
+  chatRoomId,
+  date,
+  initialMessages = [],
+}: ChatScreenProps) {
   const router = useRouter();
   const [messages, setMessages] =
     useState<ChatMessageResponse[]>(initialMessages);
@@ -27,15 +32,44 @@ export function ChatScreen({ date, initialMessages = [] }: ChatScreenProps) {
     },
   });
 
+  const sendChatMessageMutation = useMutation({
+    mutationFn: ({
+      chatRoomId,
+      content,
+    }: {
+      chatRoomId: number;
+      content: string;
+    }) => sendChatMessage(chatRoomId, { content }),
+    onSuccess: (data) => {
+      setMessages((currentMessages) => [
+        ...currentMessages,
+        {
+          messageId: data.messageId,
+          senderType: "USER",
+          content: data.content,
+          createdAt: new Date().toISOString(),
+        },
+      ]);
+    },
+  });
+
   const handleSubmit = async (
     content: string,
     sourceType: ChatSourceType = "GENERAL",
   ) => {
-    await createChatRoomMutation.mutateAsync({
-      content,
-      sourceType,
-    });
+    if (chatRoomId == null) {
+      await createChatRoomMutation.mutateAsync({
+        content,
+        sourceType,
+      });
+      return;
+    }
+
+    await sendChatMessageMutation.mutateAsync({ chatRoomId, content });
   };
+
+  const isSubmitting =
+    createChatRoomMutation.isPending || sendChatMessageMutation.isPending;
 
   return (
     <>
@@ -45,10 +79,7 @@ export function ChatScreen({ date, initialMessages = [] }: ChatScreenProps) {
         <ChatMessageList isGenerating={false} messages={messages} />
       )}
       <div className={styles.composerDock}>
-        <ChatComposer
-          isSubmitting={createChatRoomMutation.isPending}
-          onSubmit={handleSubmit}
-        />
+        <ChatComposer isSubmitting={isSubmitting} onSubmit={handleSubmit} />
       </div>
     </>
   );
