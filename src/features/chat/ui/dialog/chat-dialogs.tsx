@@ -9,6 +9,7 @@ import {
   DialogTitle,
 } from "@/shared/ui/dialog";
 import { ClearIcon } from "@/shared/ui/icon";
+import { CHAT_ROOM_TITLE_MAX_LENGTH } from "../../schema/chat";
 import styles from "./chat-dialogs.module.scss";
 
 type DialogLifecycleProps = {
@@ -59,29 +60,34 @@ export function RenameChatDialog({
         </DialogDescription>
 
         <div className={styles.inputField}>
-          <label className={styles.visuallyHidden} htmlFor="chat-title">
-            채팅 이름
-          </label>
-          <input
-            id="chat-title"
-            maxLength={50}
-            onChange={(event) => setTitle(event.target.value)}
-            ref={inputRef}
-            value={title}
-          />
-          {title && (
-            <button
-              aria-label="채팅 이름 지우기"
-              className={styles.clearButton}
-              onClick={() => {
-                setTitle("");
-                inputRef.current?.focus();
-              }}
-              type="button"
-            >
-              <ClearIcon />
-            </button>
-          )}
+          <div className={styles.inputControl}>
+            <label className={styles.visuallyHidden} htmlFor="chat-title">
+              채팅 이름
+            </label>
+            <input
+              id="chat-title"
+              maxLength={CHAT_ROOM_TITLE_MAX_LENGTH}
+              onChange={(event) => setTitle(event.target.value)}
+              ref={inputRef}
+              value={title}
+            />
+            {title && (
+              <button
+                aria-label="채팅 이름 지우기"
+                className={styles.clearButton}
+                onClick={() => {
+                  setTitle("");
+                  inputRef.current?.focus();
+                }}
+                type="button"
+              >
+                <ClearIcon />
+              </button>
+            )}
+          </div>
+          <span aria-live="polite" className={styles.characterCount}>
+            {title.length} / {CHAT_ROOM_TITLE_MAX_LENGTH}
+          </span>
         </div>
 
         <div className={styles.actions}>

@@ -18,9 +18,15 @@ import {
   RenameChatDialog,
 } from "@/features/chat/ui/dialog/chat-dialogs";
 import { formatKoreanRelativeDateTime } from "@/shared/utils/date-format";
-import { useInfiniteQuery } from "@tanstack/react-query";
-import { getChatRooms } from "../../api/chat";
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
+import { getChatRooms, renameChatRoom } from "../../api/chat";
 import styles from "./chat-sidebar.module.scss";
+
+const CHAT_ROOMS_QUERY_KEY = ["chatRooms"] as const;
 
 type ChatSidebarProps = {
   onOpenChange: (open: boolean) => void;
@@ -30,14 +36,27 @@ type ChatSidebarProps = {
 export function ChatSidebar({ open, onOpenChange }: ChatSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const chatRoomQuery = useInfiniteQuery({
-    queryKey: ["chatRooms"],
+    queryKey: CHAT_ROOMS_QUERY_KEY,
     queryFn: ({ pageParam }) => getChatRooms(pageParam),
     initialPageParam: null as number | null,
     getNextPageParam: (lastPage) =>
       lastPage.hasNext ? lastPage.nextCursor : undefined,
     enabled: open,
+  });
+
+  const renameChatRoomMutation = useMutation({
+    mutationFn: ({
+      chatRoomId,
+      title,
+    }: {
+      chatRoomId: number;
+      title: string;
+    }) => renameChatRoom(chatRoomId, { title }),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: CHAT_ROOMS_QUERY_KEY }),
   });
 
   const chatRooms =
@@ -52,7 +71,12 @@ export function ChatSidebar({ open, onOpenChange }: ChatSidebarProps) {
     overlay.open(({ close, isOpen, unmount }) => (
       <RenameChatDialog
         initialTitle={currentTitle}
-        onConfirm={() => {}}
+        onConfirm={(title) => {
+          renameChatRoomMutation.mutate(
+            { chatRoomId, title },
+            { onSuccess: close },
+          );
+        }}
         onExit={unmount}
         onOpenChange={(nextOpen) => {
           if (!nextOpen) close();

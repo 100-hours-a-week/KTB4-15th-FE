@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+export const CHAT_ROOM_TITLE_MAX_LENGTH = 20;
+
 export type ChatGenerationStatus = "GENERATING" | "COMPLETED" | "FAILED";
 export type ChatSourceType = "GENERAL" | "WISHLIST";
 
@@ -104,3 +106,16 @@ export const chatRoomListResponse = z.object({
 
 export type ChatRoomItem = z.infer<typeof chatRoomItem>;
 export type ChatRoomListResponse = z.infer<typeof chatRoomListResponse>;
+
+export const renameChatRoomRequest = z.object({
+  title: z.string().trim().min(1).max(CHAT_ROOM_TITLE_MAX_LENGTH),
+});
+
+export type RenameChatRoomRequest = z.infer<typeof renameChatRoomRequest>;
+
+export const renameChatRoomResponse = z.object({
+  chatRoomId: z.number().int().positive(),
+  title: z.string(),
+});
+
+export type RenameChatRoomResponse = z.infer<typeof renameChatRoomResponse>;
