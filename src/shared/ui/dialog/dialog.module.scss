@@ -1,0 +1,75 @@
+.backdrop,
+.dialog {
+  position: fixed;
+  z-index: var(--z-modal);
+}
+
+.backdrop {
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 100%;
+  max-width: var(--app-max-width);
+  background: var(--color-background-overlay);
+  transform: translateX(-50%);
+
+  &[data-state="open"] {
+    animation: backdrop-in var(--duration-normal) var(--easing-standard);
+  }
+
+  &[data-state="closed"] {
+    animation: backdrop-out var(--duration-normal) var(--easing-standard);
+  }
+}
+
+.dialog {
+  top: 50%;
+  left: 50%;
+  width: min(calc(100vw - 40px), 400px);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-large);
+  background: var(--color-background-surface);
+  outline: none;
+  transform: translate(-50%, -50%);
+
+  &[data-state="open"] {
+    animation: dialog-in var(--duration-normal) var(--easing-standard);
+  }
+
+  &[data-state="closed"] {
+    animation: dialog-out var(--duration-normal) var(--easing-standard);
+  }
+}
+
+@keyframes backdrop-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes backdrop-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes dialog-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, calc(-50% + 8px)) scale(0.98);
+  }
+}
+
+@keyframes dialog-out {
+  to {
+    opacity: 0;
+    transform: translate(-50%, calc(-50% + 8px)) scale(0.98);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .backdrop,
+  .dialog {
+    animation: none;
+  }
+}

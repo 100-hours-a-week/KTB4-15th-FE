@@ -1,0 +1,174 @@
+@use "@/styles/typography" as type;
+
+.carousel {
+  width: 100%;
+  min-width: 0;
+  margin-top: var(--space-md);
+}
+
+.list {
+  display: flex;
+  gap: var(--space-md);
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scroll-behavior: smooth;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.card {
+  overflow: hidden;
+  width: calc(100% - 28px);
+  flex: 0 0 calc(100% - 28px);
+  border-radius: var(--radius-large);
+  background: var(--color-background-surface);
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
+.imageArea {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background: var(--color-background-subtle);
+}
+
+.productImage {
+  object-fit: cover;
+}
+
+.rank {
+  @include type.caption;
+
+  position: absolute;
+  top: var(--space-md);
+  left: var(--space-md);
+  border-radius: var(--radius-full);
+  padding: 7px 10px;
+  background: rgb(25 31 40 / 72%);
+  color: var(--color-text-inverse);
+}
+
+.wishlistButton {
+  position: absolute;
+  top: var(--space-md);
+  right: var(--space-md);
+  background: var(--color-background-surface);
+  color: var(--color-text-primary);
+
+  > span {
+    width: 22px;
+    height: 22px;
+  }
+
+  svg {
+    position: relative;
+    z-index: 2;
+    width: 22px;
+    height: 22px;
+  }
+
+  &[aria-pressed="true"] {
+    color: var(--color-action-danger-default);
+  }
+}
+
+.details {
+  padding: var(--space-lg);
+
+  h3 {
+    @include type.body-large;
+
+    margin: var(--space-sm) 0 0;
+    color: var(--color-text-primary);
+  }
+
+  p {
+    @include type.body-medium;
+
+    display: -webkit-box;
+    overflow: hidden;
+    margin: var(--space-sm) 0 0;
+    color: var(--color-text-secondary);
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+}
+
+.summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+}
+
+.color {
+  @include type.body-medium;
+
+  overflow: hidden;
+  color: var(--color-text-secondary);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.price {
+  @include type.heading-small;
+
+  flex: 0 0 auto;
+  color: var(--color-text-primary);
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  gap: var(--space-sm);
+  margin-top: var(--space-lg);
+}
+
+.addButton,
+.fittingButton {
+  padding: 0 var(--space-md);
+}
+
+.addButton {
+  background: var(--color-background-subtle);
+  color: var(--color-text-primary);
+}
+
+.fittingButton {
+  background: var(--color-action-primary-default);
+  color: var(--color-action-primary-text);
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  gap: 2px;
+  margin-top: var(--space-md);
+}
+
+.pageButton {
+  display: grid;
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  place-items: center;
+  border: 0;
+  padding: 0;
+  background: transparent;
+}
+
+.pageDot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: var(--color-gray-200);
+}
+
+.pageButton[aria-pressed="true"] .pageDot {
+  background: var(--color-action-primary-default);
+}

@@ -1,0 +1,115 @@
+@use "@/styles/typography" as type;
+
+.field {
+  display: grid;
+  gap: var(--space-xs);
+  scroll-margin-block: var(--space-2xl);
+}
+
+.label {
+  @include type.caption;
+
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  color: var(--color-text-secondary);
+}
+
+.requiredMark {
+  color: var(--color-red-600);
+}
+
+.inputWrapper {
+  position: relative;
+}
+
+.input {
+  @include type.body-large;
+
+  width: 100%;
+  min-height: var(--control-height);
+  border: 1px solid transparent;
+  border-bottom: 2px solid var(--color-border-default);
+  border-radius: 0;
+  background: transparent;
+  padding: 0;
+  color: var(--color-text-primary);
+  outline: none;
+  transition:
+    border-color var(--duration-fast) var(--easing-standard),
+    box-shadow var(--duration-fast) var(--easing-standard),
+    background-color var(--duration-fast) var(--easing-standard);
+
+  &::placeholder {
+    color: var(--color-text-placeholder);
+  }
+
+  &:focus {
+    border-bottom-color: var(--color-border-brand);
+  }
+
+  &:disabled {
+    background: transparent;
+    color: var(--color-text-disabled);
+    cursor: not-allowed;
+  }
+
+  &:read-only:not(:disabled) {
+    background: transparent;
+  }
+}
+
+.input.error {
+  border-bottom-color: var(--color-border-default);
+
+  &:focus {
+    border-bottom-color: var(--color-red-600);
+  }
+}
+
+.endAdornment {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  transform: translateY(-50%);
+  color: var(--color-text-secondary);
+}
+
+.suffix {
+  @include type.body-medium;
+}
+
+.inputWrapper:has(.endAdornment) .input {
+  padding-right: var(--control-height);
+}
+
+.helperText,
+.errorMessage,
+.successMessage {
+  @include type.caption;
+
+  min-height: 2rem;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.helperText {
+  color: var(--color-text-secondary);
+}
+
+.errorMessage {
+  color: var(--color-red-600);
+}
+
+.successMessage {
+  color: var(--color-green-600);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .input {
+    transition: none;
+  }
+}

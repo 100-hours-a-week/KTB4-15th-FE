@@ -49,7 +49,6 @@ textarea {
 
 button,
 a,
-input,
 select,
 textarea {
   &:focus-visible {
@@ -68,6 +67,16 @@ textarea:disabled {
 ::placeholder {
   color: var(--color-text-placeholder);
   opacity: 1;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  box-shadow: 0 0 0 1000px var(--color-background-surface) inset;
+  -webkit-text-fill-color: var(--color-text-primary);
+  caret-color: var(--color-text-primary);
+  transition: background-color 9999s ease-in-out 0s;
 }
 
 @media (prefers-reduced-motion: reduce) {

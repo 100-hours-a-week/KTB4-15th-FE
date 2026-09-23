@@ -1,0 +1,27 @@
+@use "@/styles/typography" as type;
+
+.form {
+  margin-top: 48px;
+}
+
+.fields {
+  display: grid;
+  gap: var(--space-lg);
+}
+
+.actions {
+  margin-top: 56px;
+}
+
+.signupPrompt {
+  @include type.caption;
+
+  margin: var(--space-lg) 0 0;
+  text-align: center;
+  color: var(--color-text-secondary);
+
+  a {
+    color: var(--color-text-primary);
+    font-weight: var(--font-weight-semibold);
+  }
+}

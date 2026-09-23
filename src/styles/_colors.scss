@@ -33,7 +33,7 @@
 
   // Background
   --color-background-outer: var(--color-green-50);
-  --color-background-page: var(--color-gray-100);
+  --color-background-page: var(--color-gray-50);
   --color-background-surface: var(--color-white);
   --color-background-subtle: var(--color-gray-50);
   --color-background-hover: var(--color-gray-50);
@@ -68,11 +68,15 @@
   --color-action-secondary-pressed: var(--color-green-300);
   --color-action-secondary-text: var(--color-green-800);
 
-  // Neutral action
-  --color-action-neutral-default: var(--color-white);
-  --color-action-neutral-hover: var(--color-gray-50);
-  --color-action-neutral-pressed: var(--color-gray-100);
-  --color-action-neutral-text: var(--color-gray-900);
+  // Outlined action
+  --color-action-outlined-background: transparent;
+  --color-action-outlined-border: var(--color-gray-300);
+  --color-action-outlined-text: var(--color-gray-900);
+
+  // Text action
+  --color-action-text-default: var(--color-green-700);
+  --color-action-text-hover: var(--color-green-50);
+  --color-action-text-pressed: var(--color-green-100);
 
   // Disabled action
   --color-action-disabled-background: var(--color-gray-200);
