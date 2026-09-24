@@ -1,0 +1,38 @@
+@use "@/styles/typography" as type;
+
+.card {
+  padding: var(--space-xl);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sheet);
+  background: var(--color-background-surface);
+}
+
+.title {
+  @include type.label;
+
+  margin: 0 0 var(--space-md);
+  color: var(--color-text-secondary);
+  font-weight: var(--font-weight-semibold);
+}
+
+.logoutButton {
+  width: 100%;
+  min-height: var(--control-height-large);
+  border: 0;
+  border-radius: var(--radius-medium);
+  background: transparent;
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-semibold);
+  text-align: left;
+
+  &:disabled {
+    color: var(--color-text-disabled);
+  }
+}
+
+.error {
+  @include type.body-medium;
+
+  margin: var(--space-sm) 0 0;
+  color: var(--color-action-danger-default);
+}
