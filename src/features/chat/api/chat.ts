@@ -51,7 +51,7 @@ export async function getChatRoom(
   if (cursor !== null) {
     searchParams.set("cursor", cursor.toString());
   }
-  searchParams.set("size", "7");
+  searchParams.set("size", "20");
   const response = await apiClient.get(
     `chat-rooms/${chatRoomId}?${searchParams.toString()}`,
   );

@@ -85,12 +85,12 @@ export function ChatScreen({ chatRoomId, date }: ChatScreenProps) {
   });
 
   const messages =
-    chatRoomQuery.data?.pages.toReversed().flatMap((page) => page.messages.toReversed()) ??
+    chatRoomQuery.data?.pages.toReversed().flatMap((page) => page.messages) ??
     [];
-  
-  const handleLoadPreviousMessages = () => {
-    void chatRoomQuery.fetchNextPage();
-  }
+
+  const handleLoadPreviousMessages = async () => {
+    await chatRoomQuery.fetchNextPage();
+  };
 
   useEffect(() => {
     const data = chatGenerationQuery.data;
@@ -134,12 +134,12 @@ export function ChatScreen({ chatRoomId, date }: ChatScreenProps) {
       {messages.length === 0 && date != null ? (
         <ChatIntro date={date} onSelectQuestion={handleSubmit} />
       ) : (
-          <ChatMessageList
-            hasPreviousMessages={chatRoomQuery.hasNextPage}
-            isGenerating={pendingMessageId != null}
-            isLoadingPreviousMessages={chatRoomQuery.isFetchingNextPage}
-            messages={messages}
-            onLoadPreviousMessages={handleLoadPreviousMessages}
+        <ChatMessageList
+          hasPreviousMessages={chatRoomQuery.hasNextPage}
+          isGenerating={pendingMessageId != null}
+          isLoadingPreviousMessages={chatRoomQuery.isFetchingNextPage}
+          messages={messages}
+          onLoadPreviousMessages={handleLoadPreviousMessages}
         />
       )}
       <div className={styles.composerDock}>
