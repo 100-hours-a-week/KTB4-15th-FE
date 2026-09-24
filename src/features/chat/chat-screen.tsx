@@ -77,7 +77,7 @@ export function ChatScreen({ chatRoomId, date }: ChatScreenProps) {
         message.senderType === "USER" &&
         message.generationStatus === "GENERATING",
     )?.messageId ?? null;
-  
+
   const chatGenerationQuery = useQuery({
     queryKey: ["chatGenerationStatus", chatRoomId, generatingMessageId],
     queryFn: () => {
@@ -127,7 +127,7 @@ export function ChatScreen({ chatRoomId, date }: ChatScreenProps) {
 
   const isSubmitting =
     createChatRoomMutation.isPending || sendChatMessageMutation.isPending;
-  
+
   const isGenerating =
     generatingMessageId != null &&
     chatGenerationQuery.data?.generationStatus !== "COMPLETED" &&
