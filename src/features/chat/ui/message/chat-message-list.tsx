@@ -42,11 +42,40 @@ export function ChatMessageList({
       return;
     }
 
-    window.scrollTo({
-      top: document.documentElement.scrollHeight,
-      behavior: "auto",
+    if (!isInitialScroll) {
+      const frameId = requestAnimationFrame(() => {
+        window.scrollTo({
+          top: document.documentElement.scrollHeight,
+          behavior: "auto",
+        });
+      });
+
+      return () => {
+        cancelAnimationFrame(frameId);
+      };
+    }
+
+    const finishInitialScroll = () => {
+      didInitialScrollRef.current = true;
+      window.clearTimeout(fallbackTimerId);
+      window.removeEventListener("scrollend", finishInitialScroll);
+    };
+
+    window.addEventListener("scrollend", finishInitialScroll, { once: true });
+    const fallbackTimerId = window.setTimeout(finishInitialScroll, 1000);
+
+    const frameId = requestAnimationFrame(() => {
+      window.scrollTo({
+        top: document.documentElement.scrollHeight,
+        behavior: "smooth",
+      });
     });
-    didInitialScrollRef.current = true;
+
+    return () => {
+      cancelAnimationFrame(frameId);
+      window.clearTimeout(fallbackTimerId);
+      window.removeEventListener("scrollend", finishInitialScroll);
+    };
   }, [latestMessageId]);
 
   useEffect(() => {

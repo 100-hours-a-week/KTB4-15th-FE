@@ -135,6 +135,7 @@ export function ChatScreen({ chatRoomId, date }: ChatScreenProps) {
         <ChatIntro date={date} onSelectQuestion={handleSubmit} />
       ) : (
         <ChatMessageList
+          key={chatRoomId}
           hasPreviousMessages={chatRoomQuery.hasNextPage}
           isGenerating={pendingMessageId != null}
           isLoadingPreviousMessages={chatRoomQuery.isFetchingNextPage}
