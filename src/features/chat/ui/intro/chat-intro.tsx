@@ -1,6 +1,7 @@
 "use client";
 
 import Image, { type StaticImageData } from "next/image";
+import { useMemberProfileQuery } from "@/features/profile";
 import { ChevronRightIcon } from "@/shared/ui/icon";
 import type { ChatSourceType } from "../../schema/chat";
 import aiImage from "../../icon/ai.png";
@@ -59,6 +60,9 @@ type ChatIntroProps = {
 };
 
 export function ChatIntro({ date, onSelectQuestion }: ChatIntroProps) {
+  const memberProfileQuery = useMemberProfileQuery();
+  const memberName = memberProfileQuery.data?.name;
+
   return (
     <div className={styles.landing}>
       <time className={styles.date}>{date}</time>
@@ -76,7 +80,10 @@ export function ChatIntro({ date, onSelectQuestion }: ChatIntroProps) {
             <span>스타일리스트</span>
           </div>
           <div className={styles.message}>
-            <p>안녕하세요 민우님! 오늘 어떤 룩을 찾고 계신가요?</p>
+            <p>
+              안녕하세요{memberName ? ` ${memberName}님` : ""}! 오늘 어떤 룩을
+              찾고 계신가요?
+            </p>
             <p>
               아래 추천 질문을 누르거나 원하는 무드·예산을 자유롭게 물어보세요
               ✨
