@@ -2,11 +2,17 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import {
+  useMutation,
+  useQuery,
+  useInfiniteQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import {
   createChatRoom,
   sendChatMessage,
   getChatGenerationStatus,
+  getChatRoom,
 } from "./api/chat";
 import type { ChatMessageResponse, ChatSourceType } from "./schema/chat";
 import styles from "./chat-screen.module.scss";
@@ -20,14 +26,9 @@ type ChatScreenProps = {
   initialMessages?: ChatMessageResponse[];
 };
 
-export function ChatScreen({
-  chatRoomId,
-  date,
-  initialMessages = [],
-}: ChatScreenProps) {
+export function ChatScreen({ chatRoomId, date }: ChatScreenProps) {
   const router = useRouter();
-  const [messages, setMessages] =
-    useState<ChatMessageResponse[]>(initialMessages);
+  const queryClient = useQueryClient();
   const [pendingMessageId, setPendingMessageId] = useState<number | null>(null);
 
   const createChatRoomMutation = useMutation({
@@ -46,19 +47,12 @@ export function ChatScreen({
       content: string;
     }) => sendChatMessage(chatRoomId, { content }),
     onSuccess: (data) => {
-      setMessages((currentMessages) => [
-        ...currentMessages,
-        {
-          messageId: data.messageId,
-          senderType: "USER",
-          content: data.content,
-          createdAt: new Date().toISOString(),
-        },
-      ]);
+      queryClient.invalidateQueries({
+        queryKey: ["chatRoom", chatRoomId],
+      });
       setPendingMessageId(data.messageId);
     },
   });
-
   const chatGenerationQuery = useQuery({
     queryKey: ["chatGenerationStatus", chatRoomId, pendingMessageId],
     queryFn: () => {
@@ -75,6 +69,29 @@ export function ChatScreen({
     },
   });
 
+  const chatRoomQuery = useInfiniteQuery({
+    queryKey: ["chatRoom", chatRoomId],
+    queryFn: ({ pageParam }) => {
+      if (chatRoomId == null) {
+        throw new Error("채팅방 ID가 없습니다.");
+      }
+
+      return getChatRoom(chatRoomId, pageParam);
+    },
+    initialPageParam: null as number | null,
+    getNextPageParam: (lastPage) =>
+      lastPage.hasNext ? lastPage.nextCursor : undefined,
+    enabled: chatRoomId != null,
+  });
+
+  const messages =
+    chatRoomQuery.data?.pages.toReversed().flatMap((page) => page.messages.toReversed()) ??
+    [];
+  
+  const handleLoadPreviousMessages = () => {
+    void chatRoomQuery.fetchNextPage();
+  }
+
   useEffect(() => {
     const data = chatGenerationQuery.data;
 
@@ -83,9 +100,10 @@ export function ChatScreen({
     }
 
     if (data.generationStatus === "COMPLETED") {
-      setMessages((currentMessages) => [...currentMessages, data.message]);
+      queryClient.invalidateQueries({
+        queryKey: ["chatRoom", chatRoomId],
+      });
       setPendingMessageId(null);
-      return;
     }
 
     if (data.generationStatus === "FAILED") {
@@ -116,9 +134,12 @@ export function ChatScreen({
       {messages.length === 0 && date != null ? (
         <ChatIntro date={date} onSelectQuestion={handleSubmit} />
       ) : (
-        <ChatMessageList
-          isGenerating={pendingMessageId != null}
-          messages={messages}
+          <ChatMessageList
+            hasPreviousMessages={chatRoomQuery.hasNextPage}
+            isGenerating={pendingMessageId != null}
+            isLoadingPreviousMessages={chatRoomQuery.isFetchingNextPage}
+            messages={messages}
+            onLoadPreviousMessages={handleLoadPreviousMessages}
         />
       )}
       <div className={styles.composerDock}>
