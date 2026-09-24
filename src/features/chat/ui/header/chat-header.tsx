@@ -4,9 +4,8 @@ import { useState } from "react";
 import {
   ChatRoomListButton,
   Header,
-  NotificationLink,
+  HeaderTitle,
 } from "@/shared/ui/header";
-import styles from "./chat-header.module.scss";
 import { ChatSidebar } from "../sidebar/chat-sidebar";
 
 export function ChatHeader() {
@@ -15,7 +14,7 @@ export function ChatHeader() {
   return (
     <>
       <Header
-        center={<h1 className={styles.title}>AI 패션 스타일리스트</h1>}
+        center={<HeaderTitle>AI 패션 스타일리스트</HeaderTitle>}
         left={<ChatRoomListButton onClick={() => setSidebarOpen(true)} />}
         // right={<NotificationLink />}
       />
