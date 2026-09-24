@@ -1,3 +1,5 @@
+@use "@/styles/typography" as type;
+
 .header {
   display: grid;
   min-height: var(--header-height);
@@ -47,6 +49,10 @@
 .left {
   min-width: 0;
   justify-content: flex-start;
+
+  [data-header-title] {
+    @include type.heading-large;
+  }
 }
 
 .right {
@@ -56,4 +62,8 @@
 .center {
   min-width: 0;
   justify-self: center;
+
+  [data-header-title] {
+    @include type.heading-small;
+  }
 }
