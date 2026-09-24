@@ -2,7 +2,13 @@ import { z } from "zod";
 
 export const CHAT_ROOM_TITLE_MAX_LENGTH = 20;
 
-export type ChatGenerationStatus = "GENERATING" | "COMPLETED" | "FAILED";
+export const chatGenerationStatus = z.enum([
+  "GENERATING",
+  "COMPLETED",
+  "FAILED",
+]);
+
+export type ChatGenerationStatus = z.infer<typeof chatGenerationStatus>;
 export type ChatSourceType = "GENERAL" | "WISHLIST";
 
 export type CreateChatRoomRequest = {
@@ -13,6 +19,7 @@ export type CreateChatRoomRequest = {
 export const createChatRoomResponse = z.object({
   chatRoomId: z.number().int().positive(),
   messageId: z.number().int().positive(),
+  createdAt: z.string(),
 });
 
 export type CreateChatRoomResponse = z.infer<typeof createChatRoomResponse>;
@@ -25,66 +32,94 @@ export const sendChatMessageResponse = z.object({
   chatRoomId: z.number().int().positive(),
   messageId: z.number().int().positive(),
   content: z.string(),
+  createdAt: z.string(),
 });
 
 export type SendChatMessageResponse = z.infer<typeof sendChatMessageResponse>;
 
-export type RecommendedProductResponse = {
-  productId: number;
-  productName: string;
-  productImageUrl: string;
-  currentPrice: number;
-  color: string;
-  itemType: string;
-  purchaseUrl: string;
-  reason: string;
-  isWishlisted: boolean;
-  isFittingCandidate: boolean;
-};
+export const recommendedProductResponse = z.object({
+  productId: z.number().int().positive(),
+  productName: z.string(),
+  productImageUrl: z.string(),
+  currentPrice: z.number().int().nonnegative(),
+  color: z.string(),
+  itemType: z.string(),
+  purchaseUrl: z.string(),
+  recommendedReason: z.string().optional(),
+  isWishlisted: z.boolean(),
+  isFittingCandidate: z.boolean(),
+});
 
-export type RecommendationResponse = {
-  recommendationId: number;
-  products: RecommendedProductResponse[];
-};
+export type RecommendedProductResponse = z.infer<
+  typeof recommendedProductResponse
+>;
 
-export type AIMessageResponse = {
-  messageId: number;
-  senderType: "AI";
-  content: string;
-  recommendation: RecommendationResponse | null;
-  createdAt: string;
-};
+export const recommendationResponse = z.object({
+  recommendationId: z.number().int().positive(),
+  products: z.array(recommendedProductResponse),
+});
 
-export type UserMessageResponse = {
-  messageId: number;
-  senderType: "USER";
-  content: string;
-  createdAt: string;
-};
+export type RecommendationResponse = z.infer<typeof recommendationResponse>;
 
-export type ChatMessageResponse = UserMessageResponse | AIMessageResponse;
+export const chatMessageBase = z.object({
+  messageId: z.number().int().positive(),
+  content: z.string(),
+  createdAt: z.string(),
+});
 
-type PendingGenerationData = {
-  status: "GENERATING" | "FAILED";
-  message: null;
-};
+export const userMessageResponse = chatMessageBase.extend({
+  senderType: z.literal("USER"),
+  generationStatus: chatGenerationStatus,
+  recommendation: z.null(),
+});
 
-type CompletedGenerationData = {
-  status: "COMPLETED";
-  message: AIMessageResponse;
-};
+export type UserMessageResponse = z.infer<typeof userMessageResponse>;
 
-export type ChatGenerationResponse = {
-  code: "CHAT_GENERATION_GET_SUCCESS";
-  data: PendingGenerationData | CompletedGenerationData;
-  message: string;
-};
+export const aiMessageResponse = chatMessageBase.extend({
+  senderType: z.literal("AI"),
+  generationStatus: z.null(),
+  recommendation: recommendationResponse.nullable(),
+});
+
+export type AIMessageResponse = z.infer<typeof aiMessageResponse>;
+
+export const chatMessageResponse = z.discriminatedUnion("senderType", [
+  userMessageResponse,
+  aiMessageResponse,
+]);
+
+export type ChatMessageResponse = z.infer<typeof chatMessageResponse>;
+
+export const chatRoomDetailResponse = z.object({
+  chatRoomId: z.number().int().positive(),
+  title: z.string(),
+  messages: z.array(chatMessageResponse),
+  nextCursor: z.number().int().positive().nullable(),
+  hasNext: z.boolean(),
+});
+
+export type ChatRoomDetailResponse = z.infer<typeof chatRoomDetailResponse>;
+
+export const chatGenerationResponse = z.discriminatedUnion("generationStatus", [
+  z.object({
+    generationStatus: z.enum(["GENERATING", "FAILED"]),
+    message: z.null(),
+  }),
+  z.object({
+    generationStatus: z.literal("COMPLETED"),
+    message: aiMessageResponse,
+  }),
+]);
+
+export type ChatGenerationResponse = z.infer<typeof chatGenerationResponse>;
 
 export type ChatGenerationErrorCode =
+  | "INVALID_INPUT_VALUE"
   | "UNAUTHORIZED"
   | "CHAT_ROOM_ACCESS_DENIED"
   | "CHAT_ROOM_NOT_FOUND"
-  | "CHAT_GENERATION_GET_FAILED";
+  | "CHAT_MESSAGE_NOT_FOUND"
+  | "INTERNAL_SERVER_ERROR";
 
 export type ChatGenerationErrorResponse = {
   code: ChatGenerationErrorCode;

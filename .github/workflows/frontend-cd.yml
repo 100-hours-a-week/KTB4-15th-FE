@@ -40,8 +40,8 @@ env:
   AWS_REGION: ap-northeast-2
   ECR_REPOSITORY: lookddak-nextjs
   SERVICE_KEY: fe
-  SSM_EXEC_TIMEOUT: "780"   # 13분
-  POLL_TIMEOUT: "900"       # 15분 (실측 후 조정)
+  SSM_EXEC_TIMEOUT: "780" # 13분
+  POLL_TIMEOUT: "900" # 15분 (실측 후 조정)
 
 jobs:
   build-and-push:

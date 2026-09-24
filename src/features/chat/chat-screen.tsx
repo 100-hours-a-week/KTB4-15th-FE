@@ -1,9 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useMutation } from "@tanstack/react-query";
-import { createChatRoom, sendChatMessage } from "./api/chat";
+import {
+  useMutation,
+  useQuery,
+  useInfiniteQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
+import {
+  createChatRoom,
+  sendChatMessage,
+  getChatGenerationStatus,
+  getChatRoom,
+} from "./api/chat";
 import type { ChatMessageResponse, ChatSourceType } from "./schema/chat";
 import styles from "./chat-screen.module.scss";
 import { ChatComposer } from "./ui/composer/chat-composer";
@@ -16,14 +26,9 @@ type ChatScreenProps = {
   initialMessages?: ChatMessageResponse[];
 };
 
-export function ChatScreen({
-  chatRoomId,
-  date,
-  initialMessages = [],
-}: ChatScreenProps) {
+export function ChatScreen({ chatRoomId, date }: ChatScreenProps) {
   const router = useRouter();
-  const [messages, setMessages] =
-    useState<ChatMessageResponse[]>(initialMessages);
+  const queryClient = useQueryClient();
 
   const createChatRoomMutation = useMutation({
     mutationFn: createChatRoom,
@@ -40,18 +45,70 @@ export function ChatScreen({
       chatRoomId: number;
       content: string;
     }) => sendChatMessage(chatRoomId, { content }),
-    onSuccess: (data) => {
-      setMessages((currentMessages) => [
-        ...currentMessages,
-        {
-          messageId: data.messageId,
-          senderType: "USER",
-          content: data.content,
-          createdAt: new Date().toISOString(),
-        },
-      ]);
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: ["chatRoom", chatRoomId],
+      });
     },
   });
+
+  const chatRoomQuery = useInfiniteQuery({
+    queryKey: ["chatRoom", chatRoomId],
+    queryFn: ({ pageParam }) => {
+      if (chatRoomId == null) {
+        throw new Error("채팅방 ID가 없습니다.");
+      }
+
+      return getChatRoom(chatRoomId, pageParam);
+    },
+    initialPageParam: null as number | null,
+    getNextPageParam: (lastPage) =>
+      lastPage.hasNext ? lastPage.nextCursor : undefined,
+    enabled: chatRoomId != null,
+  });
+
+  const messages =
+    chatRoomQuery.data?.pages.toReversed().flatMap((page) => page.messages) ??
+    [];
+
+  const generatingMessageId =
+    messages.findLast(
+      (message) =>
+        message.senderType === "USER" &&
+        message.generationStatus === "GENERATING",
+    )?.messageId ?? null;
+
+  const chatGenerationQuery = useQuery({
+    queryKey: ["chatGenerationStatus", chatRoomId, generatingMessageId],
+    queryFn: () => {
+      if (chatRoomId == null || generatingMessageId == null) {
+        throw new Error("폴링에 필요한 ID가 없습니다.");
+      }
+
+      return getChatGenerationStatus(chatRoomId, generatingMessageId);
+    },
+    enabled: chatRoomId != null && generatingMessageId != null,
+    refetchInterval: (query) => {
+      const generationStatus = query.state.data?.generationStatus;
+      return generationStatus === "GENERATING" ? 2000 : false;
+    },
+  });
+
+  const handleLoadPreviousMessages = async () => {
+    await chatRoomQuery.fetchNextPage();
+  };
+
+  useEffect(() => {
+    const generationStatus = chatGenerationQuery.data?.generationStatus;
+
+    if (generationStatus !== "COMPLETED" && generationStatus !== "FAILED") {
+      return;
+    }
+
+    void queryClient.invalidateQueries({
+      queryKey: ["chatRoom", chatRoomId],
+    });
+  }, [chatGenerationQuery.data?.generationStatus, chatRoomId, queryClient]);
 
   const handleSubmit = async (
     content: string,
@@ -71,12 +128,24 @@ export function ChatScreen({
   const isSubmitting =
     createChatRoomMutation.isPending || sendChatMessageMutation.isPending;
 
+  const isGenerating =
+    generatingMessageId != null &&
+    chatGenerationQuery.data?.generationStatus !== "COMPLETED" &&
+    chatGenerationQuery.data?.generationStatus !== "FAILED";
+
   return (
     <>
       {messages.length === 0 && date != null ? (
         <ChatIntro date={date} onSelectQuestion={handleSubmit} />
       ) : (
-        <ChatMessageList isGenerating={false} messages={messages} />
+        <ChatMessageList
+          key={chatRoomId}
+          hasPreviousMessages={chatRoomQuery.hasNextPage}
+          isGenerating={isGenerating}
+          isLoadingPreviousMessages={chatRoomQuery.isFetchingNextPage}
+          messages={messages}
+          onLoadPreviousMessages={handleLoadPreviousMessages}
+        />
       )}
       <div className={styles.composerDock}>
         <ChatComposer isSubmitting={isSubmitting} onSubmit={handleSubmit} />

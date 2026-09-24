@@ -1,7 +1,10 @@
 "use client";
 
 import Image, { type ImageLoaderProps } from "next/image";
+import Link from "next/link";
+import { useMutation } from "@tanstack/react-query";
 import { useRef, useState, type UIEvent } from "react";
+import { createFittingCandidate } from "@/features/fitting/api/fitting-candidate";
 import type { RecommendedProductResponse } from "../../schema/chat";
 import { Button } from "@/shared/ui/button";
 //import { Button, IconButton } from "@/shared/ui/button";
@@ -29,7 +32,15 @@ function RecommendedProductCard({
   index,
   product,
 }: RecommendedProductCardProps) {
-  const [isWishlisted, setIsWishlisted] = useState(product.isWishlisted);
+  const [isFittingCandidate, setIsFittingCandidate] = useState(
+    product.isFittingCandidate,
+  );
+  const fittingCandidateMutation = useMutation({
+    mutationFn: () => createFittingCandidate(product.productId),
+    onSuccess: () => {
+      setIsFittingCandidate(true);
+    },
+  });
 
   return (
     <article
@@ -68,19 +79,32 @@ function RecommendedProductCard({
           </strong>
         </div>
         <h3>{product.productName}</h3>
-        <p>{product.reason}</p>
+        <p>{product.recommendedReason}</p>
         <div className={styles.actions}>
-          <Button className={styles.addButton} size="small" variant="text">
-            {product.isFittingCandidate ? "담김" : "담기"}
-          </Button>
-          <Button
-            className={styles.fittingButton}
-            fullWidth
-            size="small"
-            variant="primary"
+          <a
+            className={styles.productLink}
+            href={product.purchaseUrl}
+            rel="noopener noreferrer"
+            target="_blank"
           >
-            피팅룸 입어보기 <span aria-hidden="true">→</span>
-          </Button>
+            상품 보기 <span aria-hidden="true">↗</span>
+          </a>
+          {isFittingCandidate ? (
+            <Link className={styles.fittingLink} href="/fitting">
+              피팅룸에서 입어보기 <span aria-hidden="true">→</span>
+            </Link>
+          ) : (
+            <Button
+              className={styles.fittingButton}
+              fullWidth
+              isLoading={fittingCandidateMutation.isPending}
+              onClick={() => fittingCandidateMutation.mutate()}
+              size="small"
+              variant="primary"
+            >
+              피팅 목록에 추가
+            </Button>
+          )}
         </div>
       </div>
     </article>
