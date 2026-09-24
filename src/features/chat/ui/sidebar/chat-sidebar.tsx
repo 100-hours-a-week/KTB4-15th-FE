@@ -3,7 +3,6 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
 import { overlay } from "overlay-kit";
 import { Button, IconButton } from "@/shared/ui/button";
 import { Dropdown, DropdownItem } from "@/shared/ui/dropdown";
@@ -13,48 +12,21 @@ import {
   EditIcon,
   MoreIcon,
   PlusIcon,
-  SearchIcon,
 } from "@/shared/ui/icon";
 import {
   DeleteChatDialog,
   RenameChatDialog,
 } from "@/features/chat/ui/dialog/chat-dialogs";
+import { formatKoreanRelativeDateTime } from "@/shared/utils/date-format";
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
+import { deleteChatRoom, getChatRooms, renameChatRoom } from "../../api/chat";
 import styles from "./chat-sidebar.module.scss";
 
-const INITIAL_CONVERSATIONS = [
-  {
-    chatRoomId: 501,
-    title: "5만원대 캐주얼 니트 추천",
-    lastMessageAt: "오전 10:24",
-  },
-  {
-    chatRoomId: 502,
-    title: "검정 슬랙스에 어울리는 상의",
-    lastMessageAt: "오전 08:12",
-  },
-  {
-    chatRoomId: 503,
-    title: "청바지에 어울리는 아우터",
-    lastMessageAt: "10월 22일",
-  },
-  {
-    chatRoomId: 504,
-    title: "흰 블라우스에 어울리는 하의",
-    lastMessageAt: "10월 20일",
-  },
-  {
-    chatRoomId: 505,
-    title: "결혼식 하객 8만원대 셋업",
-    lastMessageAt: "10월 18일",
-  },
-  {
-    chatRoomId: 506,
-    title: "주말 데이트용 미니멀 셔츠",
-    lastMessageAt: "10월 15일",
-  },
-];
-
-type Conversation = (typeof INITIAL_CONVERSATIONS)[number];
+const CHAT_ROOMS_QUERY_KEY = ["chatRooms"] as const;
 
 type ChatSidebarProps = {
   onOpenChange: (open: boolean) => void;
@@ -62,16 +34,39 @@ type ChatSidebarProps = {
 };
 
 export function ChatSidebar({ open, onOpenChange }: ChatSidebarProps) {
-  const [conversations, setConversations] = useState<Conversation[]>(() => [
-    ...INITIAL_CONVERSATIONS,
-  ]);
-  const [query, setQuery] = useState("");
   const pathname = usePathname();
   const router = useRouter();
-  const normalizedQuery = query.trim().toLocaleLowerCase("ko-KR");
-  const filteredConversations = conversations.filter((conversation) =>
-    conversation.title.toLocaleLowerCase("ko-KR").includes(normalizedQuery),
-  );
+  const queryClient = useQueryClient();
+
+  const chatRoomQuery = useInfiniteQuery({
+    queryKey: CHAT_ROOMS_QUERY_KEY,
+    queryFn: ({ pageParam }) => getChatRooms(pageParam),
+    initialPageParam: null as number | null,
+    getNextPageParam: (lastPage) =>
+      lastPage.hasNext ? lastPage.nextCursor : undefined,
+    enabled: open,
+  });
+
+  const renameChatRoomMutation = useMutation({
+    mutationFn: ({
+      chatRoomId,
+      title,
+    }: {
+      chatRoomId: number;
+      title: string;
+    }) => renameChatRoom(chatRoomId, { title }),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: CHAT_ROOMS_QUERY_KEY }),
+  });
+
+  const deleteChatRoomMutation = useMutation({
+    mutationFn: deleteChatRoom,
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: CHAT_ROOMS_QUERY_KEY }),
+  });
+
+  const chatRooms =
+    chatRoomQuery.data?.pages.flatMap((page) => page.items) ?? [];
 
   const startNewChat = () => {
     onOpenChange(false);
@@ -83,14 +78,10 @@ export function ChatSidebar({ open, onOpenChange }: ChatSidebarProps) {
       <RenameChatDialog
         initialTitle={currentTitle}
         onConfirm={(title) => {
-          setConversations((currentConversations) =>
-            currentConversations.map((conversation) =>
-              conversation.chatRoomId === chatRoomId
-                ? { ...conversation, title }
-                : conversation,
-            ),
+          renameChatRoomMutation.mutate(
+            { chatRoomId, title },
+            { onSuccess: close },
           );
-          close();
         }}
         onExit={unmount}
         onOpenChange={(nextOpen) => {
@@ -105,16 +96,15 @@ export function ChatSidebar({ open, onOpenChange }: ChatSidebarProps) {
     overlay.open(({ close, isOpen, unmount }) => (
       <DeleteChatDialog
         onConfirm={() => {
-          setConversations((currentConversations) =>
-            currentConversations.filter(
-              (conversation) => conversation.chatRoomId !== chatRoomId,
-            ),
-          );
-          close();
+          deleteChatRoomMutation.mutate(chatRoomId, {
+            onSuccess: () => {
+              close();
 
-          if (pathname === `/chat/${chatRoomId}`) {
-            router.push("/chat");
-          }
+              if (pathname === `/chat/${chatRoomId}`) {
+                router.push("/chat");
+              }
+            },
+          });
         }}
         onExit={unmount}
         onOpenChange={(nextOpen) => {
@@ -142,7 +132,7 @@ export function ChatSidebar({ open, onOpenChange }: ChatSidebarProps) {
             </Dialog.Close>
           </header>
 
-          <div className={styles.searchField}>
+          {/* <div className={styles.searchField}>
             <SearchIcon />
             <label className={styles.visuallyHidden} htmlFor="chat-search">
               대화 내용 검색
@@ -154,7 +144,7 @@ export function ChatSidebar({ open, onOpenChange }: ChatSidebarProps) {
               type="search"
               value={query}
             />
-          </div>
+          </div> */}
 
           <Button
             className={styles.newChatButton}
@@ -168,29 +158,31 @@ export function ChatSidebar({ open, onOpenChange }: ChatSidebarProps) {
 
           <div className={styles.divider} />
 
-          <nav aria-label="대화 목록" className={styles.conversationList}>
-            {filteredConversations.map((conversation) => {
-              const href = `/chat/${conversation.chatRoomId}`;
+          <nav aria-label="대화 목록" className={styles.chatRoomList}>
+            {chatRooms.map((chatRoom) => {
+              const href = `/chat/${chatRoom.chatRoomId}`;
               const isActive = pathname === href;
 
               return (
                 <div
-                  className={`${styles.conversation} ${isActive ? styles.active : ""}`}
-                  key={conversation.chatRoomId}
+                  className={`${styles.chatRoom} ${isActive ? styles.active : ""}`}
+                  key={chatRoom.chatRoomId}
                 >
                   <Link
                     aria-current={isActive ? "page" : undefined}
-                    className={styles.conversationLink}
+                    className={styles.chatRoomLink}
                     href={href}
                     onClick={() => onOpenChange(false)}
                   >
-                    <strong>{conversation.title}</strong>
-                    <span>{conversation.lastMessageAt}</span>
+                    <strong>{chatRoom.title}</strong>
+                    <span>
+                      {formatKoreanRelativeDateTime(chatRoom.lastMessageAt)}
+                    </span>
                   </Link>
                   <Dropdown
                     trigger={
                       <IconButton
-                        aria-label={`${conversation.title} 메뉴 열기`}
+                        aria-label={`${chatRoom.title} 메뉴 열기`}
                         className={styles.moreButton}
                         size="small"
                       >
@@ -201,10 +193,7 @@ export function ChatSidebar({ open, onOpenChange }: ChatSidebarProps) {
                     <DropdownItem
                       icon={<EditIcon />}
                       onSelect={() =>
-                        openRenameDialog(
-                          conversation.chatRoomId,
-                          conversation.title,
-                        )
+                        openRenameDialog(chatRoom.chatRoomId, chatRoom.title)
                       }
                     >
                       이름 수정
@@ -212,7 +201,7 @@ export function ChatSidebar({ open, onOpenChange }: ChatSidebarProps) {
                     <DropdownItem
                       destructive
                       icon={<DeleteIcon />}
-                      onSelect={() => openDeleteDialog(conversation.chatRoomId)}
+                      onSelect={() => openDeleteDialog(chatRoom.chatRoomId)}
                     >
                       삭제하기
                     </DropdownItem>
@@ -220,9 +209,6 @@ export function ChatSidebar({ open, onOpenChange }: ChatSidebarProps) {
                 </div>
               );
             })}
-            {filteredConversations.length === 0 && (
-              <p className={styles.empty}>검색 결과가 없습니다.</p>
-            )}
           </nav>
         </Dialog.Content>
       </Dialog.Portal>

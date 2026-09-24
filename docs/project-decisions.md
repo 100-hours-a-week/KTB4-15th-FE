@@ -1,6 +1,6 @@
 # FE 프로젝트 결정 사항
 
-마지막 업데이트: 2026-09-21
+마지막 업데이트: 2026-09-23
 
 ## 개발 환경
 
@@ -57,6 +57,7 @@ src/
 ### 브라우저 요청
 
 - 브라우저 API Client는 Ky를 사용하고 기준 URL은 `NEXT_PUBLIC_API_BASE_URL`로 설정한다.
+- 브라우저의 서버 상태와 mutation은 TanStack Query로 관리한다.
 - HttpOnly Cookie 기반 인증을 위해 `credentials: 'include'`를 적용한다.
 - timeout은 10초, retry 한도는 2회로 설정한다.
 - `NEXT_PUBLIC_` 접두사가 붙은 환경 변수는 브라우저에 공개되므로 비밀 값을 저장하지 않는다.

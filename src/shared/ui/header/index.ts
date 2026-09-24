@@ -6,6 +6,6 @@ export { HeaderIconLink } from "./header-icon-link";
 export type { HeaderIconLinkProps } from "./header-icon-link";
 export {
   BackButton,
-  ConversationListButton,
+  ChatRoomListButton,
   NotificationLink,
 } from "./header-actions";

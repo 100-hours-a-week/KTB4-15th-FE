@@ -1,8 +1,15 @@
 "use client";
 
 import { OverlayProvider } from "overlay-kit";
-import type { ReactNode } from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useState, type ReactNode } from "react";
 
 export function Providers({ children }: { children: ReactNode }) {
-  return <OverlayProvider>{children}</OverlayProvider>;
+  const [queryClient] = useState(() => new QueryClient());
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <OverlayProvider>{children}</OverlayProvider>
+    </QueryClientProvider>
+  );
 }

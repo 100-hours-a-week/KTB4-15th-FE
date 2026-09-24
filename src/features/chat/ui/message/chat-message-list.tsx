@@ -1,7 +1,7 @@
 import { AIChatMessageLoading } from "./ai-chat-message-loading";
 import { AIChatMessage, UserChatMessage } from "./chat-message";
 import styles from "./chat-message-list.module.scss";
-import type { ChatMessageResponse } from "../../api/chat-api.types";
+import type { ChatMessageResponse } from "../../schema/chat";
 
 type ChatMessageListProps = {
   isGenerating?: boolean;

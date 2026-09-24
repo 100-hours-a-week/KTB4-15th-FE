@@ -2,7 +2,7 @@ type IconProps = {
   className?: string;
 };
 
-export function ConversationListIcon({ className }: IconProps) {
+export function ChatRoomListIcon({ className }: IconProps) {
   return (
     <svg
       aria-hidden="true"
