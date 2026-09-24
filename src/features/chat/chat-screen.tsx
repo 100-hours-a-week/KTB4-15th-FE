@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   useMutation,
@@ -29,7 +29,6 @@ type ChatScreenProps = {
 export function ChatScreen({ chatRoomId, date }: ChatScreenProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const [pendingMessageId, setPendingMessageId] = useState<number | null>(null);
 
   const createChatRoomMutation = useMutation({
     mutationFn: createChatRoom,
@@ -46,26 +45,10 @@ export function ChatScreen({ chatRoomId, date }: ChatScreenProps) {
       chatRoomId: number;
       content: string;
     }) => sendChatMessage(chatRoomId, { content }),
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
         queryKey: ["chatRoom", chatRoomId],
       });
-      setPendingMessageId(data.messageId);
-    },
-  });
-  const chatGenerationQuery = useQuery({
-    queryKey: ["chatGenerationStatus", chatRoomId, pendingMessageId],
-    queryFn: () => {
-      if (chatRoomId == null || pendingMessageId == null) {
-        throw new Error("폴링에 필요한 ID가 없습니다.");
-      }
-
-      return getChatGenerationStatus(chatRoomId, pendingMessageId);
-    },
-    enabled: chatRoomId != null && pendingMessageId != null,
-    refetchInterval: (query) => {
-      const generationStatus = query.state.data?.generationStatus;
-      return generationStatus === "GENERATING" ? 2000 : false;
     },
   });
 
@@ -88,28 +71,44 @@ export function ChatScreen({ chatRoomId, date }: ChatScreenProps) {
     chatRoomQuery.data?.pages.toReversed().flatMap((page) => page.messages) ??
     [];
 
+  const generatingMessageId =
+    messages.findLast(
+      (message) =>
+        message.senderType === "USER" &&
+        message.generationStatus === "GENERATING",
+    )?.messageId ?? null;
+  
+  const chatGenerationQuery = useQuery({
+    queryKey: ["chatGenerationStatus", chatRoomId, generatingMessageId],
+    queryFn: () => {
+      if (chatRoomId == null || generatingMessageId == null) {
+        throw new Error("폴링에 필요한 ID가 없습니다.");
+      }
+
+      return getChatGenerationStatus(chatRoomId, generatingMessageId);
+    },
+    enabled: chatRoomId != null && generatingMessageId != null,
+    refetchInterval: (query) => {
+      const generationStatus = query.state.data?.generationStatus;
+      return generationStatus === "GENERATING" ? 2000 : false;
+    },
+  });
+
   const handleLoadPreviousMessages = async () => {
     await chatRoomQuery.fetchNextPage();
   };
 
   useEffect(() => {
-    const data = chatGenerationQuery.data;
+    const generationStatus = chatGenerationQuery.data?.generationStatus;
 
-    if (data == null) {
+    if (generationStatus !== "COMPLETED" && generationStatus !== "FAILED") {
       return;
     }
 
-    if (data.generationStatus === "COMPLETED") {
-      queryClient.invalidateQueries({
-        queryKey: ["chatRoom", chatRoomId],
-      });
-      setPendingMessageId(null);
-    }
-
-    if (data.generationStatus === "FAILED") {
-      setPendingMessageId(null);
-    }
-  }, [chatGenerationQuery.data]);
+    void queryClient.invalidateQueries({
+      queryKey: ["chatRoom", chatRoomId],
+    });
+  }, [chatGenerationQuery.data?.generationStatus, chatRoomId, queryClient]);
 
   const handleSubmit = async (
     content: string,
@@ -128,6 +127,11 @@ export function ChatScreen({ chatRoomId, date }: ChatScreenProps) {
 
   const isSubmitting =
     createChatRoomMutation.isPending || sendChatMessageMutation.isPending;
+  
+  const isGenerating =
+    generatingMessageId != null &&
+    chatGenerationQuery.data?.generationStatus !== "COMPLETED" &&
+    chatGenerationQuery.data?.generationStatus !== "FAILED";
 
   return (
     <>
@@ -137,7 +141,7 @@ export function ChatScreen({ chatRoomId, date }: ChatScreenProps) {
         <ChatMessageList
           key={chatRoomId}
           hasPreviousMessages={chatRoomQuery.hasNextPage}
-          isGenerating={pendingMessageId != null}
+          isGenerating={isGenerating}
           isLoadingPreviousMessages={chatRoomQuery.isFetchingNextPage}
           messages={messages}
           onLoadPreviousMessages={handleLoadPreviousMessages}
