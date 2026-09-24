@@ -29,31 +29,40 @@ export const sendChatMessageResponse = z.object({
 
 export type SendChatMessageResponse = z.infer<typeof sendChatMessageResponse>;
 
-export type RecommendedProductResponse = {
-  productId: number;
-  productName: string;
-  productImageUrl: string;
-  currentPrice: number;
-  color: string;
-  itemType: string;
-  purchaseUrl: string;
-  reason: string;
-  isWishlisted: boolean;
-  isFittingCandidate: boolean;
-};
+export const recommendedProductResponse = z.object({
+  productId: z.number().int().positive(),
+  productName: z.string(),
+  productImageUrl: z.string(),
+  currentPrice: z.number().int().nonnegative(),
+  color: z.string(),
+  itemType: z.string(),
+  purchaseUrl: z.string(),
+  reason: z.string().optional(),
+  isWishlisted: z.boolean(),
+  isFittingCandidate: z.boolean(),
+});
 
-export type RecommendationResponse = {
-  recommendationId: number;
-  products: RecommendedProductResponse[];
-};
+export type RecommendedProductResponse = z.infer<
+  typeof recommendedProductResponse
+>;
 
-export type AIMessageResponse = {
-  messageId: number;
-  senderType: "AI";
-  content: string;
-  recommendation: RecommendationResponse | null;
-  createdAt: string;
-};
+export const recommendationResponse = z.object({
+  recommendationId: z.number().int().positive(),
+  products: z.array(recommendedProductResponse),
+});
+
+export type RecommendationResponse = z.infer<typeof recommendationResponse>;
+
+export const aiMessageResponse = z.object({
+  messageId: z.number().int().positive(),
+  senderType: z.literal("AI"),
+  content: z.string(),
+  generationStatus: z.null(),
+  recommendation: recommendationResponse.nullable(),
+  createdAt: z.string(),
+});
+
+export type AIMessageResponse = z.infer<typeof aiMessageResponse>;
 
 export type UserMessageResponse = {
   messageId: number;
@@ -64,27 +73,26 @@ export type UserMessageResponse = {
 
 export type ChatMessageResponse = UserMessageResponse | AIMessageResponse;
 
-type PendingGenerationData = {
-  status: "GENERATING" | "FAILED";
-  message: null;
-};
+export const chatGenerationResponse = z.discriminatedUnion("generationStatus", [
+  z.object({
+    generationStatus: z.enum(["GENERATING", "FAILED"]),
+    message: z.null(),
+  }),
+  z.object({
+    generationStatus: z.literal("COMPLETED"),
+    message: aiMessageResponse,
+  }),
+]);
 
-type CompletedGenerationData = {
-  status: "COMPLETED";
-  message: AIMessageResponse;
-};
-
-export type ChatGenerationResponse = {
-  code: "CHAT_GENERATION_GET_SUCCESS";
-  data: PendingGenerationData | CompletedGenerationData;
-  message: string;
-};
+export type ChatGenerationResponse = z.infer<typeof chatGenerationResponse>;
 
 export type ChatGenerationErrorCode =
+  | "INVALID_INPUT_VALUE"
   | "UNAUTHORIZED"
   | "CHAT_ROOM_ACCESS_DENIED"
   | "CHAT_ROOM_NOT_FOUND"
-  | "CHAT_GENERATION_GET_FAILED";
+  | "CHAT_MESSAGE_NOT_FOUND"
+  | "INTERNAL_SERVER_ERROR";
 
 export type ChatGenerationErrorResponse = {
   code: ChatGenerationErrorCode;
