@@ -1,7 +1,9 @@
 "use client";
 
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { overlay } from "overlay-kit";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { useForm } from "react-hook-form";
 import { BottomSheet } from "@/shared/ui/bottom-sheet";
@@ -18,6 +20,8 @@ import {
 } from "@/shared/utils/profile-validation";
 import styles from "./profile-setup-form.module.scss";
 import { ShootingGuide } from "./shooting-guide";
+import { createMemberProfile, validateFullBodyImage } from "./api/profile";
+import { memberProfileQueryOptions } from "./api/member-profile-query";
 
 type ProfileSetupFormValues = {
   name: string;
@@ -27,8 +31,12 @@ type ProfileSetupFormValues = {
 };
 
 export function ProfileSetupForm() {
-  const [isNotificationEnabled, setIsNotificationEnabled] = useState(true);
+  const router = useRouter();
+  const queryClient = useQueryClient();
+  const [photo, setPhoto] = useState<File>();
   const [photoUrl, setPhotoUrl] = useState<string>();
+  const [isNotificationEnabled, setIsNotificationEnabled] = useState(true);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const {
     clearErrors,
@@ -40,6 +48,34 @@ export function ProfileSetupForm() {
     setValue,
   } = useForm<ProfileSetupFormValues>({ mode: "onChange" });
   const nameField = register("name", { validate: validateName });
+  const profileSetupMutation = useMutation({
+    mutationFn: async ({
+      age,
+      height,
+      name,
+      weight,
+    }: ProfileSetupFormValues) => {
+      if (!photo) throw new Error("전신 사진이 필요합니다.");
+
+      const { validationId } = await validateFullBodyImage(photo);
+
+      return createMemberProfile({
+        age: Number(age),
+        fullBodyImageValidationId: validationId,
+        height: Number(height),
+        name,
+        priceAlertEnabled: isNotificationEnabled,
+        weight: Number(weight),
+      });
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: memberProfileQueryOptions.queryKey,
+      });
+      router.replace("/chat");
+      router.refresh();
+    },
+  });
 
   const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.value.length > 10) {
@@ -98,6 +134,8 @@ export function ProfileSetupForm() {
     const file = event.target.files?.[0];
     if (!file) return;
 
+    setPhoto(file);
+    profileSetupMutation.reset();
     setPhotoUrl((currentUrl) => {
       if (currentUrl) URL.revokeObjectURL(currentUrl);
       return URL.createObjectURL(file);
@@ -130,7 +168,7 @@ export function ProfileSetupForm() {
     <form
       className={styles.form}
       noValidate
-      onSubmit={handleSubmit(() => undefined)}
+      onSubmit={handleSubmit((values) => profileSetupMutation.mutate(values))}
     >
       <section className={styles.section}>
         <div className={styles.sectionHeading}>
@@ -272,13 +310,22 @@ export function ProfileSetupForm() {
 
       <Button
         className={styles.submitButton}
-        disabled={!isValid || !photoUrl}
+        disabled={!isValid || !photo}
         fullWidth
+        isLoading={profileSetupMutation.isPending}
         size="large"
         type="submit"
       >
-        정보 등록하고 시작하기
+        {profileSetupMutation.isPending
+          ? "정보를 등록하고 있어요"
+          : "정보 등록하고 시작하기"}
       </Button>
+      {profileSetupMutation.isError && (
+        <p className={styles.submitError} role="alert">
+          정보를 등록하지 못했어요. 사진과 입력 정보를 확인한 후 다시 시도해
+          주세요.
+        </p>
+      )}
     </form>
   );
 }

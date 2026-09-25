@@ -202,3 +202,11 @@
 .submitButton {
   margin-top: var(--space-2xl);
 }
+
+.submitError {
+  @include type.caption;
+
+  margin: var(--space-sm) 0 0;
+  color: var(--color-action-danger-default);
+  text-align: center;
+}
