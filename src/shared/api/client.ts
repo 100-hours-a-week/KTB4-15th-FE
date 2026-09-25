@@ -1,12 +1,5 @@
 import ky, { HTTPError } from "ky";
 
-export class RefreshUnauthorizedError extends Error {
-  constructor() {
-    super("인증 갱신에 실패했습니다.");
-    this.name = "RefreshUnauthorizedError";
-  }
-}
-
 const apiOptions = {
   baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL,
   credentials: "include" as const,
@@ -50,6 +43,7 @@ export const apiClient = ky.create({
           await refreshAccessToken();
         } catch (error) {
           if (error instanceof HTTPError && error.response.status === 401) {
+            notifyRefreshUnauthorized();
             throw new RefreshUnauthorizedError();
           }
 
@@ -63,3 +57,28 @@ export const apiClient = ky.create({
     ],
   },
 });
+
+export class RefreshUnauthorizedError extends Error {
+  constructor() {
+    super("인증 갱신에 실패했습니다.");
+    this.name = "RefreshUnauthorizedError";
+  }
+}
+
+type RefreshUnauthorizedListener = () => void;
+
+const refreshUnauthorizedListeners = new Set<RefreshUnauthorizedListener>();
+
+export function subscribeToRefreshUnauthorized(
+  listener: RefreshUnauthorizedListener,
+) {
+  refreshUnauthorizedListeners.add(listener);
+
+  return () => {
+    refreshUnauthorizedListeners.delete(listener);
+  };
+}
+
+function notifyRefreshUnauthorized() {
+  refreshUnauthorizedListeners.forEach((listener) => listener());
+}

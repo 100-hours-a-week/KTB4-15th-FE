@@ -1,13 +1,16 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   MemberProfileNotFoundError,
   memberProfileQueryOptions,
 } from "@/features/profile";
-import { RefreshUnauthorizedError } from "@/shared/api/client";
+import {
+  RefreshUnauthorizedError,
+  subscribeToRefreshUnauthorized,
+} from "@/shared/api/client";
 import { Button } from "@/shared/ui/button";
 import styles from "./service-access-guard.module.scss";
 
@@ -16,18 +19,28 @@ const PROFILE_SETUP_PATH = "/profile/setup";
 export function ServiceAccessGuard({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
+  const [hasRefreshUnauthorized, setHasRefreshUnauthorized] = useState(false);
   const profileQuery = useQuery({
     ...memberProfileQueryOptions,
     retry: false,
   });
   const isProfileSetupPage = pathname === PROFILE_SETUP_PATH;
   const isUnauthenticated =
+    hasRefreshUnauthorized ||
     profileQuery.error instanceof RefreshUnauthorizedError;
   const isMemberProfileMissing =
     profileQuery.error instanceof MemberProfileNotFoundError;
   const shouldRedirectToChat = profileQuery.isSuccess && isProfileSetupPage;
   const shouldRedirectToProfileSetup =
     isMemberProfileMissing && !isProfileSetupPage;
+
+  useEffect(
+    () =>
+      subscribeToRefreshUnauthorized(() => {
+        setHasRefreshUnauthorized(true);
+      }),
+    [],
+  );
 
   useEffect(() => {
     if (isUnauthenticated) {
