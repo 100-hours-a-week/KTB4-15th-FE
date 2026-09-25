@@ -7,6 +7,7 @@ import { useRef, useState, type UIEvent } from "react";
 import { createFittingCandidate } from "@/features/fitting/api/fitting-candidate";
 import type { RecommendedProductResponse } from "../../schema/chat";
 import { Button } from "@/shared/ui/button";
+import { formatPrice } from "@/shared/utils/price-format";
 //import { Button, IconButton } from "@/shared/ui/button";
 //import { HeartIcon } from "@/shared/ui/icon";
 import styles from "./recommended-product-list.module.scss";
@@ -22,10 +23,6 @@ type RecommendedProductCardProps = {
 
 function passthroughImageLoader({ src }: ImageLoaderProps) {
   return src;
-}
-
-function formatPrice(price: number) {
-  return `${new Intl.NumberFormat("ko-KR").format(price)}원`;
 }
 
 function RecommendedProductCard({

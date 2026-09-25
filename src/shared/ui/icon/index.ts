@@ -3,6 +3,7 @@ export { EyeOffIcon } from "./eye";
 export {
   AiFittingIcon,
   BackIcon,
+  CheckIcon,
   ChevronRightIcon,
   ClearIcon,
   CloseIcon,

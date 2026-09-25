@@ -180,6 +180,17 @@ export function AiFittingIcon({ className }: IconProps) {
   );
 }
 
+export function CheckIcon({ className }: IconProps) {
+  return (
+    <Icon className={className} viewBox="0 0 12 10">
+      <path
+        d="M4.333 9.1 0 4.767l1.5-1.5L4.333 6.1l6.1-6.1 1.5 1.5-7.6 7.6Z"
+        fill="currentColor"
+      />
+    </Icon>
+  );
+}
+
 export function HeartIcon({
   className,
   filled = false,

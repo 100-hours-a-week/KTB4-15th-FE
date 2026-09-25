@@ -118,6 +118,19 @@
   }
 }
 
+.productImageArea {
+  position: relative;
+  overflow: hidden;
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-medium);
+  background: var(--color-gray-100);
+}
+
+.productImage {
+  object-fit: cover;
+}
+
 .productCopy {
   display: grid;
   min-width: 0;
