@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { Button, IconButton } from "@/shared/ui/button";
@@ -12,12 +13,13 @@ import { signup } from "../api/auth";
 import styles from "./signup-form.module.scss";
 
 export function SignupForm() {
+  const router = useRouter();
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [isConfirmPasswordVisible, setIsConfirmPasswordVisible] =
     useState(false);
   const {
     control,
-    formState: { errors, isValid, touchedFields },
+    formState: { errors, isSubmitting, isValid, touchedFields },
     handleSubmit,
     register,
   } = useForm<SignupFormValues>({
@@ -36,6 +38,7 @@ export function SignupForm() {
 
   const handleSignup = async ({ email, password }: SignupFormValues) => {
     await signup({ email, password });
+    router.replace("/login");
   };
 
   return (
@@ -119,8 +122,14 @@ export function SignupForm() {
         />
       </div>
       <div className={styles.actions}>
-        <Button disabled={!isValid} fullWidth size="medium" type="submit">
-          회원가입
+        <Button
+          disabled={!isValid || isSubmitting}
+          fullWidth
+          isLoading={isSubmitting}
+          size="medium"
+          type="submit"
+        >
+          {isSubmitting ? "가입하고 있어요" : "회원가입"}
         </Button>
         <p className={styles.loginPrompt}>
           이미 회원이신가요? <Link href="/login">로그인</Link>
