@@ -3,6 +3,7 @@ import { parseResponse } from "@/shared/api/response";
 import {
   type FittingJobCreateRequest,
   fittingJobCreateResponseSchema,
+  fittingJobStatusResponseSchema,
 } from "../schema/fitting-job";
 
 export async function createFittingJob(request: FittingJobCreateRequest) {
@@ -11,4 +12,10 @@ export async function createFittingJob(request: FittingJobCreateRequest) {
   });
 
   return parseResponse(response, fittingJobCreateResponseSchema);
+}
+
+export async function getFittingJobStatus(fittingJobId: number) {
+  const response = await apiClient.get(`fitting-jobs/${fittingJobId}`);
+
+  return parseResponse(response, fittingJobStatusResponseSchema);
 }

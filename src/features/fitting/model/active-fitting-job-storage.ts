@@ -19,6 +19,10 @@ export function setActiveFittingJobId(fittingJobId: number) {
   localStorage.setItem(ACTIVE_FITTING_JOB_ID_KEY, String(fittingJobId));
 }
 
-export function clearActiveFittingJobId() {
+export function clearActiveFittingJobId(fittingJobId?: number) {
+  if (fittingJobId !== undefined && getActiveFittingJobId() !== fittingJobId) {
+    return;
+  }
+
   localStorage.removeItem(ACTIVE_FITTING_JOB_ID_KEY);
 }
