@@ -2,9 +2,10 @@
 
 .main {
   display: grid;
-  min-height: calc(100dvh - var(--header-height));
+  min-height: calc(100dvh - var(--header-height) - var(--navigation-height));
   place-content: center;
-  padding-block: var(--space-2xl);
+  padding-block: var(--space-2xl)
+    calc(var(--navigation-height) + var(--space-2xl));
   text-align: center;
 
   h2 {
