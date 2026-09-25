@@ -106,6 +106,17 @@
   object-fit: cover;
 }
 
+.emptyImageArea {
+  display: grid;
+  place-items: center;
+  color: var(--color-gray-500);
+
+  svg {
+    width: 24px;
+    height: 24px;
+  }
+}
+
 .productDetails {
   display: grid;
   min-width: 0;
@@ -123,6 +134,15 @@
 
     overflow: hidden;
     font-weight: var(--font-weight-semibold);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  > span {
+    @include type.caption;
+
+    overflow: hidden;
+    color: var(--color-text-secondary);
     text-overflow: ellipsis;
     white-space: nowrap;
   }

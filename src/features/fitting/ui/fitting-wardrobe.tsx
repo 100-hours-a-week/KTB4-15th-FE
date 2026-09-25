@@ -5,7 +5,13 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { formatPrice } from "@/shared/utils/price-format";
 import { Header, HeaderIconLink, HeaderTitle } from "@/shared/ui/header";
-import { BackIcon, CheckIcon, DeleteIcon, InfoIcon } from "@/shared/ui/icon";
+import {
+  BackIcon,
+  CheckIcon,
+  DeleteIcon,
+  HeartIcon,
+  InfoIcon,
+} from "@/shared/ui/icon";
 import {
   useDeleteFittingCandidatesMutation,
   useFittingCandidatesQuery,
@@ -78,6 +84,36 @@ function CandidateCard({
         <small>{product.color}</small>
         <strong>{product.productName}</strong>
         <b>{formatPrice(product.currentPrice)}</b>
+      </span>
+      <span aria-hidden="true" className={styles.selectionMark}>
+        {isSelected && <CheckIcon />}
+      </span>
+    </button>
+  );
+}
+
+function EmptyCandidateCard({ itemType }: { itemType: "TOP" | "BOTTOM" }) {
+  const selectedProduct = useFittingSelectionStore((state) =>
+    itemType === "TOP" ? state.top : state.bottom,
+  );
+  const clearProduct = useFittingSelectionStore((state) => state.clearProduct);
+  const isSelected = selectedProduct === null;
+  const label = itemType === "TOP" ? "상의" : "하의";
+
+  return (
+    <button
+      aria-pressed={isSelected}
+      className={`${styles.productCard} ${isSelected ? styles.selected : ""}`}
+      onClick={() => clearProduct(itemType)}
+      type="button"
+    >
+      <span className={`${styles.imageArea} ${styles.emptyImageArea}`}>
+        <HeartIcon />
+      </span>
+      <span className={styles.productDetails}>
+        <small>{label}</small>
+        <strong>선택 안 함</strong>
+        <span>기본 상품으로 피팅해요</span>
       </span>
       <span aria-hidden="true" className={styles.selectionMark}>
         {isSelected && <CheckIcon />}
@@ -185,7 +221,7 @@ export function FittingWardrobe({ initialFilter }: FittingWardrobeProps) {
     <>
       <Header
         center={
-          <HeaderTitle>{isEditing ? "옷장 편집" : "피팅 옷장"}</HeaderTitle>
+          <HeaderTitle>{isEditing ? "피팅 편집" : "피팅 목록"}</HeaderTitle>
         }
         left={
           isEditing ? null : (
@@ -251,6 +287,9 @@ export function FittingWardrobe({ initialFilter }: FittingWardrobeProps) {
         )}
 
         <div className={styles.list}>
+          {!isEditing && filter !== "ALL" && (
+            <EmptyCandidateCard itemType={filter} />
+          )}
           {isPending && (
             <p className={styles.stateMessage}>옷장을 불러오고 있어요.</p>
           )}
