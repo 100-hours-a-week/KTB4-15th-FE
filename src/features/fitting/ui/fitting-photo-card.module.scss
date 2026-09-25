@@ -1,0 +1,55 @@
+@use "@/styles/typography" as type;
+
+.card {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 4 / 5;
+  border-radius: var(--radius-large);
+  background: var(--color-gray-200);
+}
+
+.image {
+  object-fit: cover;
+  object-position: center;
+}
+
+.meta {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  left: 10px;
+  display: flex;
+  align-items: center;
+}
+
+.profileBadge {
+  @include type.caption;
+
+  display: inline-flex;
+  min-width: 0;
+  min-height: 34px;
+  align-items: center;
+  gap: 6px;
+  overflow: hidden;
+  border-radius: var(--radius-full);
+  padding-inline: 12px;
+  background: rgb(255 255 255 / 92%);
+  color: var(--color-gray-800);
+  font-weight: var(--font-weight-semibold);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.statusDot {
+  width: 6px;
+  height: 6px;
+  flex: 0 0 auto;
+  border-radius: var(--radius-full);
+  background: #20bf8f;
+}
+
+@media (width <= 359px) {
+  .profileBadge {
+    max-width: 205px;
+  }
+}

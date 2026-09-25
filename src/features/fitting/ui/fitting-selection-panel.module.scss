@@ -1,0 +1,169 @@
+@use "@/styles/typography" as type;
+
+.panel {
+  display: grid;
+  gap: 18px;
+}
+
+.section {
+  display: grid;
+  gap: var(--space-md);
+}
+
+.heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  h2 {
+    @include type.label;
+
+    margin: 0;
+    font-weight: var(--font-weight-semibold);
+  }
+}
+
+.title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+
+  span {
+    @include type.caption;
+
+    border-radius: var(--radius-full);
+    padding: 2px 8px;
+    background: var(--color-green-100);
+    color: var(--color-text-brand);
+    font-weight: var(--font-weight-semibold);
+  }
+}
+
+.changeLink {
+  @include type.caption;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding-block: 4px;
+  color: var(--color-gray-600);
+
+  svg {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+.outfitCard {
+  display: grid;
+  gap: var(--space-md);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-large);
+  padding: var(--space-lg);
+  background: var(--color-background-surface);
+}
+
+.outfitGroup {
+  display: grid;
+  gap: var(--space-md);
+}
+
+.category {
+  @include type.caption;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: var(--font-weight-semibold);
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  flex: 0 0 auto;
+  border-radius: var(--radius-full);
+  background: var(--color-green-700);
+}
+
+.productRow {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr) 20px;
+  align-items: center;
+  gap: var(--space-md);
+  width: 100%;
+  color: inherit;
+  text-align: left;
+}
+
+.emptyProductIcon {
+  display: grid;
+  width: 56px;
+  height: 56px;
+  place-content: center;
+  gap: 1px;
+  border-radius: var(--radius-medium);
+  background: #9bafc3;
+  color: var(--color-white);
+  text-align: center;
+
+  svg {
+    width: 22px;
+    height: 22px;
+    margin-inline: auto;
+  }
+
+  small {
+    font-size: 9px;
+    line-height: 11px;
+  }
+}
+
+.productCopy {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+
+  strong,
+  b {
+    @include type.label;
+
+    font-weight: var(--font-weight-semibold);
+  }
+
+  strong,
+  span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  span {
+    @include type.caption;
+
+    color: var(--color-text-secondary);
+  }
+}
+
+.productChevron {
+  width: 18px;
+  height: 18px;
+  color: var(--color-gray-400);
+}
+
+.divider {
+  height: 1px;
+  background: var(--color-border-default);
+}
+
+.actionArea {
+  display: grid;
+  gap: var(--space-md);
+
+  p {
+    @include type.caption;
+
+    margin: 0;
+    color: var(--color-text-secondary);
+    text-align: center;
+  }
+}
