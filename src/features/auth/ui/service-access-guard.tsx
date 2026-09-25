@@ -3,19 +3,15 @@
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { HTTPError } from "ky";
 import {
   MemberProfileNotFoundError,
   memberProfileQueryOptions,
 } from "@/features/profile";
+import { RefreshUnauthorizedError } from "@/shared/api/client";
 import { Button } from "@/shared/ui/button";
 import styles from "./service-access-guard.module.scss";
 
 const PROFILE_SETUP_PATH = "/profile/setup";
-
-function getErrorStatus(error: Error | null) {
-  return error instanceof HTTPError ? error.response.status : undefined;
-}
 
 export function ServiceAccessGuard({ children }: { children: ReactNode }) {
   const pathname = usePathname();
@@ -24,9 +20,9 @@ export function ServiceAccessGuard({ children }: { children: ReactNode }) {
     ...memberProfileQueryOptions,
     retry: false,
   });
-  const errorStatus = getErrorStatus(profileQuery.error);
   const isProfileSetupPage = pathname === PROFILE_SETUP_PATH;
-  const isUnauthenticated = errorStatus === 401;
+  const isUnauthenticated =
+    profileQuery.error instanceof RefreshUnauthorizedError;
   const isMemberProfileMissing =
   profileQuery.error instanceof MemberProfileNotFoundError;
   const shouldRedirectToChat = profileQuery.isSuccess && isProfileSetupPage;

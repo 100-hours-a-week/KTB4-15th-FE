@@ -1,4 +1,11 @@
-import ky from "ky";
+import ky, { HTTPError } from "ky";
+
+export class RefreshUnauthorizedError extends Error {
+  constructor() {
+    super("인증 갱신에 실패했습니다.");
+    this.name = "RefreshUnauthorizedError";
+  }
+}
 
 const apiOptions = {
   baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL,
@@ -39,7 +46,15 @@ export const apiClient = ky.create({
           return;
         }
 
-        await refreshAccessToken();
+        try {
+          await refreshAccessToken();
+        } catch (error) {
+          if (error instanceof HTTPError && error.response.status === 401) {
+            throw new RefreshUnauthorizedError();
+          }
+
+          throw error;
+        }
 
         return ky.retry({
           code: "TOKEN_REFRESHED",
