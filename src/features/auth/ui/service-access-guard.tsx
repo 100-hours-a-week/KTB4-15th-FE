@@ -24,7 +24,7 @@ export function ServiceAccessGuard({ children }: { children: ReactNode }) {
   const isUnauthenticated =
     profileQuery.error instanceof RefreshUnauthorizedError;
   const isMemberProfileMissing =
-  profileQuery.error instanceof MemberProfileNotFoundError;
+    profileQuery.error instanceof MemberProfileNotFoundError;
   const shouldRedirectToChat = profileQuery.isSuccess && isProfileSetupPage;
   const shouldRedirectToProfileSetup =
     isMemberProfileMissing && !isProfileSetupPage;
