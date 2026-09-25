@@ -2,9 +2,13 @@
 
 import Image, { type ImageLoaderProps } from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useMutation } from "@tanstack/react-query";
 import { Button } from "@/shared/ui/button";
 import { AiFittingIcon, ChevronRightIcon, HeartIcon } from "@/shared/ui/icon";
 import { formatPrice } from "@/shared/utils/price-format";
+import { createFittingJob } from "../api/fitting-jobs";
+import { setActiveFittingJobId } from "../model/active-fitting-job-storage";
 import { useFittingSelectionStore } from "../model/fitting-selection-store";
 import type { FittingCandidate } from "../schema/fitting-candidate";
 import styles from "./fitting-selection-panel.module.scss";
@@ -72,10 +76,27 @@ function OutfitItem({
 }
 
 export function FittingSelectionPanel() {
+  const router = useRouter();
   const top = useFittingSelectionStore((state) => state.top);
   const bottom = useFittingSelectionStore((state) => state.bottom);
   const selectedCount = Number(Boolean(top)) + Number(Boolean(bottom));
-  const canStart = selectedCount === 2;
+  const canStart = selectedCount > 0;
+  const createFittingJobMutation = useMutation({
+    mutationFn: createFittingJob,
+    onSuccess: ({ fittingJobId }) => {
+      setActiveFittingJobId(fittingJobId);
+      router.push(`/fitting/jobs/${fittingJobId}`);
+    },
+  });
+
+  const handleStartFitting = () => {
+    if (!top && !bottom) return;
+
+    createFittingJobMutation.mutate({
+      ...(top && { topProductId: top.productId }),
+      ...(bottom && { bottomProductId: bottom.productId }),
+    });
+  };
 
   return (
     <div className={styles.panel}>
@@ -109,16 +130,23 @@ export function FittingSelectionPanel() {
       </section>
 
       <div className={styles.actionArea}>
-        <p>상의와 하의를 선택하면 피팅을 시작할 수 있어요</p>
+        <p>상의 또는 하의를 선택하면 피팅을 시작할 수 있어요</p>
         <Button
           disabled={!canStart}
           fullWidth
+          isLoading={createFittingJobMutation.isPending}
           leadingIcon={<AiFittingIcon />}
+          onClick={handleStartFitting}
           size="large"
           trailingIcon={<span aria-hidden="true">→</span>}
         >
           AI 가상 피팅 시작하기
         </Button>
+        {createFittingJobMutation.isError && (
+          <p aria-live="polite" className={styles.errorMessage} role="status">
+            피팅 요청을 시작하지 못했어요. 잠시 후 다시 시도해 주세요.
+          </p>
+        )}
       </div>
     </div>
   );

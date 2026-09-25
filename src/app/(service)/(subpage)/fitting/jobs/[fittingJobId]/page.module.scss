@@ -1,0 +1,29 @@
+@use "@/styles/typography" as type;
+
+.main {
+  display: grid;
+  min-height: calc(100dvh - var(--header-height));
+  place-content: center;
+  padding-block: var(--space-2xl);
+  text-align: center;
+
+  h2 {
+    @include type.heading-small;
+
+    margin: var(--space-sm) 0;
+  }
+
+  p {
+    @include type.body-medium;
+
+    margin: 0;
+    color: var(--color-text-secondary);
+  }
+
+  .eyebrow {
+    @include type.caption;
+
+    color: var(--color-text-brand);
+    font-weight: var(--font-weight-semibold);
+  }
+}
