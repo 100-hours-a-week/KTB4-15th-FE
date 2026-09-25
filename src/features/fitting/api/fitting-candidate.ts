@@ -1,6 +1,7 @@
 import { apiClient } from "@/shared/api/client";
 import { parseResponse } from "@/shared/api/response";
 import {
+  fittingCandidateBulkDeleteResponse,
   fittingCandidateCreateResponse,
   fittingCandidateListResponse,
 } from "../schema/fitting-candidate";
@@ -39,4 +40,12 @@ export async function createFittingCandidate(productId: number) {
   });
 
   return parseResponse(response, fittingCandidateCreateResponse);
+}
+
+export async function deleteFittingCandidates(fittingCandidateIds: number[]) {
+  const response = await apiClient.delete("fitting-candidates", {
+    json: { fittingCandidateIds },
+  });
+
+  return parseResponse(response, fittingCandidateBulkDeleteResponse);
 }

@@ -16,9 +16,14 @@ export const fittingCandidateSchema = z.object({
 });
 
 export const fittingCandidateListResponse = z.object({
+  totalCount: z.number().int().nonnegative(),
   items: z.array(fittingCandidateSchema),
   nextCursor: z.number().int().positive().nullable(),
   hasNext: z.boolean(),
+});
+
+export const fittingCandidateBulkDeleteResponse = z.object({
+  deletedCount: z.number().int().nonnegative(),
 });
 
 export type FittingCandidateCreateResponse = z.infer<
