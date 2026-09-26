@@ -6,6 +6,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { overlay } from "overlay-kit";
 import { Button, IconButton } from "@/shared/ui/button";
 import { Dropdown, DropdownItem } from "@/shared/ui/dropdown";
+import { showToast } from "@/shared/ui/toast";
+import { getApiErrorMessage } from "@/shared/api/error";
 import {
   CloseIcon,
   DeleteIcon,
@@ -57,12 +59,28 @@ export function ChatSidebar({ open, onOpenChange }: ChatSidebarProps) {
     }) => renameChatRoom(chatRoomId, { title }),
     onSuccess: () =>
       queryClient.invalidateQueries({ queryKey: CHAT_ROOMS_QUERY_KEY }),
+    onError: (error) => {
+      showToast.error(
+        getApiErrorMessage(error, "채팅방 이름을 수정하지 못했어요."),
+        {
+          id: "rename-chat-room",
+        },
+      );
+    },
   });
 
   const deleteChatRoomMutation = useMutation({
     mutationFn: deleteChatRoom,
     onSuccess: () =>
       queryClient.invalidateQueries({ queryKey: CHAT_ROOMS_QUERY_KEY }),
+    onError: (error) => {
+      showToast.error(
+        getApiErrorMessage(error, "채팅방을 삭제하지 못했어요."),
+        {
+          id: "delete-chat-room",
+        },
+      );
+    },
   });
 
   const chatRooms =
@@ -80,7 +98,14 @@ export function ChatSidebar({ open, onOpenChange }: ChatSidebarProps) {
         onConfirm={(title) => {
           renameChatRoomMutation.mutate(
             { chatRoomId, title },
-            { onSuccess: close },
+            {
+              onSuccess: () => {
+                close();
+                showToast.success("채팅방 이름을 수정했어요.", {
+                  id: "rename-chat-room",
+                });
+              },
+            },
           );
         }}
         onExit={unmount}
@@ -99,6 +124,9 @@ export function ChatSidebar({ open, onOpenChange }: ChatSidebarProps) {
           deleteChatRoomMutation.mutate(chatRoomId, {
             onSuccess: () => {
               close();
+              showToast.success("채팅방을 삭제했어요.", {
+                id: "delete-chat-room",
+              });
 
               if (pathname === `/chat/${chatRoomId}`) {
                 router.push("/chat");

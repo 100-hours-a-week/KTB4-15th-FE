@@ -4,6 +4,8 @@ import { useRouter } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { logout } from "@/features/auth/api/auth";
 import { ButtonBase } from "@/shared/ui/button";
+import { getApiErrorMessage } from "@/shared/api/error";
+import { showToast } from "@/shared/ui/toast";
 import styles from "./account-section.module.scss";
 
 export function AccountSection() {
@@ -15,6 +17,12 @@ export function AccountSection() {
       queryClient.clear();
       router.replace("/login");
       router.refresh();
+    },
+    onError: (error) => {
+      showToast.error(
+        getApiErrorMessage(error, "로그아웃하지 못했어요. 다시 시도해 주세요."),
+        { id: "logout" },
+      );
     },
   });
 
@@ -30,11 +38,6 @@ export function AccountSection() {
       >
         {logoutMutation.isPending ? "로그아웃 중..." : "로그아웃"}
       </ButtonBase>
-      {logoutMutation.isError && (
-        <p className={styles.error} role="alert">
-          로그아웃하지 못했어요. 다시 시도해 주세요.
-        </p>
-      )}
     </section>
   );
 }
