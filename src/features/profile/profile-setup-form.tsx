@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { overlay } from "overlay-kit";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { memberMeQueryOptions } from "@/features/member";
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { useForm } from "react-hook-form";
 import { BottomSheet } from "@/shared/ui/bottom-sheet";
@@ -69,6 +70,9 @@ export function ProfileSetupForm() {
       });
     },
     onSuccess: async () => {
+      queryClient.setQueryData(memberMeQueryOptions.queryKey, {
+        profileCompleted: true,
+      });
       await queryClient.invalidateQueries({
         queryKey: memberProfileQueryOptions.queryKey,
       });
