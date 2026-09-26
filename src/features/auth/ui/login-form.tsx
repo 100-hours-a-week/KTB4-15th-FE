@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { useQueryClient } from "@tanstack/react-query";
+import { memberMeQueryOptions } from "@/features/member";
 import { Button, IconButton } from "@/shared/ui/button";
 import { PasswordVisibilityIcon } from "@/shared/ui/icon";
 import { InputField } from "@/shared/ui/input-field";
@@ -14,6 +16,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 export function LoginForm() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const {
     formState: { errors, isValid, touchedFields, isSubmitting },
@@ -27,6 +30,9 @@ export function LoginForm() {
 
   const handleLogin = async ({ email, password }: LoginRequest) => {
     const { profileCompleted } = await login({ email, password });
+    queryClient.setQueryData(memberMeQueryOptions.queryKey, {
+      profileCompleted,
+    });
     router.replace(profileCompleted ? "/chat" : "/profile/setup");
   };
 

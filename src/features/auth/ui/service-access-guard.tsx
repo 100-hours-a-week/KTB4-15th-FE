@@ -3,10 +3,7 @@
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
-import {
-  MemberProfileNotFoundError,
-  memberProfileQueryOptions,
-} from "@/features/profile";
+import { memberMeQueryOptions } from "@/features/member";
 import {
   RefreshUnauthorizedError,
   subscribeToRefreshUnauthorized,
@@ -20,19 +17,20 @@ export function ServiceAccessGuard({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const [hasRefreshUnauthorized, setHasRefreshUnauthorized] = useState(false);
-  const profileQuery = useQuery({
-    ...memberProfileQueryOptions,
+  const memberQuery = useQuery({
+    ...memberMeQueryOptions,
     retry: false,
   });
   const isProfileSetupPage = pathname === PROFILE_SETUP_PATH;
   const isUnauthenticated =
     hasRefreshUnauthorized ||
-    profileQuery.error instanceof RefreshUnauthorizedError;
-  const isMemberProfileMissing =
-    profileQuery.error instanceof MemberProfileNotFoundError;
-  const shouldRedirectToChat = profileQuery.isSuccess && isProfileSetupPage;
+    memberQuery.error instanceof RefreshUnauthorizedError;
+  const isProfileCompleted = memberQuery.data?.profileCompleted === true;
+  const isProfileIncomplete =
+    memberQuery.isSuccess && !memberQuery.data.profileCompleted;
+  const shouldRedirectToChat = isProfileCompleted && isProfileSetupPage;
   const shouldRedirectToProfileSetup =
-    isMemberProfileMissing && !isProfileSetupPage;
+    isProfileIncomplete && !isProfileSetupPage;
 
   useEffect(
     () =>
@@ -64,13 +62,13 @@ export function ServiceAccessGuard({ children }: { children: ReactNode }) {
   ]);
 
   const canRenderPage =
-    (profileQuery.isSuccess && !isProfileSetupPage) ||
-    (isMemberProfileMissing && isProfileSetupPage);
+    (isProfileCompleted && !isProfileSetupPage) ||
+    (isProfileIncomplete && isProfileSetupPage);
 
   if (canRenderPage) return children;
 
   if (
-    profileQuery.isPending ||
+    memberQuery.isPending ||
     isUnauthenticated ||
     shouldRedirectToChat ||
     shouldRedirectToProfileSetup
@@ -86,8 +84,8 @@ export function ServiceAccessGuard({ children }: { children: ReactNode }) {
     <main className={styles.status}>
       <p role="alert">사용자 정보를 확인하지 못했어요.</p>
       <Button
-        isLoading={profileQuery.isFetching}
-        onClick={() => void profileQuery.refetch()}
+        isLoading={memberQuery.isFetching}
+        onClick={() => void memberQuery.refetch()}
         size="small"
         variant="secondary"
       >

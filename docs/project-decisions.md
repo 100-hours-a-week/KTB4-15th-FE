@@ -156,7 +156,7 @@ src/
 - `(service)` 라우트는 로그인한 사용자만 접근할 수 있다.
 - 기본 정보가 없는 사용자가 일반 서비스 화면에 접근하면 `/profile/setup`으로 이동한다.
 - 기본 정보가 등록된 사용자가 `/profile/setup`에 접근하면 `/chat`으로 이동한다.
-- 서비스 접근 확인은 브라우저 API Client의 access token 갱신 흐름을 재사용한다.
+- 서비스 접근 확인은 `GET /members/me`의 `profileCompleted`와 브라우저 API Client의 access token 갱신 흐름을 사용한다.
 
 ## 빌드 및 배포
 
