@@ -147,6 +147,11 @@ src/
 - BottomSheet, Modal, AlertDialog의 open/close lifecycle은 OverlayKit으로 관리하고 각 UI 컴포넌트의 접근성과 Portal은 Radix가 담당한다.
 - Dropdown은 Radix DropdownMenu를 기반으로 구현하며 open/close, 키보드 탐색, focus와 위치 계산은 Radix가 담당한다. Dropdown 내부에서는 API 요청이나 도메인 상태를 처리하지 않고 선택 콜백만 상위에 전달한다.
 - Toast는 노출 시간과 큐 정책이 별도로 필요하므로 OverlayKit 관리 범위에 포함하지 않는다.
+- Toast의 lifecycle, stacking, dismiss, id 갱신은 Sonner가 담당한다. Sonner의 기본 UI는 사용하지 않고 프로젝트의 `ToastContent`로 렌더링한다.
+- 화면에서는 Sonner를 직접 호출하지 않고 `showToast` 공통 API를 사용한다.
+- Toast는 success와 error 타입 및 닫기 버튼을 제공하며 기본 노출 시간은 각각 3초와 4초, 최대 동시 노출 개수는 3개로 한다.
+- 같은 작업에서 반복되는 Toast는 안정적인 id로 기존 Toast를 갱신한다.
+- 일시적인 작업 결과는 Toast로 안내하고, 입력 오류는 해당 필드에, 화면 전체 조회 오류는 Error State로 표시한다. 서버의 raw error message는 사용자에게 직접 노출하지 않는다.
 - BottomSheet는 콘텐츠 높이에 맞추는 `content`와 화면 높이의 60%를 사용하는 `large` 크기를 제공한다.
 - BottomSheet는 배경 클릭, 닫기 버튼, Escape 키로 닫을 수 있으며 drag-to-close와 snap point는 현재 지원하지 않는다.
 
@@ -170,6 +175,5 @@ src/
 - 인증 쿠키의 이름, 만료, 갱신, CSRF 정책
 - 데스크톱 외부 영역 디자인
 - Input과 Textarea 공통 컴포넌트의 세부 규칙
-- 피드백 메시지 및 Toast 표시 방식
 
 보류 항목은 기능 개발에 필요해지는 시점에 검토하며, 결정 전에는 임의로 확정하지 않는다.
