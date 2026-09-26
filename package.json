@@ -6,6 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "test": "node --test src/app/health/route.test.ts",
     "lint": "pnpm lint:js && pnpm lint:styles",
     "lint:js": "eslint .",
     "lint:styles": "stylelint \"src/**/*.scss\"",
