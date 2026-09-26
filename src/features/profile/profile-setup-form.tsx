@@ -94,9 +94,12 @@ export function ProfileSetupForm() {
   const queryClient = useQueryClient();
   const [photo, setPhoto] = useState<File>();
   const [photoUrl, setPhotoUrl] = useState<string>();
+  const [photoValidationId, setPhotoValidationId] = useState<number>();
   const [isNotificationEnabled, setIsNotificationEnabled] = useState(true);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const filePickerLockedRef = useRef(false);
+  const photoValidationRequestIdRef = useRef(0);
   const {
     clearErrors,
     formState: { errors, isValid },
@@ -107,6 +110,31 @@ export function ProfileSetupForm() {
     setValue,
   } = useForm<ProfileSetupFormValues>({ mode: "onChange" });
   const nameField = register("name", { validate: validateName });
+  const photoValidationMutation = useMutation({
+    mutationFn: ({ image }: { image: File; requestId: number }) =>
+      validateFullBodyImage(image).catch(rethrowPhotoValidationError),
+    onSuccess: ({ fullBodyImageUrl, validationId }, { requestId }) => {
+      if (requestId !== photoValidationRequestIdRef.current) return;
+
+      setPhotoValidationId(validationId);
+      setPhotoUrl(fullBodyImageUrl);
+    },
+    onError: (error, { requestId }) => {
+      if (requestId !== photoValidationRequestIdRef.current) return;
+
+      setPhotoValidationId(undefined);
+
+      if (error instanceof PhotoValidationError) return;
+
+      showToast.error(
+        getApiErrorMessage(
+          error,
+          "전신 사진을 검증하지 못했어요. 다시 시도해 주세요.",
+        ),
+        { id: "photo-validation" },
+      );
+    },
+  });
   const profileSetupMutation = useMutation({
     mutationFn: async ({
       age,
@@ -115,14 +143,13 @@ export function ProfileSetupForm() {
       weight,
     }: ProfileSetupFormValues) => {
       if (!photo) throw new PhotoValidationError("전신 사진을 등록해 주세요.");
-
-      const { validationId } = await validateFullBodyImage(photo).catch(
-        rethrowPhotoValidationError,
-      );
+      if (!photoValidationId) {
+        throw new PhotoValidationError("전신 사진 검증을 완료해 주세요.");
+      }
 
       return createMemberProfile({
         age: Number(age),
-        fullBodyImageValidationId: validationId,
+        fullBodyImageValidationId: photoValidationId,
         height: Number(height),
         name,
         priceAlertEnabled: isNotificationEnabled,
@@ -153,8 +180,8 @@ export function ProfileSetupForm() {
     },
   });
   const photoValidationError =
-    profileSetupMutation.error instanceof PhotoValidationError
-      ? profileSetupMutation.error
+    photoValidationMutation.error instanceof PhotoValidationError
+      ? photoValidationMutation.error
       : undefined;
 
   const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -214,12 +241,42 @@ export function ProfileSetupForm() {
     const file = event.target.files?.[0];
     if (!file) return;
 
+    window.setTimeout(() => {
+      filePickerLockedRef.current = false;
+    }, 300);
+
     setPhoto(file);
+    setPhotoValidationId(undefined);
     profileSetupMutation.reset();
+    photoValidationMutation.reset();
     setPhotoUrl((currentUrl) => {
       if (currentUrl) URL.revokeObjectURL(currentUrl);
       return URL.createObjectURL(file);
     });
+    const requestId = photoValidationRequestIdRef.current + 1;
+    photoValidationRequestIdRef.current = requestId;
+    photoValidationMutation.mutate({ image: file, requestId });
+  };
+
+  const openPhotoPicker = () => {
+    if (filePickerLockedRef.current || photoValidationMutation.isPending) {
+      return;
+    }
+
+    const input = fileInputRef.current;
+    if (!input) return;
+
+    filePickerLockedRef.current = true;
+    window.addEventListener(
+      "focus",
+      () => {
+        window.setTimeout(() => {
+          filePickerLockedRef.current = false;
+        }, 300);
+      },
+      { once: true },
+    );
+    input.click();
   };
 
   const openShootingGuide = () => {
@@ -237,7 +294,7 @@ export function ProfileSetupForm() {
         <ShootingGuide
           onStartShooting={() => {
             close();
-            fileInputRef.current?.click();
+            openPhotoPicker();
           }}
         />
       </BottomSheet>
@@ -322,7 +379,8 @@ export function ProfileSetupForm() {
           <button
             aria-label="전신 사진 선택"
             className={styles.photoPreview}
-            onClick={() => fileInputRef.current?.click()}
+            disabled={photoValidationMutation.isPending}
+            onClick={openPhotoPicker}
             type="button"
           >
             {photoUrl ? (
@@ -347,14 +405,27 @@ export function ProfileSetupForm() {
             type="file"
           />
           <div className={styles.photoDetails}>
-            <strong>
+            <strong
+              className={
+                photoValidationMutation.isError
+                  ? styles.photoStatusError
+                  : undefined
+              }
+            >
               <i aria-hidden="true" />{" "}
-              {photoUrl ? "사진이 등록되었어요" : "전신 사진을 등록해 주세요"}
+              {photoValidationMutation.isPending
+                ? "사진을 검증하고 있어요"
+                : photoValidationId
+                  ? "사진 검증이 완료되었어요"
+                  : photoUrl
+                    ? "사진을 다시 확인해 주세요"
+                    : "전신 사진을 등록해 주세요"}
             </strong>
             <p>실제 체형 비율을 반영해 자연스러운 가상 착용을 구현해요.</p>
             <div className={styles.photoActions}>
               <Button
-                onClick={() => fileInputRef.current?.click()}
+                isLoading={photoValidationMutation.isPending}
+                onClick={openPhotoPicker}
                 size="small"
                 type="button"
                 variant="secondary"
@@ -370,9 +441,15 @@ export function ProfileSetupForm() {
               </button>
             </div>
           </div>
-          <p className={styles.photoTip}>
-            * 정면 각도에서 전신이 모두 나오면 가장 정확해요.
-          </p>
+          {photoValidationId ? (
+            <p className={styles.photoSuccess} role="status">
+              전신 사진 검증에 성공했어요.
+            </p>
+          ) : (
+            <p className={styles.photoTip}>
+              * 정면 각도에서 전신이 모두 나오면 가장 정확해요.
+            </p>
+          )}
           {photoValidationError && (
             <p className={styles.photoError} role="alert">
               {photoValidationError.message}
@@ -395,7 +472,12 @@ export function ProfileSetupForm() {
 
       <Button
         className={styles.submitButton}
-        disabled={!isValid || !photo}
+        disabled={
+          !isValid ||
+          !photo ||
+          !photoValidationId ||
+          photoValidationMutation.isPending
+        }
         fullWidth
         isLoading={profileSetupMutation.isPending}
         size="large"

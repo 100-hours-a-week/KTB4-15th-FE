@@ -6,7 +6,7 @@ export const memberProfileSchema = z.object({
   age: z.number().int(),
   height: z.number(),
   weight: z.number(),
-  fullBodyImageKey: z.string(),
+  fullBodyImageUrl: z.string().url(),
   priceAlertEnabled: z.boolean(),
 });
 
@@ -33,7 +33,6 @@ export const memberProfileCreateRequestSchema = z.object({
 
 export const memberProfileCreateResponseSchema = z.object({
   profileId: z.number().int().positive(),
-  fullBodyImageKey: z.string(),
 });
 
 export type MemberProfileCreateRequest = z.infer<

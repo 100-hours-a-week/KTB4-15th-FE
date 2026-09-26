@@ -141,6 +141,14 @@
   }
 }
 
+.photoStatusError {
+  color: var(--color-action-danger-default);
+
+  i {
+    background: var(--color-action-danger-default);
+  }
+}
+
 .photoActions {
   display: flex;
   align-items: center;
@@ -176,6 +184,15 @@
   grid-column: 1 / -1;
   margin: 0;
   color: var(--color-text-secondary);
+}
+
+.photoSuccess {
+  @include type.caption;
+
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--color-text-brand);
+  font-weight: var(--font-weight-semibold);
 }
 
 .photoError {
