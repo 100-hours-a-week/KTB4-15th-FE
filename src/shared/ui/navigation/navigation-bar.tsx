@@ -25,6 +25,7 @@ const NAVIGATION_ITEMS = [
     href: "/wishlists",
     icon: WishlistIcon,
     activeIcon: WishlistActiveIcon,
+    available: false,
   },
   {
     label: "피팅",
@@ -44,6 +45,7 @@ const NAVIGATION_ITEMS = [
     href: "/ranking",
     icon: RankingIcon,
     activeIcon: RankingActiveIcon,
+    available: false,
   },
   {
     label: "마이",

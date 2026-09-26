@@ -7,7 +7,9 @@
   min-width: 0;
   flex: 1;
   justify-items: center;
+  border: 0;
   padding: var(--space-sm) var(--space-xs);
+  background: transparent;
   color: var(--color-text-secondary);
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
@@ -19,7 +21,7 @@
   }
 
   @media (hover: hover) {
-    &:hover .icon {
+    &:not(.unavailable):hover .icon {
       transform: scale(1.07);
     }
   }
@@ -32,6 +34,28 @@
 .active {
   color: var(--color-black);
   font-weight: var(--font-weight-semibold);
+}
+
+.unavailable {
+  color: var(--color-text-disabled);
+}
+
+.iconSlot {
+  position: relative;
+}
+
+.comingSoon {
+  position: absolute;
+  top: -6px;
+  left: 16px;
+  padding: 1px 4px;
+  border-radius: var(--radius-full);
+  background: var(--color-background-selected);
+  color: var(--color-text-brand);
+  font-size: 0.625rem;
+  font-weight: var(--font-weight-semibold);
+  line-height: 12px;
+  white-space: nowrap;
 }
 
 .featured {
