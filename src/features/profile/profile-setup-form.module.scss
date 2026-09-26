@@ -71,7 +71,7 @@
 
 .photoCard {
   display: grid;
-  grid-template-columns: 68px 1fr;
+  grid-template-columns: 96px 1fr;
   gap: var(--space-md);
   border: 1px solid var(--color-border-default);
   border-radius: var(--radius-medium);
@@ -81,8 +81,8 @@
 
 .photoPreview {
   display: flex;
-  width: 68px;
-  height: 88px;
+  width: 96px;
+  height: 128px;
   align-items: center;
   justify-content: center;
   overflow: hidden;
@@ -139,6 +139,18 @@
     margin: var(--space-xs) 0 var(--space-sm);
     color: var(--color-text-secondary);
   }
+}
+
+.photoStatusError {
+  color: var(--color-action-danger-default);
+
+  i {
+    background: var(--color-action-danger-default);
+  }
+}
+
+.photoStatusSuccess {
+  color: var(--color-text-brand);
 }
 
 .photoActions {
