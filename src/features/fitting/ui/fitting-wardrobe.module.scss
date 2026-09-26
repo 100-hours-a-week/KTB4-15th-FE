@@ -1,0 +1,314 @@
+@use "@/styles/typography" as type;
+
+.screen {
+  display: grid;
+  min-height: calc(100dvh - var(--header-height));
+  grid-template-rows: auto auto 1fr auto;
+  gap: var(--space-lg);
+  padding-block: var(--space-sm) var(--space-lg);
+}
+
+.editing {
+  grid-template-rows: auto auto auto 1fr auto auto;
+}
+
+.editButton {
+  @include type.label;
+
+  border: 0;
+  padding: var(--space-sm);
+  background: transparent;
+  color: var(--color-text-brand);
+  cursor: pointer;
+  font-weight: var(--font-weight-semibold);
+}
+
+.intro {
+  h2 {
+    @include type.heading-small;
+
+    margin: 0;
+  }
+
+  p {
+    @include type.caption;
+
+    margin: var(--space-xs) 0 0;
+    color: var(--color-text-secondary);
+  }
+}
+
+.filters {
+  display: flex;
+  gap: var(--space-sm);
+
+  button {
+    @include type.caption;
+
+    min-width: 56px;
+    height: 36px;
+    border: 1px solid var(--color-border-default);
+    border-radius: var(--radius-full);
+    padding-inline: var(--space-md);
+    background: var(--color-background-surface);
+    cursor: pointer;
+  }
+
+  .activeFilter {
+    border-color: var(--color-action-primary-default);
+    background: var(--color-action-primary-default);
+    color: var(--color-action-primary-text);
+  }
+}
+
+.list {
+  display: grid;
+  align-content: start;
+  gap: var(--space-sm);
+}
+
+.productCard {
+  display: grid;
+  min-height: 88px;
+  grid-template-columns: 72px minmax(0, 1fr) 24px;
+  align-items: center;
+  gap: var(--space-md);
+  width: 100%;
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-medium);
+  padding: var(--space-sm);
+  background: var(--color-background-surface);
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+
+.selected {
+  border-color: var(--color-border-brand);
+  background: var(--color-background-selected);
+}
+
+.selectedForDelete {
+  border-color: var(--color-red-300);
+  background: var(--color-red-50);
+}
+
+.imageArea {
+  position: relative;
+  overflow: hidden;
+  width: 72px;
+  height: 72px;
+  border-radius: var(--radius-small);
+  background: var(--color-gray-100);
+}
+
+.productImage {
+  object-fit: cover;
+}
+
+.emptyImageArea {
+  display: grid;
+  place-items: center;
+  color: var(--color-gray-500);
+
+  svg {
+    width: 24px;
+    height: 24px;
+  }
+}
+
+.productDetails {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+
+  small {
+    @include type.caption;
+
+    color: var(--color-text-secondary);
+  }
+
+  strong,
+  b {
+    @include type.label;
+
+    overflow: hidden;
+    font-weight: var(--font-weight-semibold);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  > span {
+    @include type.caption;
+
+    overflow: hidden;
+    color: var(--color-text-secondary);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.selectionMark {
+  display: grid;
+  width: 22px;
+  height: 22px;
+  place-items: center;
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-full);
+  color: var(--color-white);
+  font-size: 12px;
+
+  svg {
+    width: 12px;
+    height: 10px;
+  }
+}
+
+.selected .selectionMark {
+  border-color: var(--color-action-primary-default);
+  background: var(--color-action-primary-default);
+}
+
+.selectedForDelete .selectionMark {
+  border-color: var(--color-red-600);
+  background: var(--color-red-600);
+}
+
+.selectAllButton {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-sm);
+  width: 100%;
+  border: 0;
+  padding: var(--space-sm) 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+
+  strong,
+  > span:last-child {
+    @include type.label;
+  }
+
+  > span:last-child {
+    color: var(--color-text-secondary);
+    font-weight: var(--font-weight-regular);
+  }
+}
+
+.selectAllMark {
+  display: grid;
+  width: 22px;
+  height: 22px;
+  place-items: center;
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-full);
+  background: var(--color-gray-200);
+
+  svg {
+    width: 12px;
+    height: 10px;
+  }
+}
+
+.selectAllButton[aria-pressed="true"] .selectAllMark {
+  border-color: var(--color-red-600);
+  background: var(--color-red-600);
+  color: var(--color-white);
+}
+
+.stateMessage {
+  @include type.body-medium;
+
+  margin: var(--space-2xl) 0;
+  color: var(--color-text-secondary);
+  text-align: center;
+}
+
+.loadMore {
+  @include type.caption;
+
+  min-height: 24px;
+  color: var(--color-text-secondary);
+  text-align: center;
+}
+
+.bottomAction {
+  position: sticky;
+  bottom: 0;
+  padding-top: var(--space-sm);
+  background: var(--color-background-surface);
+}
+
+.deleteNotice {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-sm);
+  border-radius: var(--radius-medium);
+  padding: var(--space-lg);
+  background: var(--color-gray-100);
+  color: var(--color-text-secondary);
+
+  svg {
+    flex: 0 0 auto;
+    width: 20px;
+    height: 20px;
+    color: var(--color-text-brand);
+  }
+
+  p {
+    @include type.caption;
+
+    margin: 0;
+  }
+}
+
+.completeButton {
+  @include type.label;
+
+  width: 100%;
+  min-height: var(--control-height-large);
+  border: 0;
+  border-radius: var(--radius-medium);
+  background: var(--color-action-primary-default);
+  color: var(--color-action-primary-text);
+  cursor: pointer;
+  font-weight: var(--font-weight-semibold);
+}
+
+.deleteButton {
+  @include type.label;
+
+  display: flex;
+  width: 100%;
+  min-height: var(--control-height-large);
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  border: 0;
+  border-radius: var(--radius-medium);
+  background: var(--color-red-600);
+  color: var(--color-white);
+  cursor: pointer;
+  font-weight: var(--font-weight-semibold);
+
+  &:disabled {
+    cursor: default;
+    opacity: 0.45;
+  }
+
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.deleteError {
+  @include type.caption;
+
+  margin: var(--space-xs) 0 0;
+  color: var(--color-red-600);
+  text-align: center;
+}

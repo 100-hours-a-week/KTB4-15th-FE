@@ -1,0 +1,7 @@
+.main {
+  display: grid;
+  min-height: calc(100dvh - var(--header-height) - var(--navigation-height));
+  gap: 18px;
+  align-content: start;
+  padding-block: 4px calc(var(--navigation-height) + var(--space-xl));
+}
