@@ -409,7 +409,9 @@ export function ProfileSetupForm() {
               className={
                 photoValidationMutation.isError
                   ? styles.photoStatusError
-                  : undefined
+                  : photoValidationId
+                    ? styles.photoStatusSuccess
+                    : undefined
               }
             >
               <i aria-hidden="true" />{" "}
@@ -441,15 +443,9 @@ export function ProfileSetupForm() {
               </button>
             </div>
           </div>
-          {photoValidationId ? (
-            <p className={styles.photoSuccess} role="status">
-              전신 사진 검증에 성공했어요.
-            </p>
-          ) : (
-            <p className={styles.photoTip}>
-              * 정면 각도에서 전신이 모두 나오면 가장 정확해요.
-            </p>
-          )}
+          <p className={styles.photoTip}>
+            * 정면 각도에서 전신이 모두 나오면 가장 정확해요.
+          </p>
           {photoValidationError && (
             <p className={styles.photoError} role="alert">
               {photoValidationError.message}
