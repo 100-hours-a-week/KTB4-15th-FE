@@ -390,9 +390,9 @@ export function ProfileSetupForm() {
             ) : (
               <Image
                 alt="전신 사진 촬영 예시"
-                height={88}
+                height={128}
                 src="/images/profile/full-body-example.png"
-                width={68}
+                width={96}
               />
             )}
           </button>
