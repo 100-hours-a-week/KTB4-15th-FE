@@ -5,8 +5,10 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { Button, IconButton } from "@/shared/ui/button";
+import { getApiErrorMessage } from "@/shared/api/error";
 import { PasswordVisibilityIcon } from "@/shared/ui/icon";
 import { InputField } from "@/shared/ui/input-field";
+import { showToast } from "@/shared/ui/toast";
 import { signupFormSchema, type SignupFormValues } from "../schema/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signup } from "../api/auth";
@@ -37,8 +39,16 @@ export function SignupForm() {
   });
 
   const handleSignup = async ({ email, password }: SignupFormValues) => {
-    await signup({ email, password });
-    router.replace("/login");
+    try {
+      await signup({ email, password });
+      showToast.success("회원가입이 완료됐어요.", { id: "signup" });
+      router.replace("/login");
+    } catch (error) {
+      showToast.error(
+        getApiErrorMessage(error, "회원가입에 실패했어요. 다시 시도해 주세요."),
+        { id: "signup" },
+      );
+    }
   };
 
   return (

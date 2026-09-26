@@ -29,10 +29,3 @@
     color: var(--color-text-disabled);
   }
 }
-
-.error {
-  @include type.body-medium;
-
-  margin: var(--space-sm) 0 0;
-  color: var(--color-action-danger-default);
-}

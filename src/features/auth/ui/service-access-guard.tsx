@@ -42,7 +42,7 @@ export function ServiceAccessGuard({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (isUnauthenticated) {
-      router.replace("/login");
+      router.replace("/login?reason=session-expired");
       return;
     }
 

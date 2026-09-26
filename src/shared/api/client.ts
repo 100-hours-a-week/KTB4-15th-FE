@@ -6,7 +6,25 @@ const apiOptions = {
   timeout: 10000,
 };
 
-const refreshClient = ky.create(apiOptions);
+export class OfflineError extends Error {
+  constructor() {
+    super("인터넷 연결을 확인해 주세요.");
+    this.name = "OfflineError";
+  }
+}
+
+function throwIfOffline() {
+  if (typeof navigator !== "undefined" && !navigator.onLine) {
+    throw new OfflineError();
+  }
+}
+
+const refreshClient = ky.create({
+  ...apiOptions,
+  hooks: {
+    beforeRequest: [throwIfOffline],
+  },
+});
 const refreshExcludedPaths = ["/auth/login", "/auth/signup", "/auth/refresh"];
 
 let refreshPromise: Promise<void> | undefined;
@@ -28,6 +46,7 @@ export const apiClient = ky.create({
     limit: 1,
   },
   hooks: {
+    beforeRequest: [throwIfOffline],
     afterResponse: [
       async ({ request, response, retryCount }) => {
         const { pathname } = new URL(request.url);

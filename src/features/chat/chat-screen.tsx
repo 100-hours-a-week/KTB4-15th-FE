@@ -14,6 +14,8 @@ import {
   getChatGenerationStatus,
   getChatRoom,
 } from "./api/chat";
+import { showToast } from "@/shared/ui/toast";
+import { getApiErrorMessage } from "@/shared/api/error";
 import type { ChatMessageResponse, ChatSourceType } from "./schema/chat";
 import styles from "./chat-screen.module.scss";
 import { ChatComposer } from "./ui/composer/chat-composer";
@@ -35,6 +37,15 @@ export function ChatScreen({ chatRoomId, date }: ChatScreenProps) {
     onSuccess: (data) => {
       router.replace(`/chat/${data.chatRoomId}`);
     },
+    onError: (error) => {
+      showToast.error(
+        getApiErrorMessage(
+          error,
+          "메시지를 보내지 못했어요. 다시 시도해 주세요.",
+        ),
+        { id: "send-chat-message" },
+      );
+    },
   });
 
   const sendChatMessageMutation = useMutation({
@@ -49,6 +60,15 @@ export function ChatScreen({ chatRoomId, date }: ChatScreenProps) {
       void queryClient.invalidateQueries({
         queryKey: ["chatRoom", chatRoomId],
       });
+    },
+    onError: (error) => {
+      showToast.error(
+        getApiErrorMessage(
+          error,
+          "메시지를 보내지 못했어요. 다시 시도해 주세요.",
+        ),
+        { id: "send-chat-message" },
+      );
     },
   });
 

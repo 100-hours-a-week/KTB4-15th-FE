@@ -7,6 +7,8 @@ import { useRef, useState, type UIEvent } from "react";
 import { createFittingCandidate } from "@/features/fitting/api/fitting-candidate";
 import type { RecommendedProductResponse } from "../../schema/chat";
 import { Button } from "@/shared/ui/button";
+import { showToast } from "@/shared/ui/toast";
+import { getApiErrorMessage } from "@/shared/api/error";
 //import { Button, IconButton } from "@/shared/ui/button";
 //import { HeartIcon } from "@/shared/ui/icon";
 import styles from "./recommended-product-list.module.scss";
@@ -39,6 +41,17 @@ function RecommendedProductCard({
     mutationFn: () => createFittingCandidate(product.productId),
     onSuccess: () => {
       setIsFittingCandidate(true);
+      showToast.success("피팅 목록에 추가했어요.", {
+        id: `add-fitting-candidate:${product.productId}`,
+      });
+    },
+    onError: (error) => {
+      showToast.error(
+        getApiErrorMessage(error, "피팅 목록에 추가하지 못했어요."),
+        {
+          id: `add-fitting-candidate:${product.productId}`,
+        },
+      );
     },
   });
 

@@ -3,14 +3,18 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { overlay } from "overlay-kit";
+import { HTTPError } from "ky";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { memberMeQueryOptions } from "@/features/member";
+import { OfflineError } from "@/shared/api/client";
+import { getApiErrorMessage } from "@/shared/api/error";
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { useForm } from "react-hook-form";
 import { BottomSheet } from "@/shared/ui/bottom-sheet";
 import { Button, Toggle } from "@/shared/ui/button";
 import { InfoIcon } from "@/shared/ui/icon";
 import { InputField } from "@/shared/ui/input-field";
+import { showToast } from "@/shared/ui/toast";
 import {
   normalizeName,
   sanitizeDecimalInput,
@@ -30,6 +34,60 @@ type ProfileSetupFormValues = {
   height: string;
   weight: string;
 };
+
+const PHOTO_VALIDATION_ERROR_CODES = new Set([
+  "IMAGE_EMPTY",
+  "IMAGE_FORMAT_UNSUPPORTED",
+  "IMAGE_DECODE_FAILED",
+  "IMAGE_RESOLUTION_TOO_SMALL",
+  "PERSON_NOT_FOUND",
+  "MULTIPLE_PERSONS",
+  "PERSON_TOO_SMALL",
+  "FULL_BODY_NOT_VISIBLE",
+  "ARMS_NOT_VISIBLE",
+  "LEGS_NOT_VISIBLE",
+  "NOT_FRONTAL",
+  "IMAGE_SIZE_EXCEEDED",
+  "IMAGE_TOO_LARGE",
+]);
+
+class PhotoValidationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "PhotoValidationError";
+  }
+}
+
+function isApiErrorResponse(
+  value: unknown,
+): value is { code: string; message: string } {
+  if (typeof value !== "object" || value === null) return false;
+
+  const response = value as Record<string, unknown>;
+  return (
+    typeof response.code === "string" && typeof response.message === "string"
+  );
+}
+
+async function rethrowPhotoValidationError(error: unknown): Promise<never> {
+  if (error instanceof OfflineError) throw error;
+
+  if (error instanceof HTTPError) {
+    const responseBody: unknown = await error.response
+      .clone()
+      .json()
+      .catch(() => undefined);
+
+    if (
+      isApiErrorResponse(responseBody) &&
+      PHOTO_VALIDATION_ERROR_CODES.has(responseBody.code)
+    ) {
+      throw new PhotoValidationError(responseBody.message);
+    }
+  }
+
+  throw error;
+}
 
 export function ProfileSetupForm() {
   const router = useRouter();
@@ -56,9 +114,11 @@ export function ProfileSetupForm() {
       name,
       weight,
     }: ProfileSetupFormValues) => {
-      if (!photo) throw new Error("전신 사진이 필요합니다.");
+      if (!photo) throw new PhotoValidationError("전신 사진을 등록해 주세요.");
 
-      const { validationId } = await validateFullBodyImage(photo);
+      const { validationId } = await validateFullBodyImage(photo).catch(
+        rethrowPhotoValidationError,
+      );
 
       return createMemberProfile({
         age: Number(age),
@@ -76,10 +136,26 @@ export function ProfileSetupForm() {
       await queryClient.invalidateQueries({
         queryKey: memberProfileQueryOptions.queryKey,
       });
+      showToast.success("기본 정보가 등록됐어요.", { id: "profile-setup" });
       router.replace("/chat");
       router.refresh();
     },
+    onError: (error) => {
+      if (error instanceof PhotoValidationError) return;
+
+      showToast.error(
+        getApiErrorMessage(
+          error,
+          "기본 정보를 등록하지 못했어요. 다시 시도해 주세요.",
+        ),
+        { id: "profile-setup" },
+      );
+    },
   });
+  const photoValidationError =
+    profileSetupMutation.error instanceof PhotoValidationError
+      ? profileSetupMutation.error
+      : undefined;
 
   const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.value.length > 10) {
@@ -297,6 +373,11 @@ export function ProfileSetupForm() {
           <p className={styles.photoTip}>
             * 정면 각도에서 전신이 모두 나오면 가장 정확해요.
           </p>
+          {photoValidationError && (
+            <p className={styles.photoError} role="alert">
+              {photoValidationError.message}
+            </p>
+          )}
         </div>
       </section>
 
@@ -324,12 +405,6 @@ export function ProfileSetupForm() {
           ? "정보를 등록하고 있어요"
           : "정보 등록하고 시작하기"}
       </Button>
-      {profileSetupMutation.isError && (
-        <p className={styles.submitError} role="alert">
-          정보를 등록하지 못했어요. 사진과 입력 정보를 확인한 후 다시 시도해
-          주세요.
-        </p>
-      )}
     </form>
   );
 }
