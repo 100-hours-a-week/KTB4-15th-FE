@@ -145,6 +145,14 @@ export function ChatScreen({ chatRoomId, date }: ChatScreenProps) {
     await sendChatMessageMutation.mutateAsync({ chatRoomId, content });
   };
 
+  const handleRetry = (content: string) => {
+    if (chatRoomId == null || sendChatMessageMutation.isPending) {
+      return;
+    }
+
+    sendChatMessageMutation.mutate({ chatRoomId, content });
+  };
+
   const isSubmitting =
     createChatRoomMutation.isPending || sendChatMessageMutation.isPending;
 
@@ -163,8 +171,10 @@ export function ChatScreen({ chatRoomId, date }: ChatScreenProps) {
           hasPreviousMessages={chatRoomQuery.hasNextPage}
           isGenerating={isGenerating}
           isLoadingPreviousMessages={chatRoomQuery.isFetchingNextPage}
+          isRetryPending={sendChatMessageMutation.isPending}
           messages={messages}
           onLoadPreviousMessages={handleLoadPreviousMessages}
+          onRetryMessage={handleRetry}
         />
       )}
       <div className={styles.composerDock}>

@@ -10,16 +10,20 @@ type ChatMessageListProps = {
   hasPreviousMessages?: boolean;
   isGenerating?: boolean;
   isLoadingPreviousMessages?: boolean;
+  isRetryPending?: boolean;
   messages: ChatMessageResponse[];
   onLoadPreviousMessages?: () => Promise<unknown>;
+  onRetryMessage?: (content: string) => void;
 };
 
 export function ChatMessageList({
   hasPreviousMessages = false,
   isGenerating = false,
   isLoadingPreviousMessages = false,
+  isRetryPending = false,
   messages,
   onLoadPreviousMessages,
+  onRetryMessage,
 }: ChatMessageListProps) {
   const loadMoreRef = useRef<HTMLDivElement>(null);
   const didInitialScrollRef = useRef(false);
@@ -138,9 +142,18 @@ export function ChatMessageList({
           <span className={styles.spinner} />
         </div>
       )}
-      {messages.map((message) =>
+      {messages.map((message, index) =>
         message.senderType === "USER" ? (
-          <UserChatMessage key={message.messageId} message={message} />
+          <UserChatMessage
+            canRetry={
+              index === messages.length - 1 &&
+              message.generationStatus === "FAILED"
+            }
+            isRetryPending={isRetryPending}
+            key={message.messageId}
+            message={message}
+            onRetryMessage={onRetryMessage}
+          />
         ) : (
           <AIChatMessage key={message.messageId} message={message} />
         ),

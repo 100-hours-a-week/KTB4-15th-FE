@@ -11,6 +11,7 @@ export {
   InfoIcon,
   MoreIcon,
   PlusIcon,
+  RetryIcon,
   SearchIcon,
 } from "./interface-icons";
 export { PasswordVisibilityIcon } from "./password-visibility-icon";

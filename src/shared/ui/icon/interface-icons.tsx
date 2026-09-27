@@ -149,6 +149,20 @@ export function InfoIcon({ className }: IconProps) {
   );
 }
 
+export function RetryIcon({ className }: IconProps) {
+  return (
+    <Icon className={className}>
+      <path
+        d="M4 4v6h6M5.5 15.5a7 7 0 1 0 .3-7.3L4 10"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+      />
+    </Icon>
+  );
+}
+
 export function HeartIcon({
   className,
   filled = false,
