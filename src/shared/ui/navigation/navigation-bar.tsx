@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
 import {
   ChatActiveIcon,
   ChatIcon,
@@ -73,6 +73,11 @@ export function NavigationBar({ className }: NavigationBarProps) {
     .filter(Boolean)
     .join(" ");
 
+  useLayoutEffect(() => {
+    setIsNavigationVisible(true);
+    lastScrollY.current = window.scrollY;
+  }, [pathname, setIsNavigationVisible]);
+
   useEffect(() => {
     lastScrollY.current = window.scrollY;
 
@@ -102,15 +107,12 @@ export function NavigationBar({ className }: NavigationBarProps) {
   return (
     <nav aria-label="주요 메뉴" className={classNames}>
       <div className={styles.items}>
-        {NAVIGATION_ITEMS.map((item) => (
-          <NavigationItem
-            key={item.href}
-            {...item}
-            active={
-              pathname === item.href || pathname.startsWith(`${item.href}/`)
-            }
-          />
-        ))}
+        {NAVIGATION_ITEMS.map((item) => {
+          const active =
+            pathname === item.href || pathname.startsWith(`${item.href}/`);
+
+          return <NavigationItem key={item.href} {...item} active={active} />;
+        })}
       </div>
     </nav>
   );

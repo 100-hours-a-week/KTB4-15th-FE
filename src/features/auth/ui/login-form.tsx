@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState, type KeyboardEvent } from "react";
 import { useForm } from "react-hook-form";
 import { useQueryClient } from "@tanstack/react-query";
+import { clearFittingSelection } from "@/features/fitting/store/fitting-selection-store";
 import { memberMeQueryOptions } from "@/features/member";
 import { getApiErrorMessage } from "@/shared/api/error";
 import { Button, IconButton } from "@/shared/ui/button";
@@ -33,6 +34,7 @@ export function LoginForm() {
   const handleLogin = async ({ email, password }: LoginRequest) => {
     try {
       const { profileCompleted } = await login({ email, password });
+      clearFittingSelection();
       queryClient.setQueryData(memberMeQueryOptions.queryKey, {
         profileCompleted,
       });

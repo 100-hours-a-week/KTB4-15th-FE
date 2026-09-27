@@ -17,6 +17,7 @@ import {
   useFittingCandidatesQuery,
 } from "../api/fitting-candidate-query";
 import { useFittingSelectionStore } from "../store/fitting-selection-store";
+import { useRestoreFittingSelection } from "../store/use-restore-fitting-selection";
 import type { FittingCandidate } from "../schema/fitting-candidate";
 import styles from "./fitting-wardrobe.module.scss";
 
@@ -123,6 +124,7 @@ function EmptyCandidateCard({ itemType }: { itemType: "TOP" | "BOTTOM" }) {
 }
 
 export function FittingWardrobe({ initialFilter }: FittingWardrobeProps) {
+  useRestoreFittingSelection();
   const router = useRouter();
   const [filter, setFilter] = useState<WardrobeFilter>(initialFilter);
   const [isEditing, setIsEditing] = useState(false);

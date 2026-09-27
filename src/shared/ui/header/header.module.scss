@@ -6,7 +6,7 @@
   width: calc(100% + var(--screen-padding) * 2);
   align-items: center;
   margin-inline: calc(var(--screen-padding) * -1);
-  background: transparent;
+  background: var(--color-background-page);
 }
 
 .centered {

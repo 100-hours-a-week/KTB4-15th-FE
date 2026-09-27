@@ -2,9 +2,11 @@
 
 import Image, { type ImageLoaderProps } from "next/image";
 import Link from "next/link";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRef, useState, type UIEvent } from "react";
 import { createFittingCandidate } from "@/features/fitting/api/fitting-candidate";
+import { FITTING_CANDIDATES_QUERY_KEY } from "@/features/fitting/api/fitting-candidate-query";
+import { useFittingSelectionStore } from "@/features/fitting/store/fitting-selection-store";
 import type { RecommendedProductResponse } from "../../schema/chat";
 import { Button } from "@/shared/ui/button";
 import { formatPrice } from "@/shared/utils/price-format";
@@ -31,13 +33,24 @@ function RecommendedProductCard({
   index,
   product,
 }: RecommendedProductCardProps) {
+  const queryClient = useQueryClient();
+  const selectProduct = useFittingSelectionStore(
+    (state) => state.selectProduct,
+  );
   const [isFittingCandidate, setIsFittingCandidate] = useState(
     product.isFittingCandidate,
   );
+  const [fittingCandidateId, setFittingCandidateId] = useState(
+    product.fittingCandidateId,
+  );
   const fittingCandidateMutation = useMutation({
     mutationFn: () => createFittingCandidate(product.productId),
-    onSuccess: () => {
+    onSuccess: ({ fittingCandidateId }) => {
+      setFittingCandidateId(fittingCandidateId);
       setIsFittingCandidate(true);
+      void queryClient.invalidateQueries({
+        queryKey: FITTING_CANDIDATES_QUERY_KEY,
+      });
       showToast.success("피팅 목록에 추가했어요.", {
         id: `add-fitting-candidate:${product.productId}`,
       });
@@ -100,7 +113,23 @@ function RecommendedProductCard({
             상품 보기 <span aria-hidden="true">↗</span>
           </a>
           {isFittingCandidate ? (
-            <Link className={styles.fittingLink} href="/fitting">
+            <Link
+              className={styles.fittingLink}
+              href="/fitting"
+              onClick={() => {
+                if (!fittingCandidateId) return;
+
+                selectProduct({
+                  fittingCandidateId,
+                  productId: product.productId,
+                  productName: product.productName,
+                  productImageUrl: product.productImageUrl,
+                  currentPrice: product.currentPrice,
+                  color: product.color,
+                  itemType: product.itemType,
+                });
+              }}
+            >
               피팅룸에서 입어보기 <span aria-hidden="true">→</span>
             </Link>
           ) : (
