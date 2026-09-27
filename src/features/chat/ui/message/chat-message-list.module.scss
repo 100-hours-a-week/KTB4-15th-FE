@@ -1,7 +1,26 @@
+@use "@/styles/typography" as type;
+
 .list {
   display: flex;
   flex-direction: column;
   gap: 40px;
+}
+
+.dateGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+.dateDivider {
+  @include type.caption;
+
+  align-self: center;
+  margin-bottom: -16px;
+  border-radius: var(--radius-full);
+  padding: 8px 14px;
+  background: var(--color-gray-100);
+  color: var(--color-text-secondary);
 }
 
 .loadMoreTrigger {
