@@ -147,6 +147,7 @@ src/
 - 키보드 사용자를 위해 `focus-visible` 상태를 제공한다.
 - 인터랙션 컴포넌트는 hover, pressed, disabled 상태를 구분한다.
 - 기본 모션 시간은 120ms, 200ms, 300ms 세 단계와 공통 easing을 사용한다.
+- 주요 하단 탭 사이를 이동할 때는 내비게이션 순서를 기준으로 본문에 짧은 좌우 방향 전환을 적용하고, 하단 내비게이션은 고정한다. 같은 탭의 하위 경로 사이에서는 방향 전환을 적용하지 않는다.
 - 로딩 spinner의 회전 시간은 800ms를 사용한다.
 - `prefers-reduced-motion` 설정을 지원한다.
 - z-index는 sticky 5, dropdown 10, overlay 15, modal 20, toast 25 단계로 관리한다.
