@@ -29,6 +29,227 @@
   }
 }
 
+.progressMain {
+  display: flex;
+  min-height: calc(100dvh - var(--header-height) - var(--navigation-height));
+  flex-direction: column;
+  padding-block: 0 calc(var(--navigation-height) + var(--space-xl));
+}
+
+.floatingVisual {
+  position: relative;
+  display: grid;
+  width: 184px;
+  height: 184px;
+  place-items: center;
+  margin: 56px auto 0;
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 50% 40%, rgb(232 242 238 / 72%), transparent 65%),
+    var(--color-background-surface);
+  box-shadow: 0 12px 30px rgb(17 75 54 / 8%);
+
+  &::after {
+    position: absolute;
+    right: 30px;
+    bottom: 19px;
+    left: 30px;
+    height: 12px;
+    border-radius: 50%;
+    background: rgb(17 75 54 / 12%);
+    content: "";
+    filter: blur(8px);
+    animation: floating-shadow 3.2s ease-in-out infinite;
+  }
+}
+
+.floatingImage {
+  position: relative;
+  z-index: 1;
+  width: 176px;
+  height: 176px;
+  object-fit: contain;
+  animation: floating-object 3.2s ease-in-out infinite;
+}
+
+.progressCopy {
+  margin-top: 42px;
+  text-align: center;
+
+  h2 {
+    @include type.heading-medium;
+
+    margin: 0;
+  }
+
+  p {
+    @include type.body-medium;
+
+    margin: 14px 0 0;
+    color: var(--color-text-secondary);
+  }
+}
+
+.progressStatus {
+  margin-top: 36px;
+}
+
+.progressMeta {
+  @include type.caption;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--color-text-secondary);
+
+  > span::before {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    margin-right: 6px;
+    border-radius: var(--radius-full);
+    background: var(--color-green-700);
+    content: "";
+    vertical-align: 1px;
+  }
+
+  strong {
+    color: var(--color-text-brand);
+    font-weight: var(--font-weight-bold);
+  }
+}
+
+.progressTrack {
+  overflow: hidden;
+  height: 7px;
+  margin-top: 8px;
+  border-radius: var(--radius-full);
+  background: var(--color-gray-200);
+
+  > span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--color-green-700);
+    transition: width 500ms var(--easing-standard);
+  }
+}
+
+.tipCard {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-top: 40px;
+  border-radius: var(--radius-sheet);
+  padding: 18px 16px;
+  background: var(--color-background-surface);
+
+  p {
+    @include type.label;
+
+    margin: 0 0 4px;
+    font-weight: var(--font-weight-semibold);
+  }
+
+  small {
+    margin-left: 4px;
+    border-radius: 5px;
+    padding: 2px 5px;
+    background: var(--color-green-100);
+    color: var(--color-text-brand);
+    font-weight: var(--font-weight-medium);
+  }
+
+  div > span {
+    @include type.caption;
+
+    color: var(--color-text-secondary);
+  }
+}
+
+.tipIcon {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: var(--radius-full);
+  background: var(--color-green-200);
+  font-size: 16px;
+}
+
+.backgroundAction {
+  @include type.caption;
+
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  align-self: center;
+  justify-content: center;
+  gap: 4px;
+  margin-top: 22px;
+  border-radius: var(--radius-small);
+  padding-inline: 12px;
+  color: var(--color-text-secondary);
+  transition:
+    color var(--duration-fast) var(--easing-standard),
+    background-color var(--duration-fast) var(--easing-standard);
+
+  &:hover {
+    background: var(--color-background-hover);
+    color: var(--color-text-primary);
+  }
+
+  &:active {
+    background: var(--color-background-pressed);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: 2px;
+  }
+
+  > span {
+    font-size: 18px;
+    line-height: 1;
+  }
+}
+
+@keyframes floating-object {
+  0%,
+  100% {
+    transform: translateY(2px) rotate(-0.8deg);
+  }
+
+  50% {
+    transform: translateY(-8px) rotate(0.8deg);
+  }
+}
+
+@keyframes floating-shadow {
+  0%,
+  100% {
+    opacity: 0.7;
+    transform: scaleX(1);
+  }
+
+  50% {
+    opacity: 0.35;
+    transform: scaleX(0.82);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .floatingImage,
+  .floatingVisual::after {
+    animation: none;
+  }
+
+  .progressTrack > span {
+    transition: none;
+  }
+}
+
 .resultMain {
   display: grid;
   gap: var(--space-xl);
@@ -216,12 +437,9 @@
   padding: var(--space-md);
   background: var(--color-gray-100);
   color: var(--color-text-primary);
+  cursor: default;
   font-weight: var(--font-weight-medium);
   outline: none;
-
-  &:focus-visible {
-    box-shadow: 0 0 0 2px var(--color-green-500);
-  }
 }
 
 .nameCard > p {

@@ -3,13 +3,13 @@
 .card {
   position: relative;
   overflow: hidden;
-  aspect-ratio: 4 / 5;
+  height: clamp(215px, 33dvh, 315px);
   border-radius: var(--radius-large);
-  background: var(--color-gray-200);
+  background: #f1f3f4;
 }
 
 .image {
-  object-fit: cover;
+  object-fit: contain;
   object-position: center;
 }
 
@@ -51,5 +51,11 @@
 @media (width <= 359px) {
   .profileBadge {
     max-width: 205px;
+  }
+}
+
+@media (height <= 800px) {
+  .card {
+    height: 205px;
   }
 }

@@ -16,7 +16,7 @@ import {
   useDeleteFittingCandidatesMutation,
   useFittingCandidatesQuery,
 } from "../api/fitting-candidate-query";
-import { useFittingSelectionStore } from "../model/fitting-selection-store";
+import { useFittingSelectionStore } from "../store/fitting-selection-store";
 import type { FittingCandidate } from "../schema/fitting-candidate";
 import styles from "./fitting-wardrobe.module.scss";
 
@@ -141,6 +141,7 @@ export function FittingWardrobe({ initialFilter }: FittingWardrobeProps) {
   const top = useFittingSelectionStore((state) => state.top);
   const bottom = useFittingSelectionStore((state) => state.bottom);
   const clearProduct = useFittingSelectionStore((state) => state.clearProduct);
+
   const deleteMutation = useDeleteFittingCandidatesMutation();
   const selectedCount = Number(Boolean(top)) + Number(Boolean(bottom));
   const products = data?.pages.flatMap((page) => page.items) ?? [];

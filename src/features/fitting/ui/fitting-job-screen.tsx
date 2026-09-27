@@ -7,7 +7,11 @@ import { useMemberProfileQuery } from "@/features/profile/api/member-profile-que
 import { Header, HeaderIconLink, HeaderTitle } from "@/shared/ui/header";
 import { BackIcon, CloseIcon, RefreshIcon, SearchIcon } from "@/shared/ui/icon";
 import { useFittingJobStatusQuery } from "../api/fitting-job-query";
-import { clearActiveFittingJobId } from "../model/active-fitting-job-storage";
+import { clearActiveFittingJobId } from "../store/active-fitting-job-storage";
+import {
+  clearFittingJobProgress,
+  getFittingJobStartedAt,
+} from "../store/fitting-job-progress-storage";
 import type { FittingJobStatusResponse } from "../schema/fitting-job";
 import styles from "./fitting-job-screen.module.scss";
 
@@ -31,22 +35,122 @@ function ResultHeader() {
 }
 
 function ProgressHeader() {
+  return <Header center={<HeaderTitle>가상 피팅</HeaderTitle>} />;
+}
+
+const MAX_SIMULATED_PROGRESS = 92;
+const RESULT_REVEAL_DELAY = 900;
+
+function getSimulatedProgress(createdAt: number) {
+  const elapsedSeconds = Math.max(0, Date.now() - createdAt) / 1000;
+
+  return Math.min(
+    MAX_SIMULATED_PROGRESS,
+    Math.round(10 + 84 * (1 - Math.exp(-elapsedSeconds / 14))),
+  );
+}
+
+function FittingProgressView({
+  completed,
+  fittingJobId,
+}: {
+  completed: boolean;
+  fittingJobId: number;
+}) {
+  const { data: memberProfile } = useMemberProfileQuery();
+  const [startedAt] = useState(() => getFittingJobStartedAt(fittingJobId));
+  const [progress, setProgress] = useState(() =>
+    getSimulatedProgress(startedAt ?? Date.now()),
+  );
+
+  useEffect(() => {
+    if (completed) {
+      const frame = window.requestAnimationFrame(() => setProgress(100));
+      return () => window.cancelAnimationFrame(frame);
+    }
+
+    const timer = window.setInterval(() => {
+      setProgress(getSimulatedProgress(startedAt ?? Date.now()));
+    }, 500);
+
+    return () => window.clearInterval(timer);
+  }, [completed, startedAt]);
+
   return (
-    <Header
-      center={<HeaderTitle>가상 피팅</HeaderTitle>}
-      left={
-        <HeaderIconLink aria-label="피팅으로 돌아가기" href="/fitting">
-          <BackIcon />
-        </HeaderIconLink>
-      }
-    />
+    <>
+      <ProgressHeader />
+      <main className={styles.progressMain}>
+        <div aria-hidden="true" className={styles.floatingVisual}>
+          <Image
+            alt=""
+            className={styles.floatingImage}
+            height={220}
+            priority
+            src="/images/fitting-loading.png"
+            width={220}
+          />
+        </div>
+
+        <section className={styles.progressCopy}>
+          <h2>
+            {memberProfile?.name
+              ? `${memberProfile.name} 님의 체형에 맞춰`
+              : "체형에 맞춰"}
+            <br />
+            자연스러운 핏을 짓고 있어요
+          </h2>
+          <p>
+            원단의 텍스처와 실루엣을 계산 중이에요.
+            <br />
+            잠시만 기다려주세요.
+          </p>
+        </section>
+
+        <section
+          aria-label="피팅 이미지 생성 진행률"
+          className={styles.progressStatus}
+        >
+          <div className={styles.progressMeta}>
+            <span>피팅 이미지를 완성하고 있어요</span>
+            <strong>{progress}%</strong>
+          </div>
+          <div
+            aria-valuemax={100}
+            aria-valuemin={0}
+            aria-valuenow={progress}
+            className={styles.progressTrack}
+            role="progressbar"
+          >
+            <span style={{ width: `${progress}%` }} />
+          </div>
+        </section>
+
+        <aside className={styles.tipCard}>
+          <span aria-hidden="true" className={styles.tipIcon}>
+            💡
+          </span>
+          <div>
+            <p>
+              피팅 꿀팁 <small>LOOKDDAK Tip</small>
+            </p>
+            <span>
+              가상 피팅된 조합은 
+            </span>
+          </div>
+        </aside>
+
+        <Link className={styles.backgroundAction} href="/chat">
+          다른 코디 둘러보며 기다리기
+          <span aria-hidden="true">›</span>
+        </Link>
+      </main>
+    </>
   );
 }
 
 function FittingResultView({ result }: { result: FittingResult }) {
   const { data: memberProfile } = useMemberProfileQuery();
   const [isImageOpen, setIsImageOpen] = useState(false);
-  const [outfitName, setOutfitName] = useState(result.outfitName);
 
   useEffect(() => {
     if (!isImageOpen) return;
@@ -124,14 +228,14 @@ function FittingResultView({ result }: { result: FittingResult }) {
         <section className={styles.nameCard}>
           <div className={styles.nameHeading}>
             <label htmlFor="fitting-outfit-name">코디명</label>
-            <span>{outfitName.length}/20</span>
+            <span>{result.outfitName.length}/20</span>
           </div>
           <input
             className={styles.outfitName}
             id="fitting-outfit-name"
             maxLength={20}
-            onChange={(event) => setOutfitName(event.target.value)}
-            value={outfitName}
+            readOnly
+            value={result.outfitName}
           />
         </section>
 
@@ -195,21 +299,30 @@ function FittingResultView({ result }: { result: FittingResult }) {
 
 export function FittingJobScreen({ fittingJobId }: FittingJobScreenProps) {
   const { data, isError, isPending } = useFittingJobStatusQuery(fittingJobId);
+  const [isResultReady, setIsResultReady] = useState(false);
 
   useEffect(() => {
-    if (data?.status === "COMPLETED" || data?.status === "FAILED") {
+    if (data?.status === "FAILED") {
       clearActiveFittingJobId(fittingJobId);
+      clearFittingJobProgress(fittingJobId);
     }
+  }, [data?.status, fittingJobId]);
+
+  useEffect(() => {
+    if (data?.status !== "COMPLETED") return;
+
+    clearActiveFittingJobId(fittingJobId);
+    const timer = window.setTimeout(() => {
+      setIsResultReady(true);
+      clearFittingJobProgress(fittingJobId);
+    }, RESULT_REVEAL_DELAY);
+
+    return () => window.clearTimeout(timer);
   }, [data?.status, fittingJobId]);
 
   if (isPending) {
     return (
-      <>
-        <ProgressHeader />
-        <main className={styles.main}>
-          <p>피팅 작업 상태를 확인하고 있어요.</p>
-        </main>
-      </>
+      <FittingProgressView completed={false} fittingJobId={fittingJobId} />
     );
   }
 
@@ -237,18 +350,14 @@ export function FittingJobScreen({ fittingJobId }: FittingJobScreenProps) {
     );
   }
 
-  if (data.status === "COMPLETED" && data.result) {
+  if (data.status === "COMPLETED" && data.result && isResultReady) {
     return <FittingResultView result={data.result} />;
   }
 
   return (
-    <>
-      <ProgressHeader />
-      <main className={styles.main}>
-        <p className={styles.eyebrow}>FITTING #{fittingJobId}</p>
-        <h2>가상 피팅을 준비하고 있어요</h2>
-        <p>결과가 준비될 때까지 잠시만 기다려 주세요.</p>
-      </main>
-    </>
+    <FittingProgressView
+      completed={data.status === "COMPLETED"}
+      fittingJobId={fittingJobId}
+    />
   );
 }

@@ -1,11 +1,17 @@
 "use client";
 
-import Image from "next/image";
+import Image, { type ImageLoaderProps } from "next/image";
 import { useMemberProfileQuery } from "@/features/profile/api/member-profile-query";
 import styles from "./fitting-photo-card.module.scss";
 
+function passthroughImageLoader({ src }: ImageLoaderProps) {
+  return src;
+}
+
 export function FittingPhotoCard() {
   const { data: memberProfile, isPending } = useMemberProfileQuery();
+  const fullBodyImageUrl =
+    memberProfile?.fullBodyImageUrl ?? "/images/profile/full-body-example.png";
 
   const bodyProfileText = isPending
     ? "체형 정보 불러오는 중"
@@ -19,9 +25,10 @@ export function FittingPhotoCard() {
         alt="가상 피팅에 사용할 등록된 전신 사진"
         className={styles.image}
         fill
+        loader={passthroughImageLoader}
         priority
         sizes="(max-width: 480px) calc(100vw - 40px), 440px"
-        src="/images/profile/full-body-example.png"
+        src={fullBodyImageUrl}
       />
       <div className={styles.meta}>
         <span className={styles.profileBadge}>

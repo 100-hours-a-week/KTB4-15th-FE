@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { getActiveFittingJobId } from "../model/active-fitting-job-storage";
+import { getActiveFittingJobId } from "../store/active-fitting-job-storage";
 
 export function FittingEntryGuard() {
   const router = useRouter();

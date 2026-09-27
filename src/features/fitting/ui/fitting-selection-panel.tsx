@@ -8,8 +8,9 @@ import { Button } from "@/shared/ui/button";
 import { AiFittingIcon, ChevronRightIcon, HeartIcon } from "@/shared/ui/icon";
 import { formatPrice } from "@/shared/utils/price-format";
 import { createFittingJob } from "../api/fitting-jobs";
-import { setActiveFittingJobId } from "../model/active-fitting-job-storage";
-import { useFittingSelectionStore } from "../model/fitting-selection-store";
+import { setActiveFittingJobId } from "../store/active-fitting-job-storage";
+import { saveFittingJobStartedAt } from "../store/fitting-job-progress-storage";
+import { useFittingSelectionStore } from "../store/fitting-selection-store";
 import type { FittingCandidate } from "../schema/fitting-candidate";
 import styles from "./fitting-selection-panel.module.scss";
 
@@ -79,12 +80,18 @@ export function FittingSelectionPanel() {
   const router = useRouter();
   const top = useFittingSelectionStore((state) => state.top);
   const bottom = useFittingSelectionStore((state) => state.bottom);
+  const clearSelection = useFittingSelectionStore(
+    (state) => state.clearSelection,
+  );
   const selectedCount = Number(Boolean(top)) + Number(Boolean(bottom));
   const canStart = selectedCount > 0;
+
   const createFittingJobMutation = useMutation({
     mutationFn: createFittingJob,
     onSuccess: ({ fittingJobId }) => {
       setActiveFittingJobId(fittingJobId);
+      saveFittingJobStartedAt(fittingJobId);
+      clearSelection();
       router.push(`/fitting/jobs/${fittingJobId}`);
     },
   });
