@@ -26,7 +26,7 @@ export function FittingPhotoCard() {
         className={styles.image}
         fill
         loader={passthroughImageLoader}
-        priority
+        loading="eager"
         sizes="(max-width: 480px) calc(100vw - 40px), 440px"
         src={fullBodyImageUrl}
       />
