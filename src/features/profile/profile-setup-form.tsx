@@ -3,12 +3,20 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { overlay } from "overlay-kit";
-import { HTTPError } from "ky";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  FullBodyImageGuide,
+  getLocalPhotoErrorMessage,
+} from "@/features/full-body-image";
 import { memberMeQueryOptions } from "@/features/member";
-import { OfflineError } from "@/shared/api/client";
 import { getApiErrorMessage } from "@/shared/api/error";
-import { useEffect, useRef, useState, type KeyboardEvent } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type KeyboardEvent,
+} from "react";
 import { useForm } from "react-hook-form";
 import { BottomSheet } from "@/shared/ui/bottom-sheet";
 import { Button, Toggle } from "@/shared/ui/button";
@@ -24,7 +32,6 @@ import {
   validateWeight,
 } from "@/shared/utils/profile-validation";
 import styles from "./profile-setup-form.module.scss";
-import { ShootingGuide } from "./shooting-guide";
 import { createMemberProfile, validateFullBodyImage } from "./api/profile";
 import { memberProfileQueryOptions } from "./api/member-profile-query";
 
@@ -35,59 +42,9 @@ type ProfileSetupFormValues = {
   weight: string;
 };
 
-const PHOTO_VALIDATION_ERROR_CODES = new Set([
-  "IMAGE_EMPTY",
-  "IMAGE_FORMAT_UNSUPPORTED",
-  "IMAGE_DECODE_FAILED",
-  "IMAGE_RESOLUTION_TOO_SMALL",
-  "PERSON_NOT_FOUND",
-  "MULTIPLE_PERSONS",
-  "PERSON_TOO_SMALL",
-  "FULL_BODY_NOT_VISIBLE",
-  "ARMS_NOT_VISIBLE",
-  "LEGS_NOT_VISIBLE",
-  "NOT_FRONTAL",
-  "IMAGE_SIZE_EXCEEDED",
-  "IMAGE_TOO_LARGE",
-]);
-
-class PhotoValidationError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = "PhotoValidationError";
-  }
-}
-
-function isApiErrorResponse(
-  value: unknown,
-): value is { code: string; message: string } {
-  if (typeof value !== "object" || value === null) return false;
-
-  const response = value as Record<string, unknown>;
-  return (
-    typeof response.code === "string" && typeof response.message === "string"
-  );
-}
-
-async function rethrowPhotoValidationError(error: unknown): Promise<never> {
-  if (error instanceof OfflineError) throw error;
-
-  if (error instanceof HTTPError) {
-    const responseBody: unknown = await error.response
-      .clone()
-      .json()
-      .catch(() => undefined);
-
-    if (
-      isApiErrorResponse(responseBody) &&
-      PHOTO_VALIDATION_ERROR_CODES.has(responseBody.code)
-    ) {
-      throw new PhotoValidationError(responseBody.message);
-    }
-  }
-
-  throw error;
-}
+type ProfileSetupMutationValues = ProfileSetupFormValues & {
+  fullBodyImageValidationId: number;
+};
 
 export function ProfileSetupForm() {
   const router = useRouter();
@@ -95,11 +52,11 @@ export function ProfileSetupForm() {
   const [photo, setPhoto] = useState<File>();
   const [photoUrl, setPhotoUrl] = useState<string>();
   const [photoValidationId, setPhotoValidationId] = useState<number>();
+  const [photoErrorMessage, setPhotoErrorMessage] = useState<string>();
   const [isNotificationEnabled, setIsNotificationEnabled] = useState(true);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const filePickerLockedRef = useRef(false);
-  const photoValidationRequestIdRef = useRef(0);
   const {
     clearErrors,
     formState: { errors, isValid },
@@ -111,28 +68,20 @@ export function ProfileSetupForm() {
   } = useForm<ProfileSetupFormValues>({ mode: "onChange" });
   const nameField = register("name", { validate: validateName });
   const photoValidationMutation = useMutation({
-    mutationFn: ({ image }: { image: File; requestId: number }) =>
-      validateFullBodyImage(image).catch(rethrowPhotoValidationError),
-    onSuccess: ({ fullBodyImageUrl, validationId }, { requestId }) => {
-      if (requestId !== photoValidationRequestIdRef.current) return;
+    mutationFn: validateFullBodyImage,
+    onSuccess: (result) => {
+      if (!result.success) {
+        setPhotoValidationId(undefined);
+        setPhotoErrorMessage(result.message);
+        return;
+      }
 
-      setPhotoValidationId(validationId);
-      setPhotoUrl(fullBodyImageUrl);
+      setPhotoErrorMessage(undefined);
+      setPhotoValidationId(result.data.validationId);
+      setPhotoUrl(result.data.fullBodyImageUrl);
     },
-    onError: (error, { requestId }) => {
-      if (requestId !== photoValidationRequestIdRef.current) return;
-
+    onError: () => {
       setPhotoValidationId(undefined);
-
-      if (error instanceof PhotoValidationError) return;
-
-      showToast.error(
-        getApiErrorMessage(
-          error,
-          "전신 사진을 검증하지 못했어요. 다시 시도해 주세요.",
-        ),
-        { id: "photo-validation" },
-      );
     },
   });
   const profileSetupMutation = useMutation({
@@ -141,15 +90,11 @@ export function ProfileSetupForm() {
       height,
       name,
       weight,
-    }: ProfileSetupFormValues) => {
-      if (!photo) throw new PhotoValidationError("전신 사진을 등록해 주세요.");
-      if (!photoValidationId) {
-        throw new PhotoValidationError("전신 사진 검증을 완료해 주세요.");
-      }
-
+      fullBodyImageValidationId,
+    }: ProfileSetupMutationValues) => {
       return createMemberProfile({
         age: Number(age),
-        fullBodyImageValidationId: photoValidationId,
+        fullBodyImageValidationId,
         height: Number(height),
         name,
         priceAlertEnabled: isNotificationEnabled,
@@ -168,8 +113,6 @@ export function ProfileSetupForm() {
       router.refresh();
     },
     onError: (error) => {
-      if (error instanceof PhotoValidationError) return;
-
       showToast.error(
         getApiErrorMessage(
           error,
@@ -179,11 +122,26 @@ export function ProfileSetupForm() {
       );
     },
   });
-  const photoValidationError =
-    photoValidationMutation.error instanceof PhotoValidationError
-      ? photoValidationMutation.error
-      : undefined;
+  const displayedPhotoErrorMessage =
+    photoErrorMessage ??
+    (photoValidationMutation.error
+      ? getApiErrorMessage(
+          photoValidationMutation.error,
+          "전신 사진을 검증하지 못했어요. 다시 시도해 주세요.",
+        )
+      : undefined);
 
+  const handleProfileSubmit = (values: ProfileSetupFormValues) => {
+    if (!photoValidationId) {
+      setPhotoErrorMessage("전신 사진 검증을 완료해 주세요.");
+      return;
+    }
+
+    profileSetupMutation.mutate({
+      ...values,
+      fullBodyImageValidationId: photoValidationId,
+    });
+  };
   const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.value.length > 10) {
       setValue("name", event.target.value.slice(0, 10), {
@@ -237,6 +195,20 @@ export function ProfileSetupForm() {
     };
   }, [photoUrl]);
 
+  const startPhotoValidation = (file: File) => {
+    setPhotoErrorMessage(undefined);
+    photoValidationMutation.mutate(file);
+  };
+
+  const clearSelectedPhoto = () => {
+    setPhoto(undefined);
+    setPhotoValidationId(undefined);
+    setPhotoUrl((currentUrl) => {
+      if (currentUrl) URL.revokeObjectURL(currentUrl);
+      return undefined;
+    });
+  };
+
   const handlePhotoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -245,18 +217,55 @@ export function ProfileSetupForm() {
       filePickerLockedRef.current = false;
     }, 300);
 
-    setPhoto(file);
-    setPhotoValidationId(undefined);
     profileSetupMutation.reset();
     photoValidationMutation.reset();
+    const localErrorMessage = getLocalPhotoErrorMessage(file);
+
+    if (localErrorMessage) {
+      clearSelectedPhoto();
+      setPhotoErrorMessage(localErrorMessage);
+      event.target.value = "";
+      return;
+    }
+
+    setPhoto(file);
+    setPhotoValidationId(undefined);
     setPhotoUrl((currentUrl) => {
       if (currentUrl) URL.revokeObjectURL(currentUrl);
       return URL.createObjectURL(file);
     });
-    const requestId = photoValidationRequestIdRef.current + 1;
-    photoValidationRequestIdRef.current = requestId;
-    photoValidationMutation.mutate({ image: file, requestId });
+    startPhotoValidation(file);
   };
+
+  const handlePhotoPickerCancel = useCallback(async () => {
+    filePickerLockedRef.current = false;
+    let isCameraPermissionDenied = false;
+
+    try {
+      const permission = await navigator.permissions?.query({
+        name: "camera" as PermissionName,
+      });
+      isCameraPermissionDenied = permission?.state === "denied";
+    } catch {
+      // Some browsers do not expose camera permission state for file inputs.
+    }
+
+    setPhotoErrorMessage(
+      isCameraPermissionDenied
+        ? "카메라 권한이 필요해요. 설정에서 권한을 허용하거나 로컬 사진 등록을 선택해주세요."
+        : "사진 등록이 취소되었습니다.",
+    );
+  }, []);
+
+  useEffect(() => {
+    const input = fileInputRef.current;
+    if (!input) return;
+
+    const handleCancel = () => void handlePhotoPickerCancel();
+    input.addEventListener("cancel", handleCancel);
+
+    return () => input.removeEventListener("cancel", handleCancel);
+  }, [handlePhotoPickerCancel]);
 
   const openPhotoPicker = () => {
     if (filePickerLockedRef.current || photoValidationMutation.isPending) {
@@ -276,10 +285,11 @@ export function ProfileSetupForm() {
       },
       { once: true },
     );
+    input.value = "";
     input.click();
   };
 
-  const openShootingGuide = () => {
+  const openFullBodyImageGuide = () => {
     overlay.open(({ close, isOpen, unmount }) => (
       <BottomSheet
         description="더 자연스러운 가상 피팅을 위해 아래 내용을 확인해주세요."
@@ -291,7 +301,7 @@ export function ProfileSetupForm() {
         open={isOpen}
         title="전신 사진 촬영 가이드"
       >
-        <ShootingGuide
+        <FullBodyImageGuide
           onStartShooting={() => {
             close();
             openPhotoPicker();
@@ -305,7 +315,7 @@ export function ProfileSetupForm() {
     <form
       className={styles.form}
       noValidate
-      onSubmit={handleSubmit((values) => profileSetupMutation.mutate(values))}
+      onSubmit={handleSubmit(handleProfileSubmit)}
     >
       <section className={styles.section}>
         <div className={styles.sectionHeading}>
@@ -397,7 +407,7 @@ export function ProfileSetupForm() {
             )}
           </button>
           <input
-            accept="image/*"
+            accept=".jpg,.jpeg,.png,image/jpeg,image/png"
             className={styles.fileInput}
             onChange={handlePhotoChange}
             ref={fileInputRef}
@@ -407,7 +417,7 @@ export function ProfileSetupForm() {
           <div className={styles.photoDetails}>
             <strong
               className={
-                photoValidationMutation.isError
+                displayedPhotoErrorMessage && !photoValidationId
                   ? styles.photoStatusError
                   : photoValidationId
                     ? styles.photoStatusSuccess
@@ -419,8 +429,8 @@ export function ProfileSetupForm() {
                 ? "사진을 검증하고 있어요"
                 : photoValidationId
                   ? "사진 검증이 완료되었어요"
-                  : photoUrl
-                    ? "사진을 다시 확인해 주세요"
+                  : displayedPhotoErrorMessage
+                    ? "사진 검증 중 오류가 발생했어요"
                     : "전신 사진을 등록해 주세요"}
             </strong>
             <p>실제 체형 비율을 반영해 자연스러운 가상 착용을 구현해요.</p>
@@ -436,21 +446,22 @@ export function ProfileSetupForm() {
               </Button>
               <button
                 className={styles.guideButton}
-                onClick={openShootingGuide}
+                onClick={openFullBodyImageGuide}
                 type="button"
               >
                 <InfoIcon /> 촬영 가이드
               </button>
             </div>
           </div>
-          <p className={styles.photoTip}>
-            * 정면 각도에서 전신이 모두 나오면 가장 정확해요.
+          <p
+            className={
+              displayedPhotoErrorMessage ? styles.photoError : styles.photoTip
+            }
+            role={displayedPhotoErrorMessage ? "alert" : undefined}
+          >
+            {displayedPhotoErrorMessage ??
+              "* 정면 각도에서 전신이 모두 나오면 가장 정확해요."}
           </p>
-          {photoValidationError && (
-            <p className={styles.photoError} role="alert">
-              {photoValidationError.message}
-            </p>
-          )}
         </div>
       </section>
 

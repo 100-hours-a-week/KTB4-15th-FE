@@ -1,25 +1,14 @@
 import { Button } from "@/shared/ui/button";
-import styles from "./shooting-guide.module.scss";
+import { InfoFilledIcon } from "@/shared/ui/icon";
+import styles from "./full-body-image-guide.module.scss";
 
-type ShootingGuideProps = {
+type FullBodyImageGuideProps = {
   onStartShooting: () => void;
 };
 
-function TipIcon() {
-  return (
-    <svg aria-hidden="true" fill="none" viewBox="0 0 20 20">
-      <circle cx="10" cy="10" fill="currentColor" r="8" />
-      <path
-        d="M10 9v5M10 6.5h.01"
-        stroke="white"
-        strokeLinecap="round"
-        strokeWidth="1.5"
-      />
-    </svg>
-  );
-}
-
-export function ShootingGuide({ onStartShooting }: ShootingGuideProps) {
+export function FullBodyImageGuide({
+  onStartShooting,
+}: FullBodyImageGuideProps) {
   return (
     <div className={styles.guide}>
       <ol className={styles.steps}>
@@ -56,7 +45,7 @@ export function ShootingGuide({ onStartShooting }: ShootingGuideProps) {
         </li>
       </ol>
       <div className={styles.tip}>
-        <TipIcon />
+        <InfoFilledIcon />
         <p>
           <strong>TIP</strong> 스마트폰을 허리 높이에서 수평으로 들고 찍으면
           왜곡이 적어요.
