@@ -76,8 +76,11 @@
 .image {
   width: 100%;
   height: auto;
-  animation: image-enter var(--duration-slow) var(--easing-standard);
   object-fit: contain;
+}
+
+.imageEnter {
+  animation: image-enter var(--duration-slow) var(--easing-standard);
 }
 
 .copy {
@@ -180,7 +183,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .image {
+  .imageEnter {
     animation: none;
   }
 }
