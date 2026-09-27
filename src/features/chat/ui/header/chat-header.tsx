@@ -1,13 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import {
-  ConversationListButton,
-  Header,
-  NotificationLink,
-} from "@/shared/ui/header";
-import styles from "./chat-header.module.scss";
+import { ChatRoomListButton, Header, HeaderTitle } from "@/shared/ui/header";
 import { ChatSidebar } from "../sidebar/chat-sidebar";
+import styles from "./chat-header.module.scss";
 
 export function ChatHeader() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -15,9 +11,10 @@ export function ChatHeader() {
   return (
     <>
       <Header
-        center={<h1 className={styles.title}>AI 패션 스타일리스트</h1>}
-        left={<ConversationListButton onClick={() => setSidebarOpen(true)} />}
-        right={<NotificationLink />}
+        className={styles.header}
+        center={<HeaderTitle>AI 패션 스타일리스트</HeaderTitle>}
+        left={<ChatRoomListButton onClick={() => setSidebarOpen(true)} />}
+        // right={<NotificationLink />}
       />
       <ChatSidebar onOpenChange={setSidebarOpen} open={sidebarOpen} />
     </>

@@ -3,9 +3,13 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { useQueryClient } from "@tanstack/react-query";
+import { memberMeQueryOptions } from "@/features/member";
+import { getApiErrorMessage } from "@/shared/api/error";
 import { Button, IconButton } from "@/shared/ui/button";
 import { PasswordVisibilityIcon } from "@/shared/ui/icon";
 import { InputField } from "@/shared/ui/input-field";
+import { showToast } from "@/shared/ui/toast";
 import styles from "./login-form.module.scss";
 import { loginSchema, type LoginRequest } from "../schema/auth";
 import { login } from "../api/auth";
@@ -14,6 +18,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 export function LoginForm() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const {
     formState: { errors, isValid, touchedFields, isSubmitting },
@@ -26,8 +31,20 @@ export function LoginForm() {
   });
 
   const handleLogin = async ({ email, password }: LoginRequest) => {
-    const { profileCompleted } = await login({ email, password });
-    router.replace(profileCompleted ? "/chat" : "/profile/setup");
+    try {
+      const { profileCompleted } = await login({ email, password });
+      queryClient.setQueryData(memberMeQueryOptions.queryKey, {
+        profileCompleted,
+      });
+      router.replace(profileCompleted ? "/chat" : "/profile/setup");
+    } catch (error) {
+      showToast.error(
+        getApiErrorMessage(error, "이메일 또는 비밀번호를 확인해 주세요."),
+        {
+          id: "login",
+        },
+      );
+    }
   };
 
   return (

@@ -1,0 +1,20 @@
+@use "@/styles/typography" as type;
+
+.status {
+  display: flex;
+  min-height: 100dvh;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: var(--space-md);
+  padding: var(--space-xl);
+  background: var(--color-background-page);
+  text-align: center;
+
+  p {
+    @include type.body-medium;
+
+    margin: 0;
+    color: var(--color-text-secondary);
+  }
+}

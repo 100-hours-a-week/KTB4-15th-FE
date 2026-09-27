@@ -1,13 +1,22 @@
+import { notFound } from "next/navigation";
 import { ChatHeader, ChatScreen } from "@/features/chat";
-import { CHAT_MESSAGE_FIXTURE } from "@/features/chat/fixtures/chat.fixture";
 import styles from "../page.module.scss";
 
-export default function ChatRoomPage() {
+export default async function ChatRoomPage({
+  params,
+}: PageProps<"/chat/[chatId]">) {
+  const { chatId } = await params;
+  const chatRoomId = Number(chatId);
+
+  if (!Number.isInteger(chatRoomId) || chatRoomId <= 0) {
+    notFound();
+  }
+
   return (
     <>
       <ChatHeader />
       <main className={styles.main}>
-        <ChatScreen initialMessages={CHAT_MESSAGE_FIXTURE} />
+        <ChatScreen chatRoomId={chatRoomId} initialMessages={[]} />
       </main>
     </>
   );

@@ -2,7 +2,9 @@
   position: fixed;
   z-index: var(--z-sticky);
   right: 50%;
-  bottom: calc(var(--navigation-height) + env(safe-area-inset-bottom));
+  bottom: calc(
+    var(--navigation-height) + env(safe-area-inset-bottom) + var(--space-sm)
+  );
   width: min(100%, var(--app-max-width));
   padding: var(--space-sm) var(--screen-padding);
   background: linear-gradient(
@@ -11,4 +13,9 @@
     var(--color-background-page) var(--space-md)
   );
   transform: translateX(50%);
+  transition: bottom var(--duration-normal) var(--easing-standard);
+}
+
+.navigationHidden {
+  bottom: env(safe-area-inset-bottom);
 }

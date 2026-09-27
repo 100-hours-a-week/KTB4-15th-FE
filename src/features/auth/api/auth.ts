@@ -22,3 +22,7 @@ export async function login(payload: LoginRequest) {
 
   return parseResponse(response, loginResponse);
 }
+
+export async function logout() {
+  await apiClient.post("auth/logout");
+}

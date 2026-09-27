@@ -1,8 +1,14 @@
-import { LoginForm } from "@/features/auth";
+import { LoginForm, SessionExpiredToast } from "@/features/auth";
 import { IntroHero } from "@/shared/ui/intro-hero";
 import styles from "./page.module.scss";
 
-export default function LoginPage() {
+type LoginPageProps = {
+  searchParams: Promise<{ reason?: string }>;
+};
+
+export default async function LoginPage({ searchParams }: LoginPageProps) {
+  const { reason } = await searchParams;
+
   return (
     <main className={styles.main}>
       <IntroHero
@@ -11,6 +17,7 @@ export default function LoginPage() {
         }
         title={"패션이 쉬워지는\nAI 도우미 룩딱"}
       />
+      <SessionExpiredToast enabled={reason === "session-expired"} />
       <LoginForm />
     </main>
   );

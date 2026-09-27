@@ -1,11 +1,12 @@
 "use client";
 
 import Image, { type StaticImageData } from "next/image";
+import { useMemberProfileQuery } from "@/features/profile";
 import { ChevronRightIcon } from "@/shared/ui/icon";
-import type { ChatSourceType } from "../../api/chat-api.types";
+import type { ChatSourceType } from "../../schema/chat";
 import aiImage from "../../icon/ai.png";
 import knitImage from "../../icon/knit.png";
-import likeImage from "../../icon/like.png";
+//import likeImage from "../../icon/like.png";
 import shirtImage from "../../icon/shirt.png";
 import suitImage from "../../icon/suit.png";
 import styles from "./chat-intro.module.scss";
@@ -19,13 +20,14 @@ type SuggestedQuestion = {
 };
 
 const SUGGESTED_QUESTIONS: SuggestedQuestion[] = [
-  {
-    title: "찜 목록 기반 코디 추천",
-    description: "내 취향 아이템으로 완성하는 맞춤 스타일",
-    image: likeImage,
-    message: "내가 찜한 상품을 기반으로 코디를 추천해줘",
-    sourceType: "WISHLIST",
-  },
+  // V2 /wishlists/count 10개 이상일 때
+  // {
+  //   title: "찜 목록 기반 코디 추천",
+  //   description: "내 취향 아이템으로 완성하는 맞춤 스타일",
+  //   image: likeImage,
+  //   message: "내가 찜한 상품을 기반으로 코디를 추천해줘",
+  //   sourceType: "WISHLIST",
+  // },
   {
     title: "주말 데이트 5만원대 셔츠",
     description: "깔끔하고 편안한 가성비 옥스포드 셔츠",
@@ -58,6 +60,9 @@ type ChatIntroProps = {
 };
 
 export function ChatIntro({ date, onSelectQuestion }: ChatIntroProps) {
+  const memberProfileQuery = useMemberProfileQuery();
+  const memberName = memberProfileQuery.data?.name;
+
   return (
     <div className={styles.landing}>
       <time className={styles.date}>{date}</time>
@@ -75,7 +80,10 @@ export function ChatIntro({ date, onSelectQuestion }: ChatIntroProps) {
             <span>스타일리스트</span>
           </div>
           <div className={styles.message}>
-            <p>안녕하세요 민우님! 오늘 어떤 룩을 찾고 계신가요?</p>
+            <p>
+              안녕하세요{memberName ? ` ${memberName}님` : ""}! 오늘 어떤 룩을
+              찾고 계신가요?
+            </p>
             <p>
               아래 추천 질문을 누르거나 원하는 무드·예산을 자유롭게 물어보세요
               ✨

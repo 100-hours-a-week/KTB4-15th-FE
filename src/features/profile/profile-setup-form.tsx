@@ -1,13 +1,20 @@
 "use client";
 
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { overlay } from "overlay-kit";
+import { HTTPError } from "ky";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { memberMeQueryOptions } from "@/features/member";
+import { OfflineError } from "@/shared/api/client";
+import { getApiErrorMessage } from "@/shared/api/error";
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { useForm } from "react-hook-form";
 import { BottomSheet } from "@/shared/ui/bottom-sheet";
 import { Button, Toggle } from "@/shared/ui/button";
 import { InfoIcon } from "@/shared/ui/icon";
 import { InputField } from "@/shared/ui/input-field";
+import { showToast } from "@/shared/ui/toast";
 import {
   normalizeName,
   sanitizeDecimalInput,
@@ -18,6 +25,8 @@ import {
 } from "@/shared/utils/profile-validation";
 import styles from "./profile-setup-form.module.scss";
 import { ShootingGuide } from "./shooting-guide";
+import { createMemberProfile, validateFullBodyImage } from "./api/profile";
+import { memberProfileQueryOptions } from "./api/member-profile-query";
 
 type ProfileSetupFormValues = {
   name: string;
@@ -26,10 +35,71 @@ type ProfileSetupFormValues = {
   weight: string;
 };
 
+const PHOTO_VALIDATION_ERROR_CODES = new Set([
+  "IMAGE_EMPTY",
+  "IMAGE_FORMAT_UNSUPPORTED",
+  "IMAGE_DECODE_FAILED",
+  "IMAGE_RESOLUTION_TOO_SMALL",
+  "PERSON_NOT_FOUND",
+  "MULTIPLE_PERSONS",
+  "PERSON_TOO_SMALL",
+  "FULL_BODY_NOT_VISIBLE",
+  "ARMS_NOT_VISIBLE",
+  "LEGS_NOT_VISIBLE",
+  "NOT_FRONTAL",
+  "IMAGE_SIZE_EXCEEDED",
+  "IMAGE_TOO_LARGE",
+]);
+
+class PhotoValidationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "PhotoValidationError";
+  }
+}
+
+function isApiErrorResponse(
+  value: unknown,
+): value is { code: string; message: string } {
+  if (typeof value !== "object" || value === null) return false;
+
+  const response = value as Record<string, unknown>;
+  return (
+    typeof response.code === "string" && typeof response.message === "string"
+  );
+}
+
+async function rethrowPhotoValidationError(error: unknown): Promise<never> {
+  if (error instanceof OfflineError) throw error;
+
+  if (error instanceof HTTPError) {
+    const responseBody: unknown = await error.response
+      .clone()
+      .json()
+      .catch(() => undefined);
+
+    if (
+      isApiErrorResponse(responseBody) &&
+      PHOTO_VALIDATION_ERROR_CODES.has(responseBody.code)
+    ) {
+      throw new PhotoValidationError(responseBody.message);
+    }
+  }
+
+  throw error;
+}
+
 export function ProfileSetupForm() {
-  const [isNotificationEnabled, setIsNotificationEnabled] = useState(true);
+  const router = useRouter();
+  const queryClient = useQueryClient();
+  const [photo, setPhoto] = useState<File>();
   const [photoUrl, setPhotoUrl] = useState<string>();
+  const [photoValidationId, setPhotoValidationId] = useState<number>();
+  const [isNotificationEnabled, setIsNotificationEnabled] = useState(true);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const filePickerLockedRef = useRef(false);
+  const photoValidationRequestIdRef = useRef(0);
   const {
     clearErrors,
     formState: { errors, isValid },
@@ -40,6 +110,79 @@ export function ProfileSetupForm() {
     setValue,
   } = useForm<ProfileSetupFormValues>({ mode: "onChange" });
   const nameField = register("name", { validate: validateName });
+  const photoValidationMutation = useMutation({
+    mutationFn: ({ image }: { image: File; requestId: number }) =>
+      validateFullBodyImage(image).catch(rethrowPhotoValidationError),
+    onSuccess: ({ fullBodyImageUrl, validationId }, { requestId }) => {
+      if (requestId !== photoValidationRequestIdRef.current) return;
+
+      setPhotoValidationId(validationId);
+      setPhotoUrl(fullBodyImageUrl);
+    },
+    onError: (error, { requestId }) => {
+      if (requestId !== photoValidationRequestIdRef.current) return;
+
+      setPhotoValidationId(undefined);
+
+      if (error instanceof PhotoValidationError) return;
+
+      showToast.error(
+        getApiErrorMessage(
+          error,
+          "전신 사진을 검증하지 못했어요. 다시 시도해 주세요.",
+        ),
+        { id: "photo-validation" },
+      );
+    },
+  });
+  const profileSetupMutation = useMutation({
+    mutationFn: async ({
+      age,
+      height,
+      name,
+      weight,
+    }: ProfileSetupFormValues) => {
+      if (!photo) throw new PhotoValidationError("전신 사진을 등록해 주세요.");
+      if (!photoValidationId) {
+        throw new PhotoValidationError("전신 사진 검증을 완료해 주세요.");
+      }
+
+      return createMemberProfile({
+        age: Number(age),
+        fullBodyImageValidationId: photoValidationId,
+        height: Number(height),
+        name,
+        priceAlertEnabled: isNotificationEnabled,
+        weight: Number(weight),
+      });
+    },
+    onSuccess: async () => {
+      queryClient.setQueryData(memberMeQueryOptions.queryKey, {
+        profileCompleted: true,
+      });
+      await queryClient.invalidateQueries({
+        queryKey: memberProfileQueryOptions.queryKey,
+      });
+      showToast.success("기본 정보가 등록됐어요.", { id: "profile-setup" });
+      router.replace("/chat");
+      router.refresh();
+    },
+    onError: (error) => {
+      if (error instanceof PhotoValidationError) return;
+
+      showToast.error(
+        getApiErrorMessage(
+          error,
+          "기본 정보를 등록하지 못했어요. 다시 시도해 주세요.",
+        ),
+        { id: "profile-setup" },
+      );
+    },
+  });
+  const photoValidationError =
+    photoValidationMutation.error instanceof PhotoValidationError
+      ? photoValidationMutation.error
+      : undefined;
 
   const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.value.length > 10) {
@@ -98,10 +241,42 @@ export function ProfileSetupForm() {
     const file = event.target.files?.[0];
     if (!file) return;
 
+    window.setTimeout(() => {
+      filePickerLockedRef.current = false;
+    }, 300);
+
+    setPhoto(file);
+    setPhotoValidationId(undefined);
+    profileSetupMutation.reset();
+    photoValidationMutation.reset();
     setPhotoUrl((currentUrl) => {
       if (currentUrl) URL.revokeObjectURL(currentUrl);
       return URL.createObjectURL(file);
     });
+    const requestId = photoValidationRequestIdRef.current + 1;
+    photoValidationRequestIdRef.current = requestId;
+    photoValidationMutation.mutate({ image: file, requestId });
+  };
+
+  const openPhotoPicker = () => {
+    if (filePickerLockedRef.current || photoValidationMutation.isPending) {
+      return;
+    }
+
+    const input = fileInputRef.current;
+    if (!input) return;
+
+    filePickerLockedRef.current = true;
+    window.addEventListener(
+      "focus",
+      () => {
+        window.setTimeout(() => {
+          filePickerLockedRef.current = false;
+        }, 300);
+      },
+      { once: true },
+    );
+    input.click();
   };
 
   const openShootingGuide = () => {
@@ -119,7 +294,7 @@ export function ProfileSetupForm() {
         <ShootingGuide
           onStartShooting={() => {
             close();
-            fileInputRef.current?.click();
+            openPhotoPicker();
           }}
         />
       </BottomSheet>
@@ -130,7 +305,7 @@ export function ProfileSetupForm() {
     <form
       className={styles.form}
       noValidate
-      onSubmit={handleSubmit(() => undefined)}
+      onSubmit={handleSubmit((values) => profileSetupMutation.mutate(values))}
     >
       <section className={styles.section}>
         <div className={styles.sectionHeading}>
@@ -204,7 +379,8 @@ export function ProfileSetupForm() {
           <button
             aria-label="전신 사진 선택"
             className={styles.photoPreview}
-            onClick={() => fileInputRef.current?.click()}
+            disabled={photoValidationMutation.isPending}
+            onClick={openPhotoPicker}
             type="button"
           >
             {photoUrl ? (
@@ -214,9 +390,9 @@ export function ProfileSetupForm() {
             ) : (
               <Image
                 alt="전신 사진 촬영 예시"
-                height={88}
+                height={128}
                 src="/images/profile/full-body-example.png"
-                width={68}
+                width={96}
               />
             )}
           </button>
@@ -229,14 +405,29 @@ export function ProfileSetupForm() {
             type="file"
           />
           <div className={styles.photoDetails}>
-            <strong>
+            <strong
+              className={
+                photoValidationMutation.isError
+                  ? styles.photoStatusError
+                  : photoValidationId
+                    ? styles.photoStatusSuccess
+                    : undefined
+              }
+            >
               <i aria-hidden="true" />{" "}
-              {photoUrl ? "사진이 등록되었어요" : "전신 사진을 등록해 주세요"}
+              {photoValidationMutation.isPending
+                ? "사진을 검증하고 있어요"
+                : photoValidationId
+                  ? "사진 검증이 완료되었어요"
+                  : photoUrl
+                    ? "사진을 다시 확인해 주세요"
+                    : "전신 사진을 등록해 주세요"}
             </strong>
             <p>실제 체형 비율을 반영해 자연스러운 가상 착용을 구현해요.</p>
             <div className={styles.photoActions}>
               <Button
-                onClick={() => fileInputRef.current?.click()}
+                isLoading={photoValidationMutation.isPending}
+                onClick={openPhotoPicker}
                 size="small"
                 type="button"
                 variant="secondary"
@@ -255,6 +446,11 @@ export function ProfileSetupForm() {
           <p className={styles.photoTip}>
             * 정면 각도에서 전신이 모두 나오면 가장 정확해요.
           </p>
+          {photoValidationError && (
+            <p className={styles.photoError} role="alert">
+              {photoValidationError.message}
+            </p>
+          )}
         </div>
       </section>
 
@@ -272,12 +468,20 @@ export function ProfileSetupForm() {
 
       <Button
         className={styles.submitButton}
-        disabled={!isValid || !photoUrl}
+        disabled={
+          !isValid ||
+          !photo ||
+          !photoValidationId ||
+          photoValidationMutation.isPending
+        }
         fullWidth
+        isLoading={profileSetupMutation.isPending}
         size="large"
         type="submit"
       >
-        정보 등록하고 시작하기
+        {profileSetupMutation.isPending
+          ? "정보를 등록하고 있어요"
+          : "정보 등록하고 시작하기"}
       </Button>
     </form>
   );

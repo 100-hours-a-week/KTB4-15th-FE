@@ -1,11 +1,6 @@
-@use "@/styles/typography" as type;
-
-.title {
-  @include type.heading-small;
-
-  overflow: hidden;
-  margin: 0;
-  color: var(--color-text-primary);
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.header {
+  position: sticky;
+  z-index: var(--z-sticky);
+  top: 0;
+  background: var(--color-background-page);
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import {
   ChatActiveIcon,
   ChatIcon,
@@ -16,6 +16,7 @@ import {
 } from "./navigation-icons";
 import styles from "./navigation-bar.module.scss";
 import { NavigationItem } from "./navigation-item";
+import { useNavigationVisibility } from "./navigation-visibility";
 
 const SCROLL_THRESHOLD = 8;
 
@@ -25,6 +26,7 @@ const NAVIGATION_ITEMS = [
     href: "/wishlists",
     icon: WishlistIcon,
     activeIcon: WishlistActiveIcon,
+    available: false,
   },
   {
     label: "피팅",
@@ -44,6 +46,7 @@ const NAVIGATION_ITEMS = [
     href: "/ranking",
     icon: RankingIcon,
     activeIcon: RankingActiveIcon,
+    available: false,
   },
   {
     label: "마이",
@@ -59,9 +62,14 @@ type NavigationBarProps = {
 
 export function NavigationBar({ className }: NavigationBarProps) {
   const pathname = usePathname();
-  const [visible, setVisible] = useState(true);
+  const { isNavigationVisible, setIsNavigationVisible } =
+    useNavigationVisibility();
   const lastScrollY = useRef(0);
-  const classNames = [styles.bar, !visible && styles.hidden, className]
+  const classNames = [
+    styles.bar,
+    !isNavigationVisible && styles.hidden,
+    className,
+  ]
     .filter(Boolean)
     .join(" ");
 
@@ -73,7 +81,7 @@ export function NavigationBar({ className }: NavigationBarProps) {
       const scrollDelta = currentScrollY - lastScrollY.current;
 
       if (currentScrollY <= 0) {
-        setVisible(true);
+        setIsNavigationVisible(true);
         lastScrollY.current = 0;
         return;
       }
@@ -82,14 +90,14 @@ export function NavigationBar({ className }: NavigationBarProps) {
         return;
       }
 
-      setVisible(scrollDelta < 0);
+      setIsNavigationVisible(scrollDelta < 0);
       lastScrollY.current = currentScrollY;
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
 
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [setIsNavigationVisible]);
 
   return (
     <nav aria-label="주요 메뉴" className={classNames}>

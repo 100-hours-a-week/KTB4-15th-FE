@@ -1,6 +1,6 @@
 # FE 프로젝트 결정 사항
 
-마지막 업데이트: 2026-09-21
+마지막 업데이트: 2026-09-26
 
 ## 개발 환경
 
@@ -23,7 +23,8 @@
 - App Router의 최상위 라우트 그룹은 `(public)`과 `(service)`로 구분한다.
 - `/`는 `/login`으로 이동하고, 로그인 완료 후 진입 화면은 `/chat`으로 한다.
 - 회원가입 직후 기본 정보 입력 화면은 `/profile/setup`을 사용한다.
-- 인증이 필요한 화면은 `(service)`에 배치한다. 주요 탭 화면은 하단 내비게이션을 제공하는 `(main)`에, 기본 정보 입력처럼 독립된 흐름은 `(standalone)`에 배치한다.
+- 인증이 필요한 화면은 `(service)`에 배치한다. 주요 탭 화면은 하단 내비게이션을 제공하는 `(main)`에, 주요 화면에서 진입하고 하단 내비게이션이 없는 상세·작업 화면은 `(subpage)`에, 기본 정보 입력처럼 독립된 흐름은 `(standalone)`에 배치한다.
+- 서비스 화면은 기본적으로 회색 `page` 표면을 사용하며, 흰색 `surface`가 필요한 독립 화면만 명시적으로 적용한다.
 - 같은 헤더가 여러 하위 경로에서 유지되면 가장 가까운 공통 `layout.tsx`에 배치하고, 한 화면에만 적용되면 `page.tsx`에서 선언한다.
 
 ### 폴더 구조
@@ -47,6 +48,11 @@ src/
 └── styles/         # 전역 Style, Design Token과 Mixin
 ```
 
+### 클라이언트 상태
+
+- 여러 화면 사이에서 유지되어야 하는 피팅 상품 선택처럼 서버에 저장되기 전의 임시 클라이언트 상태는 Zustand로 관리한다.
+- API에서 가져온 서버 상태는 Zustand에 복제하지 않고 TanStack Query로 관리한다.
+
 ## API 통신
 
 ### 공통 응답
@@ -57,6 +63,8 @@ src/
 ### 브라우저 요청
 
 - 브라우저 API Client는 Ky를 사용하고 기준 URL은 `NEXT_PUBLIC_API_BASE_URL`로 설정한다.
+- 브라우저의 서버 상태와 mutation은 TanStack Query로 관리한다.
+- Mutation은 오프라인에서 대기 후 재실행하지 않고 즉시 실패하도록 `networkMode: 'always'`를 사용한다. 명시적인 오프라인 상태는 API Client가 `OfflineError`로 변환한다.
 - HttpOnly Cookie 기반 인증을 위해 `credentials: 'include'`를 적용한다.
 - timeout은 10초, retry 한도는 2회로 설정한다.
 - `NEXT_PUBLIC_` 접두사가 붙은 환경 변수는 브라우저에 공개되므로 비밀 값을 저장하지 않는다.
@@ -146,25 +154,35 @@ src/
 - BottomSheet, Modal, AlertDialog의 open/close lifecycle은 OverlayKit으로 관리하고 각 UI 컴포넌트의 접근성과 Portal은 Radix가 담당한다.
 - Dropdown은 Radix DropdownMenu를 기반으로 구현하며 open/close, 키보드 탐색, focus와 위치 계산은 Radix가 담당한다. Dropdown 내부에서는 API 요청이나 도메인 상태를 처리하지 않고 선택 콜백만 상위에 전달한다.
 - Toast는 노출 시간과 큐 정책이 별도로 필요하므로 OverlayKit 관리 범위에 포함하지 않는다.
+- Toast의 lifecycle, stacking, dismiss, id 갱신은 Sonner가 담당한다. Sonner의 기본 UI는 사용하지 않고 프로젝트의 `ToastContent`로 렌더링한다.
+- 화면에서는 Sonner를 직접 호출하지 않고 `showToast` 공통 API를 사용한다.
+- Toast는 success와 error 타입 및 닫기 버튼을 제공하며 기본 노출 시간은 각각 3초와 4초, 최대 동시 노출 개수는 3개로 한다.
+- 같은 작업에서 반복되는 Toast는 안정적인 id로 기존 Toast를 갱신한다.
+- 일시적인 작업 결과는 Toast로 안내하고, 입력 오류는 해당 필드에, 화면 전체 조회 오류는 Error State로 표시한다. 서버의 raw error message는 사용자에게 직접 노출하지 않는다.
 - BottomSheet는 콘텐츠 높이에 맞추는 `content`와 화면 높이의 60%를 사용하는 `large` 크기를 제공한다.
 - BottomSheet는 배경 클릭, 닫기 버튼, Escape 키로 닫을 수 있으며 drag-to-close와 snap point는 현재 지원하지 않는다.
 
 ## 인증
 
 - 인증은 BE와 HttpOnly Cookie 방식으로 협의한다.
+- `(service)` 라우트는 로그인한 사용자만 접근할 수 있다.
+- 기본 정보가 없는 사용자가 일반 서비스 화면에 접근하면 `/profile/setup`으로 이동한다.
+- 기본 정보가 등록된 사용자가 `/profile/setup`에 접근하면 `/chat`으로 이동한다.
+- 서비스 접근 확인은 `GET /members/me`의 `profileCompleted`와 브라우저 API Client의 access token 갱신 흐름을 사용한다.
 
 ## 빌드 및 배포
 
 - Docker 배포를 위해 Next.js 빌드 결과를 `standalone` 형식으로 생성한다.
+- 컨테이너 liveness 확인은 외부 의존성을 조회하지 않는 `GET /health`를 사용하며, 정상 응답은 HTTP 200과 `{ "status": "UP" }`이다.
+- 현재 Route Handler 단위 테스트는 별도 테스트 프레임워크 없이 Node.js 내장 테스트 러너를 사용한다.
 
 ## 보류 항목
 
-- 테스트 도구와 테스트 범위
+- UI 컴포넌트와 브라우저 동작을 위한 테스트 도구 및 테스트 범위
 - Husky 및 pre-commit hook 도입
 - 타이포그래피 토큰의 실제 화면 적용 후 세부 조정
 - 인증 쿠키의 이름, 만료, 갱신, CSRF 정책
 - 데스크톱 외부 영역 디자인
 - Input과 Textarea 공통 컴포넌트의 세부 규칙
-- 피드백 메시지 및 Toast 표시 방식
 
 보류 항목은 기능 개발에 필요해지는 시점에 검토하며, 결정 전에는 임의로 확정하지 않는다.

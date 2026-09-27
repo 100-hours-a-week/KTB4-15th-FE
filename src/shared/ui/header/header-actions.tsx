@@ -4,20 +4,18 @@ import { useRouter } from "next/navigation";
 import type { MouseEventHandler } from "react";
 import { BackIcon } from "@/shared/ui/icon";
 import styles from "./header-action.module.scss";
-import { ConversationListIcon, NotificationIcon } from "./header-icons";
+import { ChatRoomListIcon, NotificationIcon } from "./header-icons";
 import { HeaderIconButton } from "./header-icon-button";
 import { HeaderIconLink } from "./header-icon-link";
 
-type ConversationListButtonProps = {
+type ChatRoomListButtonProps = {
   onClick: MouseEventHandler<HTMLButtonElement>;
 };
 
-export function ConversationListButton({
-  onClick,
-}: ConversationListButtonProps) {
+export function ChatRoomListButton({ onClick }: ChatRoomListButtonProps) {
   return (
     <HeaderIconButton aria-label="대화 목록 열기" onClick={onClick}>
-      <ConversationListIcon />
+      <ChatRoomListIcon />
     </HeaderIconButton>
   );
 }

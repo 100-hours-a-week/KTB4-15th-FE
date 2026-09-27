@@ -124,24 +124,43 @@
 
 .actions {
   display: grid;
-  grid-template-columns: 64px minmax(0, 1fr);
+  grid-template-columns: auto minmax(0, 1fr);
   gap: var(--space-sm);
   margin-top: var(--space-lg);
 }
 
-.addButton,
-.fittingButton {
+.productLink,
+.fittingButton,
+.fittingLink {
   padding: 0 var(--space-md);
 }
 
-.addButton {
-  background: var(--color-background-subtle);
-  color: var(--color-text-primary);
+.productLink,
+.fittingLink {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-medium);
+  text-decoration: none;
 }
 
-.fittingButton {
+.productLink {
+  @include type.label;
+
+  background: var(--color-background-subtle);
+  color: var(--color-text-primary);
+  white-space: nowrap;
+}
+
+.fittingButton,
+.fittingLink {
   background: var(--color-action-primary-default);
   color: var(--color-action-primary-text);
+}
+
+.fittingLink {
+  @include type.label;
 }
 
 .pagination {

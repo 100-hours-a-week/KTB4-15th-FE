@@ -8,11 +8,41 @@
   white-space: nowrap;
 }
 
+.userMessageContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-sm);
+}
+
 .userMessage {
   display: flex;
   align-items: flex-end;
   justify-content: flex-end;
   gap: var(--space-md);
+}
+
+.retryArea {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-sm);
+}
+
+.retryMessage {
+  @include type.caption;
+
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0;
+  color: var(--color-red-600);
+
+  svg {
+    width: 18px;
+    height: 18px;
+    flex: 0 0 auto;
+  }
 }
 
 .userBubble {

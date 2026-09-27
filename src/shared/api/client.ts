@@ -1,4 +1,4 @@
-import ky from "ky";
+import ky, { HTTPError } from "ky";
 
 const apiOptions = {
   baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL,
@@ -6,7 +6,25 @@ const apiOptions = {
   timeout: 10000,
 };
 
-const refreshClient = ky.create(apiOptions);
+export class OfflineError extends Error {
+  constructor() {
+    super("인터넷 연결을 확인해 주세요.");
+    this.name = "OfflineError";
+  }
+}
+
+function throwIfOffline() {
+  if (typeof navigator !== "undefined" && !navigator.onLine) {
+    throw new OfflineError();
+  }
+}
+
+const refreshClient = ky.create({
+  ...apiOptions,
+  hooks: {
+    beforeRequest: [throwIfOffline],
+  },
+});
 const refreshExcludedPaths = ["/auth/login", "/auth/signup", "/auth/refresh"];
 
 let refreshPromise: Promise<void> | undefined;
@@ -28,6 +46,7 @@ export const apiClient = ky.create({
     limit: 1,
   },
   hooks: {
+    beforeRequest: [throwIfOffline],
     afterResponse: [
       async ({ request, response, retryCount }) => {
         const { pathname } = new URL(request.url);
@@ -39,7 +58,16 @@ export const apiClient = ky.create({
           return;
         }
 
-        await refreshAccessToken();
+        try {
+          await refreshAccessToken();
+        } catch (error) {
+          if (error instanceof HTTPError && error.response.status === 401) {
+            notifyRefreshUnauthorized();
+            throw new RefreshUnauthorizedError();
+          }
+
+          throw error;
+        }
 
         return ky.retry({
           code: "TOKEN_REFRESHED",
@@ -48,3 +76,28 @@ export const apiClient = ky.create({
     ],
   },
 });
+
+export class RefreshUnauthorizedError extends Error {
+  constructor() {
+    super("인증 갱신에 실패했습니다.");
+    this.name = "RefreshUnauthorizedError";
+  }
+}
+
+type RefreshUnauthorizedListener = () => void;
+
+const refreshUnauthorizedListeners = new Set<RefreshUnauthorizedListener>();
+
+export function subscribeToRefreshUnauthorized(
+  listener: RefreshUnauthorizedListener,
+) {
+  refreshUnauthorizedListeners.add(listener);
+
+  return () => {
+    refreshUnauthorizedListeners.delete(listener);
+  };
+}
+
+function notifyRefreshUnauthorized() {
+  refreshUnauthorizedListeners.forEach((listener) => listener());
+}
