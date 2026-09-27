@@ -4,10 +4,7 @@ import Image, { type ImageLoaderProps } from "next/image";
 import Link from "next/link";
 import { useMutation } from "@tanstack/react-query";
 import { useRef, useState, type UIEvent } from "react";
-import {
-  createFittingCandidate,
-  FittingCandidateLimitError,
-} from "@/features/fitting/api/fitting-candidate";
+import { createFittingCandidate } from "@/features/fitting/api/fitting-candidate";
 import type { RecommendedProductResponse } from "../../schema/chat";
 import { Button } from "@/shared/ui/button";
 import { formatPrice } from "@/shared/utils/price-format";
@@ -47,9 +44,7 @@ function RecommendedProductCard({
     },
     onError: (error) => {
       showToast.error(
-        error instanceof FittingCandidateLimitError
-          ? error.message
-          : getApiErrorMessage(error, "피팅 목록에 추가하지 못했어요."),
+        getApiErrorMessage(error, "피팅 목록에 추가하지 못했어요."),
         {
           id: `add-fitting-candidate:${product.productId}`,
         },
