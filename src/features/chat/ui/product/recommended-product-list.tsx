@@ -10,6 +10,7 @@ import {
 } from "@/features/fitting/api/fitting-candidate";
 import type { RecommendedProductResponse } from "../../schema/chat";
 import { Button } from "@/shared/ui/button";
+import { formatPrice } from "@/shared/utils/price-format";
 import { showToast } from "@/shared/ui/toast";
 import { getApiErrorMessage } from "@/shared/api/error";
 //import { Button, IconButton } from "@/shared/ui/button";
@@ -27,10 +28,6 @@ type RecommendedProductCardProps = {
 
 function passthroughImageLoader({ src }: ImageLoaderProps) {
   return src;
-}
-
-function formatPrice(price: number) {
-  return `${new Intl.NumberFormat("ko-KR").format(price)}원`;
 }
 
 function RecommendedProductCard({

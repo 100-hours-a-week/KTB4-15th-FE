@@ -7,6 +7,27 @@ export const fittingCandidateCreateResponse = z.object({
   productId: z.number().int().positive(),
 });
 
+export const fittingCandidateSchema = z.object({
+  fittingCandidateId: z.number().int().positive(),
+  productId: z.number().int().positive(),
+  productName: z.string(),
+  productImageUrl: z.string(),
+  currentPrice: z.number().int().nonnegative(),
+  color: z.string(),
+  itemType: z.enum(["TOP", "BOTTOM"]),
+});
+
+export const fittingCandidateListResponse = z.object({
+  totalCount: z.number().int().nonnegative(),
+  items: z.array(fittingCandidateSchema),
+  nextCursor: z.number().int().positive().nullable(),
+  hasNext: z.boolean(),
+});
+
+export const fittingCandidateBulkDeleteResponse = z.object({
+  deletedCount: z.number().int().nonnegative(),
+});
+
 export type FittingCandidateCreateResponse = z.infer<
   typeof fittingCandidateCreateResponse
 >;
@@ -17,4 +38,9 @@ export const fittingCandidateCountResponse = z.object({
 
 export type FittingCandidateCountResponse = z.infer<
   typeof fittingCandidateCountResponse
+>;
+
+export type FittingCandidate = z.infer<typeof fittingCandidateSchema>;
+export type FittingCandidateListResponse = z.infer<
+  typeof fittingCandidateListResponse
 >;
