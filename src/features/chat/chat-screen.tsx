@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import {
   useMutation,
@@ -31,6 +31,7 @@ type ChatScreenProps = {
 export function ChatScreen({ chatRoomId, date }: ChatScreenProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const submissionLockRef = useRef(false);
 
   const createChatRoomMutation = useMutation({
     mutationFn: createChatRoom,
@@ -130,36 +131,59 @@ export function ChatScreen({ chatRoomId, date }: ChatScreenProps) {
     });
   }, [chatGenerationQuery.data?.generationStatus, chatRoomId, queryClient]);
 
-  const handleSubmit = async (
-    content: string,
-    sourceType: ChatSourceType = "GENERAL",
-  ) => {
-    if (chatRoomId == null) {
-      await createChatRoomMutation.mutateAsync({
-        content,
-        sourceType,
-      });
-      return;
-    }
-
-    await sendChatMessageMutation.mutateAsync({ chatRoomId, content });
-  };
-
-  const handleRetry = (content: string) => {
-    if (chatRoomId == null || sendChatMessageMutation.isPending) {
-      return;
-    }
-
-    sendChatMessageMutation.mutate({ chatRoomId, content });
-  };
-
-  const isSubmitting =
-    createChatRoomMutation.isPending || sendChatMessageMutation.isPending;
-
   const isGenerating =
     generatingMessageId != null &&
     chatGenerationQuery.data?.generationStatus !== "COMPLETED" &&
     chatGenerationQuery.data?.generationStatus !== "FAILED";
+
+  const handleSubmit = async (
+    content: string,
+    sourceType: ChatSourceType = "GENERAL",
+  ) => {
+    if (submissionLockRef.current || isGenerating) {
+      return;
+    }
+
+    submissionLockRef.current = true;
+
+    try {
+      if (chatRoomId == null) {
+        await createChatRoomMutation.mutateAsync({
+          content,
+          sourceType,
+        });
+        return;
+      }
+
+      await sendChatMessageMutation.mutateAsync({ chatRoomId, content });
+    } finally {
+      submissionLockRef.current = false;
+    }
+  };
+
+  const handleRetry = (content: string) => {
+    if (
+      chatRoomId == null ||
+      submissionLockRef.current ||
+      sendChatMessageMutation.isPending
+    ) {
+      return;
+    }
+
+    submissionLockRef.current = true;
+
+    void sendChatMessageMutation
+      .mutateAsync({ chatRoomId, content })
+      .catch(() => undefined)
+      .finally(() => {
+        submissionLockRef.current = false;
+      });
+  };
+
+  const isSubmitting =
+    createChatRoomMutation.isPending ||
+    sendChatMessageMutation.isPending ||
+    isGenerating;
 
   return (
     <>
