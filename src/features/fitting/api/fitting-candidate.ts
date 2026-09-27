@@ -24,8 +24,8 @@ export async function getFittingCandidates({
   if (itemType) searchParams.set("itemType", itemType);
   if (cursor) {
     searchParams.set("cursor", String(cursor));
-    searchParams.set("size", String(size));
   }
+  searchParams.set("size", String(size));
 
   const response = await apiClient.get("fitting-candidates", {
     searchParams,

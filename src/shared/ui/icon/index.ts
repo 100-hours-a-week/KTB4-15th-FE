@@ -13,6 +13,7 @@ export {
   InfoIcon,
   MoreIcon,
   PlusIcon,
+  RetryIcon,
   RefreshIcon,
   SearchIcon,
 } from "./interface-icons";

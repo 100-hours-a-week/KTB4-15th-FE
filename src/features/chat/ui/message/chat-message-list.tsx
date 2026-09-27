@@ -5,26 +5,53 @@ import { AIChatMessageLoading } from "./ai-chat-message-loading";
 import { AIChatMessage, UserChatMessage } from "./chat-message";
 import styles from "./chat-message-list.module.scss";
 import type { ChatMessageResponse } from "../../schema/chat";
+import { formatKoreanDate } from "@/shared/utils/date-format";
 
 type ChatMessageListProps = {
   hasPreviousMessages?: boolean;
   isGenerating?: boolean;
   isLoadingPreviousMessages?: boolean;
+  isRetryPending?: boolean;
   messages: ChatMessageResponse[];
   onLoadPreviousMessages?: () => Promise<unknown>;
+  onRetryMessage?: (content: string) => void;
 };
 
 export function ChatMessageList({
   hasPreviousMessages = false,
   isGenerating = false,
   isLoadingPreviousMessages = false,
+  isRetryPending = false,
   messages,
   onLoadPreviousMessages,
+  onRetryMessage,
 }: ChatMessageListProps) {
   const loadMoreRef = useRef<HTMLDivElement>(null);
   const didInitialScrollRef = useRef(false);
   const latestMessageId = messages.at(-1)?.messageId;
   const previousLatestMessageIdRef = useRef<number | undefined>(undefined);
+  const messageGroups = messages.reduce<
+    Array<{
+      dateLabel: string;
+      firstMessageCreatedAt: string;
+      messages: ChatMessageResponse[];
+    }>
+  >((groups, message) => {
+    const dateLabel = formatKoreanDate(message.createdAt);
+    const latestGroup = groups.at(-1);
+
+    if (latestGroup?.dateLabel === dateLabel) {
+      latestGroup.messages.push(message);
+      return groups;
+    }
+
+    groups.push({
+      dateLabel,
+      firstMessageCreatedAt: message.createdAt,
+      messages: [message],
+    });
+    return groups;
+  }, []);
 
   useLayoutEffect(() => {
     if (latestMessageId == null) {
@@ -138,13 +165,36 @@ export function ChatMessageList({
           <span className={styles.spinner} />
         </div>
       )}
-      {messages.map((message) =>
-        message.senderType === "USER" ? (
-          <UserChatMessage key={message.messageId} message={message} />
-        ) : (
-          <AIChatMessage key={message.messageId} message={message} />
-        ),
-      )}
+      {messageGroups.map((group) => (
+        <section
+          aria-label={group.dateLabel}
+          className={styles.dateGroup}
+          key={group.dateLabel}
+        >
+          <time
+            className={styles.dateDivider}
+            dateTime={group.firstMessageCreatedAt}
+          >
+            {group.dateLabel}
+          </time>
+          {group.messages.map((message) =>
+            message.senderType === "USER" ? (
+              <UserChatMessage
+                canRetry={
+                  message.messageId === latestMessageId &&
+                  message.generationStatus === "FAILED"
+                }
+                isRetryPending={isRetryPending}
+                key={message.messageId}
+                message={message}
+                onRetryMessage={onRetryMessage}
+              />
+            ) : (
+              <AIChatMessage key={message.messageId} message={message} />
+            ),
+          )}
+        </section>
+      ))}
       {isGenerating && <AIChatMessageLoading />}
     </div>
   );
