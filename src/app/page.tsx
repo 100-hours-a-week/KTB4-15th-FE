@@ -106,9 +106,10 @@ export default function Home() {
           <div aria-hidden="true" className={styles.glow} />
           <Image
             alt={currentItem.imageAlt}
-            className={styles.image}
+            className={`${styles.image} ${currentIndex > 0 ? styles.imageEnter : ""}`}
             key={currentItem.image.src}
             priority
+            sizes="(max-width: 480px) 100vw, 360px"
             src={currentItem.image}
           />
         </div>

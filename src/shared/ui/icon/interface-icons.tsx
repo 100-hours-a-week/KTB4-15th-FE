@@ -149,6 +149,20 @@ export function InfoIcon({ className }: IconProps) {
   );
 }
 
+export function InfoFilledIcon({ className }: IconProps) {
+  return (
+    <Icon className={className} viewBox="0 0 20 20">
+      <circle cx="10" cy="10" fill="currentColor" r="8" />
+      <path
+        d="M10 9v5M10 6.5h.01"
+        stroke="white"
+        strokeLinecap="round"
+        strokeWidth="1.5"
+      />
+    </Icon>
+  );
+}
+
 export function RetryIcon({ className }: IconProps) {
   return (
     <Icon className={className}>

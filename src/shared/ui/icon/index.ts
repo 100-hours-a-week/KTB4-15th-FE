@@ -10,6 +10,7 @@ export {
   DeleteIcon,
   EditIcon,
   HeartIcon,
+  InfoFilledIcon,
   InfoIcon,
   MoreIcon,
   PlusIcon,
