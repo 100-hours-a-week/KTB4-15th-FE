@@ -183,6 +183,72 @@
   text-align: center;
 }
 
+.state {
+  @include type.body-medium;
+
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  gap: var(--space-md);
+  margin: var(--space-2xl) 0;
+  color: var(--color-text-secondary);
+  text-align: center;
+
+  p {
+    margin: 0;
+  }
+}
+
+.skeleton {
+  display: flex;
+  min-height: 60px;
+  flex-direction: column;
+  justify-content: center;
+  gap: 7px;
+  padding: 9px 56px 9px 12px;
+
+  span {
+    overflow: hidden;
+    height: 13px;
+    border-radius: var(--radius-small);
+    background: var(--color-background-pressed);
+
+    &::after {
+      display: block;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        var(--color-background-subtle),
+        transparent
+      );
+      content: "";
+      animation: skeleton-loading 1.2s infinite;
+    }
+
+    &:first-child {
+      width: 75%;
+    }
+
+    &:last-child {
+      width: 42%;
+      height: 10px;
+    }
+  }
+}
+
+.loadMore {
+  @include type.caption;
+
+  display: grid;
+  min-height: 44px;
+  gap: var(--space-xs);
+  place-items: center;
+  padding-block: var(--space-xs);
+  color: var(--color-text-secondary);
+}
+
 .visuallyHidden {
   position: absolute;
   width: 1px;
@@ -216,9 +282,20 @@
   }
 }
 
+@keyframes skeleton-loading {
+  from {
+    transform: translateX(-100%);
+  }
+
+  to {
+    transform: translateX(100%);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .backdrop,
-  .sidebar {
+  .sidebar,
+  .skeleton span::after {
     animation: none;
   }
 }
