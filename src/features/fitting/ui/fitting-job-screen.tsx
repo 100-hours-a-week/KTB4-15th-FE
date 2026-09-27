@@ -133,9 +133,7 @@ function FittingProgressView({
             <p>
               피팅 꿀팁 <small>LOOKDDAK Tip</small>
             </p>
-            <span>
-              가상 피팅된 조합은 
-            </span>
+            <span>가상 피팅된 조합은 저장이 가능해질 예정입니다.</span>
           </div>
         </aside>
 
