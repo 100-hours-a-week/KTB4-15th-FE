@@ -13,12 +13,9 @@ import {
   type SendChatMessageRequest,
 } from "../schema/chat";
 
-const CHAT_REQUEST_TIMEOUT_MS = 10_000;
-
 export async function createChatRoom(payload: CreateChatRoomRequest) {
   const response = await apiClient.post("chat-rooms", {
     json: payload,
-    timeout: CHAT_REQUEST_TIMEOUT_MS,
   });
 
   return parseResponse(response, createChatRoomResponse);
@@ -30,7 +27,6 @@ export async function sendChatMessage(
 ) {
   const response = await apiClient.post(`chat-rooms/${chatRoomId}/messages`, {
     json: payload,
-    timeout: CHAT_REQUEST_TIMEOUT_MS,
   });
 
   return parseResponse(response, sendChatMessageResponse);
@@ -42,7 +38,6 @@ export async function getChatGenerationStatus(
 ) {
   const response = await apiClient.get(
     `chat-rooms/${chatRoomId}/messages/${messageId}/status`,
-    { timeout: CHAT_REQUEST_TIMEOUT_MS },
   );
 
   return parseResponse(response, chatGenerationResponse);
