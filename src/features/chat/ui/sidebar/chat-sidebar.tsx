@@ -146,21 +146,25 @@ export function ChatSidebar({ open, onOpenChange }: ChatSidebarProps) {
   return (
     <Dialog.Root onOpenChange={onOpenChange} open={open}>
       <Dialog.Portal>
-        <Dialog.Overlay className={styles.backdrop} />
-        <Dialog.Content aria-describedby={undefined} className={styles.sidebar}>
-          <header className={styles.sidebarHeader}>
-            <div className={styles.heading}>
-              <Dialog.Title className={styles.title}>채팅</Dialog.Title>
-              <span className={styles.badge}>AI 룩딱</span>
-            </div>
-            <Dialog.Close asChild>
-              <IconButton aria-label="채팅 목록 닫기" size="small">
-                <CloseIcon />
-              </IconButton>
-            </Dialog.Close>
-          </header>
+        <div className={styles.portalViewport}>
+          <Dialog.Overlay className={styles.backdrop} />
+          <Dialog.Content
+            aria-describedby={undefined}
+            className={styles.sidebar}
+          >
+            <header className={styles.sidebarHeader}>
+              <div className={styles.heading}>
+                <Dialog.Title className={styles.title}>채팅</Dialog.Title>
+                <span className={styles.badge}>AI 룩딱</span>
+              </div>
+              <Dialog.Close asChild>
+                <IconButton aria-label="채팅 목록 닫기" size="small">
+                  <CloseIcon />
+                </IconButton>
+              </Dialog.Close>
+            </header>
 
-          {/* <div className={styles.searchField}>
+            {/* <div className={styles.searchField}>
             <SearchIcon />
             <label className={styles.visuallyHidden} htmlFor="chat-search">
               대화 내용 검색
@@ -174,71 +178,72 @@ export function ChatSidebar({ open, onOpenChange }: ChatSidebarProps) {
             />
           </div> */}
 
-          <Button
-            className={styles.newChatButton}
-            fullWidth
-            leadingIcon={<PlusIcon />}
-            onClick={startNewChat}
-            size="small"
-          >
-            새 채팅
-          </Button>
+            <Button
+              className={styles.newChatButton}
+              fullWidth
+              leadingIcon={<PlusIcon />}
+              onClick={startNewChat}
+              size="small"
+            >
+              새 채팅
+            </Button>
 
-          <div className={styles.divider} />
+            <div className={styles.divider} />
 
-          <nav aria-label="대화 목록" className={styles.chatRoomList}>
-            {chatRooms.map((chatRoom) => {
-              const href = `/chat/${chatRoom.chatRoomId}`;
-              const isActive = pathname === href;
+            <nav aria-label="대화 목록" className={styles.chatRoomList}>
+              {chatRooms.map((chatRoom) => {
+                const href = `/chat/${chatRoom.chatRoomId}`;
+                const isActive = pathname === href;
 
-              return (
-                <div
-                  className={`${styles.chatRoom} ${isActive ? styles.active : ""}`}
-                  key={chatRoom.chatRoomId}
-                >
-                  <Link
-                    aria-current={isActive ? "page" : undefined}
-                    className={styles.chatRoomLink}
-                    href={href}
-                    onClick={() => onOpenChange(false)}
+                return (
+                  <div
+                    className={`${styles.chatRoom} ${isActive ? styles.active : ""}`}
+                    key={chatRoom.chatRoomId}
                   >
-                    <strong>{chatRoom.title}</strong>
-                    <span>
-                      {formatKoreanRelativeDateTime(chatRoom.lastMessageAt)}
-                    </span>
-                  </Link>
-                  <Dropdown
-                    trigger={
-                      <IconButton
-                        aria-label={`${chatRoom.title} 메뉴 열기`}
-                        className={styles.moreButton}
-                        size="small"
-                      >
-                        <MoreIcon />
-                      </IconButton>
-                    }
-                  >
-                    <DropdownItem
-                      icon={<EditIcon />}
-                      onSelect={() =>
-                        openRenameDialog(chatRoom.chatRoomId, chatRoom.title)
+                    <Link
+                      aria-current={isActive ? "page" : undefined}
+                      className={styles.chatRoomLink}
+                      href={href}
+                      onClick={() => onOpenChange(false)}
+                    >
+                      <strong>{chatRoom.title}</strong>
+                      <span>
+                        {formatKoreanRelativeDateTime(chatRoom.lastMessageAt)}
+                      </span>
+                    </Link>
+                    <Dropdown
+                      trigger={
+                        <IconButton
+                          aria-label={`${chatRoom.title} 메뉴 열기`}
+                          className={styles.moreButton}
+                          size="small"
+                        >
+                          <MoreIcon />
+                        </IconButton>
                       }
                     >
-                      이름 수정
-                    </DropdownItem>
-                    <DropdownItem
-                      destructive
-                      icon={<DeleteIcon />}
-                      onSelect={() => openDeleteDialog(chatRoom.chatRoomId)}
-                    >
-                      삭제하기
-                    </DropdownItem>
-                  </Dropdown>
-                </div>
-              );
-            })}
-          </nav>
-        </Dialog.Content>
+                      <DropdownItem
+                        icon={<EditIcon />}
+                        onSelect={() =>
+                          openRenameDialog(chatRoom.chatRoomId, chatRoom.title)
+                        }
+                      >
+                        이름 수정
+                      </DropdownItem>
+                      <DropdownItem
+                        destructive
+                        icon={<DeleteIcon />}
+                        onSelect={() => openDeleteDialog(chatRoom.chatRoomId)}
+                      >
+                        삭제하기
+                      </DropdownItem>
+                    </Dropdown>
+                  </div>
+                );
+              })}
+            </nav>
+          </Dialog.Content>
+        </div>
       </Dialog.Portal>
     </Dialog.Root>
   );
