@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { logout } from "@/features/auth/api/auth";
+import { clearFittingSelection } from "@/features/fitting/store/fitting-selection-store";
 import { ButtonBase } from "@/shared/ui/button";
 import { getApiErrorMessage } from "@/shared/api/error";
 import { showToast } from "@/shared/ui/toast";
@@ -14,6 +15,7 @@ export function AccountSection() {
   const logoutMutation = useMutation({
     mutationFn: logout,
     onSuccess: () => {
+      clearFittingSelection();
       queryClient.clear();
       router.replace("/login");
       router.refresh();

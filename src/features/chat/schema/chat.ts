@@ -43,11 +43,12 @@ export const recommendedProductResponse = z.object({
   productImageUrl: z.string(),
   currentPrice: z.number().int().nonnegative(),
   color: z.string(),
-  itemType: z.string(),
+  itemType: z.enum(["TOP", "BOTTOM"]),
   purchaseUrl: z.string(),
   recommendedReason: z.string().optional(),
   isWishlisted: z.boolean(),
   isFittingCandidate: z.boolean(),
+  fittingCandidateId: z.number().int().positive().nullable(),
 });
 
 export type RecommendedProductResponse = z.infer<
