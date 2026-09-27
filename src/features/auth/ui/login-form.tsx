@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, type KeyboardEvent } from "react";
 import { useForm } from "react-hook-form";
 import { useQueryClient } from "@tanstack/react-query";
 import { memberMeQueryOptions } from "@/features/member";
@@ -24,6 +24,7 @@ export function LoginForm() {
     formState: { errors, isSubmitted, isValid, touchedFields, isSubmitting },
     handleSubmit,
     register,
+    setFocus,
   } = useForm<LoginRequest>({
     mode: "onChange",
     resolver: zodResolver(loginSchema),
@@ -46,6 +47,13 @@ export function LoginForm() {
     }
   };
 
+  const focusPasswordOnEnter = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key !== "Enter" || event.nativeEvent.isComposing) return;
+
+    event.preventDefault();
+    setFocus("password");
+  };
+
   return (
     <form
       className={styles.form}
@@ -56,6 +64,7 @@ export function LoginForm() {
         <InputField
           {...register("email")}
           autoComplete="email"
+          enterKeyHint="next"
           error={
             touchedFields.email || isSubmitted
               ? errors.email?.message
@@ -67,6 +76,7 @@ export function LoginForm() {
               : "가입하신 이메일 주소를 입력해주세요."
           }
           label="이메일"
+          onKeyDown={focusPasswordOnEnter}
           placeholder="looker@lookddak.com"
           required
           showRequiredMark={false}
@@ -76,6 +86,7 @@ export function LoginForm() {
         <InputField
           {...register("password")}
           autoComplete="current-password"
+          enterKeyHint="done"
           endAdornment={
             <IconButton
               aria-label={
