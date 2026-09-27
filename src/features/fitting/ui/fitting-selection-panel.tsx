@@ -11,6 +11,7 @@ import { createFittingJob } from "../api/fitting-jobs";
 import { setActiveFittingJobId } from "../store/active-fitting-job-storage";
 import { saveFittingJobStartedAt } from "../store/fitting-job-progress-storage";
 import { useFittingSelectionStore } from "../store/fitting-selection-store";
+import { useRestoreFittingSelection } from "../store/use-restore-fitting-selection";
 import type { FittingCandidate } from "../schema/fitting-candidate";
 import styles from "./fitting-selection-panel.module.scss";
 
@@ -77,6 +78,7 @@ function OutfitItem({
 }
 
 export function FittingSelectionPanel() {
+  useRestoreFittingSelection();
   const router = useRouter();
   const top = useFittingSelectionStore((state) => state.top);
   const bottom = useFittingSelectionStore((state) => state.bottom);
