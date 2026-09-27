@@ -1,11 +1,9 @@
 {
+  "files.autoSave": "afterDelay",
+  "files.autoSaveDelay": 500,
   "editor.formatOnSave": false,
-  "editor.defaultFormatter": "esbenp.prettier-vscode",
   "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": "explicit",
-    "source.fixAll.stylelint": "explicit"
-  },
-  "[scss]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
+    "source.fixAll.eslint": "never",
+    "source.fixAll.stylelint": "never"
   }
 }
