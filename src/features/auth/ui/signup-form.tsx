@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, type KeyboardEvent } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { Button, IconButton } from "@/shared/ui/button";
 import { getApiErrorMessage } from "@/shared/api/error";
@@ -21,12 +21,12 @@ export function SignupForm() {
     useState(false);
   const {
     control,
-    formState: { errors, isSubmitting, isValid, touchedFields },
+    formState: { errors, isSubmitted, isSubmitting, isValid, touchedFields },
     handleSubmit,
     register,
+    setFocus,
   } = useForm<SignupFormValues>({
-    mode: "onBlur",
-    reValidateMode: "onChange",
+    mode: "onChange",
     resolver: zodResolver(signupFormSchema),
   });
 
@@ -51,6 +51,16 @@ export function SignupForm() {
     }
   };
 
+  const focusFieldOnEnter = (
+    event: KeyboardEvent<HTMLInputElement>,
+    nextField: "password" | "confirmPassword",
+  ) => {
+    if (event.key !== "Enter" || event.nativeEvent.isComposing) return;
+
+    event.preventDefault();
+    setFocus(nextField);
+  };
+
   return (
     <form
       className={styles.form}
@@ -61,13 +71,19 @@ export function SignupForm() {
         <InputField
           {...register("email")}
           autoComplete="email"
-          error={errors.email?.message}
+          enterKeyHint="next"
+          error={
+            touchedFields.email || isSubmitted
+              ? errors.email?.message
+              : undefined
+          }
           helperText={
             touchedFields.email && !errors.email
               ? undefined
               : "가입하신 이메일 주소를 입력해주세요."
           }
           label="이메일"
+          onKeyDown={(event) => focusFieldOnEnter(event, "password")}
           required
           showRequiredMark={false}
           type="email"
@@ -75,6 +91,7 @@ export function SignupForm() {
         <InputField
           {...register("password")}
           autoComplete="new-password"
+          enterKeyHint="next"
           endAdornment={
             <IconButton
               aria-label={
@@ -89,13 +106,18 @@ export function SignupForm() {
               />
             </IconButton>
           }
-          error={errors.password?.message}
+          error={
+            touchedFields.password || isSubmitted
+              ? errors.password?.message
+              : undefined
+          }
           helperText={
             touchedFields.password && !errors.password
               ? undefined
               : "영문, 숫자, 대문자, 소문자, 특수문자를 포함해 8자 이상 입력해주세요."
           }
           label="비밀번호"
+          onKeyDown={(event) => focusFieldOnEnter(event, "confirmPassword")}
           required
           showRequiredMark={false}
           type={isPasswordVisible ? "text" : "password"}
@@ -103,6 +125,7 @@ export function SignupForm() {
         <InputField
           {...register("confirmPassword")}
           autoComplete="new-password"
+          enterKeyHint="done"
           endAdornment={
             <IconButton
               aria-label={
@@ -119,12 +142,19 @@ export function SignupForm() {
               />
             </IconButton>
           }
-          error={errors.confirmPassword?.message}
+          error={
+            touchedFields.confirmPassword || isSubmitted
+              ? errors.confirmPassword?.message
+              : undefined
+          }
           label="비밀번호 확인"
           required
           showRequiredMark={false}
           success={
-            confirmation && password === confirmation && !errors.confirmPassword
+            touchedFields.confirmPassword &&
+            confirmation &&
+            password === confirmation &&
+            !errors.confirmPassword
               ? "비밀번호가 일치해요."
               : undefined
           }
