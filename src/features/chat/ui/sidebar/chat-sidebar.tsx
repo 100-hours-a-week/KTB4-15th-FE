@@ -4,6 +4,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { overlay } from "overlay-kit";
+import { useEffect, useRef } from "react";
 import { Button, IconButton } from "@/shared/ui/button";
 import { Dropdown, DropdownItem } from "@/shared/ui/dropdown";
 import { showToast } from "@/shared/ui/toast";
@@ -39,13 +40,17 @@ export function ChatSidebar({ open, onOpenChange }: ChatSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const queryClient = useQueryClient();
+  const chatRoomListRef = useRef<HTMLElement>(null);
+  const loadMoreRef = useRef<HTMLDivElement>(null);
 
   const chatRoomQuery = useInfiniteQuery({
     queryKey: CHAT_ROOMS_QUERY_KEY,
     queryFn: ({ pageParam }) => getChatRooms(pageParam),
     initialPageParam: null as number | null,
     getNextPageParam: (lastPage) =>
-      lastPage.hasNext ? lastPage.nextCursor : undefined,
+      lastPage.hasNext && lastPage.nextCursor !== null
+        ? lastPage.nextCursor
+        : undefined,
     enabled: open,
   });
 
@@ -85,6 +90,42 @@ export function ChatSidebar({ open, onOpenChange }: ChatSidebarProps) {
 
   const chatRooms =
     chatRoomQuery.data?.pages.flatMap((page) => page.items) ?? [];
+  const {
+    fetchNextPage,
+    hasNextPage,
+    isFetchNextPageError,
+    isFetchingNextPage,
+  } = chatRoomQuery;
+
+  useEffect(() => {
+    const root = chatRoomListRef.current;
+    const target = loadMoreRef.current;
+
+    if (!open || !root || !target || !hasNextPage) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (
+          entry.isIntersecting &&
+          !isFetchingNextPage &&
+          !isFetchNextPageError
+        ) {
+          void fetchNextPage();
+        }
+      },
+      { root, rootMargin: "0px 0px 200px" },
+    );
+
+    observer.observe(target);
+
+    return () => observer.disconnect();
+  }, [
+    fetchNextPage,
+    hasNextPage,
+    isFetchNextPageError,
+    isFetchingNextPage,
+    open,
+  ]);
 
   const startNewChat = () => {
     onOpenChange(false);
@@ -190,7 +231,43 @@ export function ChatSidebar({ open, onOpenChange }: ChatSidebarProps) {
 
             <div className={styles.divider} />
 
-            <nav aria-label="대화 목록" className={styles.chatRoomList}>
+            <nav
+              aria-busy={
+                chatRoomQuery.isPending || chatRoomQuery.isFetchingNextPage
+              }
+              aria-label="대화 목록"
+              className={styles.chatRoomList}
+              ref={chatRoomListRef}
+            >
+              {chatRoomQuery.isPending && (
+                <div aria-label="대화 목록을 불러오는 중" role="status">
+                  {Array.from({ length: 4 }, (_, index) => (
+                    <div className={styles.skeleton} key={index}>
+                      <span />
+                      <span />
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {chatRoomQuery.isError && chatRooms.length === 0 && (
+                <div className={styles.state} role="alert">
+                  <p>대화 목록을 불러오지 못했어요</p>
+                  <Button
+                    isLoading={chatRoomQuery.isFetching}
+                    onClick={() => void chatRoomQuery.refetch()}
+                    size="small"
+                    variant="secondary"
+                  >
+                    {chatRoomQuery.isFetching ? "불러오는 중..." : "다시 시도"}
+                  </Button>
+                </div>
+              )}
+
+              {chatRoomQuery.isSuccess && chatRooms.length === 0 && (
+                <p className={styles.empty}>아직 대화가 없어요</p>
+              )}
+
               {chatRooms.map((chatRoom) => {
                 const href = `/chat/${chatRoom.chatRoomId}`;
                 const isActive = pathname === href;
@@ -241,6 +318,26 @@ export function ChatSidebar({ open, onOpenChange }: ChatSidebarProps) {
                   </div>
                 );
               })}
+
+              {chatRooms.length > 0 && (
+                <div className={styles.loadMore} ref={loadMoreRef}>
+                  {chatRoomQuery.isFetchingNextPage && (
+                    <span aria-live="polite">대화를 더 불러오는 중...</span>
+                  )}
+                  {chatRoomQuery.isFetchNextPageError && (
+                    <>
+                      <span role="alert">추가 대화를 불러오지 못했어요</span>
+                      <Button
+                        onClick={() => void chatRoomQuery.fetchNextPage()}
+                        size="small"
+                        variant="text"
+                      >
+                        다시 시도
+                      </Button>
+                    </>
+                  )}
+                </div>
+              )}
             </nav>
           </Dialog.Content>
         </div>
