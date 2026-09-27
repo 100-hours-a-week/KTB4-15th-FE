@@ -10,8 +10,6 @@ import {
 } from "@tanstack/react-query";
 import {
   createChatRoom,
-  CHAT_ROOM_LIMIT,
-  getChatRooms,
   sendChatMessage,
   getChatGenerationStatus,
   getChatRoom,
@@ -150,29 +148,6 @@ export function ChatScreen({ chatRoomId, date }: ChatScreenProps) {
 
     try {
       if (chatRoomId == null) {
-        let chatRooms;
-
-        try {
-          chatRooms = await getChatRooms(null, CHAT_ROOM_LIMIT);
-        } catch (error) {
-          showToast.error(
-            getApiErrorMessage(
-              error,
-              "채팅방 개수를 확인하지 못했어요. 다시 시도해 주세요.",
-            ),
-            { id: "chat-room-limit" },
-          );
-          throw error;
-        }
-
-        if (chatRooms.items.length >= CHAT_ROOM_LIMIT) {
-          showToast.error(
-            `채팅방은 최대 ${CHAT_ROOM_LIMIT}개까지 만들 수 있어요.`,
-            { id: "chat-room-limit" },
-          );
-          return;
-        }
-
         await createChatRoomMutation.mutateAsync({
           content,
           sourceType,

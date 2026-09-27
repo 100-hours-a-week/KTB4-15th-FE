@@ -14,7 +14,6 @@ import {
 } from "../schema/chat";
 
 const CHAT_REQUEST_TIMEOUT_MS = 10_000;
-export const CHAT_ROOM_LIMIT = 100;
 
 export async function createChatRoom(payload: CreateChatRoomRequest) {
   const response = await apiClient.post("chat-rooms", {
@@ -64,15 +63,12 @@ export async function getChatRoom(
   return parseResponse(response, chatRoomDetailResponse);
 }
 
-export async function getChatRooms(
-  cursor: number | null = null,
-  size: number = 20,
-) {
+export async function getChatRooms(cursor: number | null = null) {
   const searchParams = new URLSearchParams();
   if (cursor !== null) {
     searchParams.set("cursor", cursor.toString());
   }
-  searchParams.set("size", size.toString());
+  searchParams.set("size", "20");
   const response = await apiClient.get(`chat-rooms?${searchParams.toString()}`);
   return parseResponse(response, chatRoomListResponse);
 }
