@@ -71,7 +71,7 @@ export function ChatIntro({ date, onSelectQuestion }: ChatIntroProps) {
         <Image
           alt="AI 스타일리스트"
           className={styles.avatar}
-          priority
+          loading="eager"
           src={aiImage}
         />
         <div className={styles.messageArea}>

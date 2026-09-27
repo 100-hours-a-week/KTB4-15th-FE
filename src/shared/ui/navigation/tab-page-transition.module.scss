@@ -1,0 +1,33 @@
+.content {
+  width: 100%;
+  min-height: 100dvh;
+}
+
+.forward {
+  animation: enter-from-right var(--duration-normal) var(--easing-standard) both;
+}
+
+.back {
+  animation: enter-from-left var(--duration-normal) var(--easing-standard) both;
+}
+
+@keyframes enter-from-right {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+}
+
+@keyframes enter-from-left {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .forward,
+  .back {
+    animation: none;
+  }
+}

@@ -108,7 +108,7 @@ export default function Home() {
             alt={currentItem.imageAlt}
             className={`${styles.image} ${currentIndex > 0 ? styles.imageEnter : ""}`}
             key={currentItem.image.src}
-            priority
+            preload={currentIndex === 0}
             sizes="(max-width: 480px) 100vw, 360px"
             src={currentItem.image}
           />

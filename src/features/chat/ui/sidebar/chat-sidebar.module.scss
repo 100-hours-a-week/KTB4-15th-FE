@@ -1,15 +1,24 @@
 @use "@/styles/typography" as type;
 
-.backdrop {
+.portalViewport {
   position: fixed;
   z-index: var(--z-overlay);
   top: 0;
   bottom: 0;
   left: 50%;
-  width: 100%;
-  max-width: var(--app-max-width);
-  background: var(--color-background-overlay);
+  width: min(100%, var(--app-max-width));
+  overflow: hidden;
   transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.backdrop {
+  position: absolute;
+  z-index: var(--z-overlay);
+  inset: 0;
+  width: 100%;
+  background: var(--color-background-overlay);
+  pointer-events: auto;
 
   &[data-state="open"] {
     animation: backdrop-in var(--duration-normal) var(--easing-standard);
@@ -21,17 +30,18 @@
 }
 
 .sidebar {
-  position: fixed;
+  position: absolute;
   z-index: var(--z-modal);
   top: 0;
   bottom: 0;
-  left: max(0px, calc((100vw - var(--app-max-width)) / 2));
+  left: 0;
   display: flex;
   width: min(308px, calc(100vw - 48px));
   flex-direction: column;
   border-radius: 0 var(--radius-large) var(--radius-large) 0;
   background: var(--color-background-surface);
   outline: none;
+  pointer-events: auto;
 
   &[data-state="open"] {
     animation: sidebar-in var(--duration-slow) var(--easing-standard);
@@ -106,7 +116,7 @@
 
 .newChatButton {
   width: auto;
-  margin: var(--space-lg) var(--screen-padding) 28px;
+  margin: 0 var(--screen-padding) 28px;
   border-radius: var(--radius-medium);
 }
 

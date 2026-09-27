@@ -85,7 +85,7 @@ function FittingProgressView({
             alt=""
             className={styles.floatingImage}
             height={220}
-            priority
+            loading="eager"
             src="/images/fitting-loading.png"
             width={220}
           />
@@ -202,7 +202,7 @@ function FittingResultView({ result }: { result: FittingResult }) {
             alt="선택한 상품을 착용한 가상 피팅 결과"
             className={styles.resultImage}
             fill
-            priority
+            loading="eager"
             sizes="(max-width: 480px) calc(100vw - 40px), 440px"
             src={result.resultImageUrl}
             unoptimized
@@ -283,7 +283,7 @@ function FittingResultView({ result }: { result: FittingResult }) {
               alt="선택한 상품을 착용한 가상 피팅 결과 크게 보기"
               className={styles.imageViewerImage}
               fill
-              priority
+              loading="eager"
               sizes="100vw"
               src={result.resultImageUrl}
               unoptimized

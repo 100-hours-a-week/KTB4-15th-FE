@@ -46,6 +46,31 @@ type ProfileSetupMutationValues = ProfileSetupFormValues & {
   fullBodyImageValidationId: number;
 };
 
+const COMPLETION_DURATION_MS = 1700;
+
+function ProfileSetupComplete() {
+  return (
+    <main aria-live="polite" className={styles.complete} role="status">
+      <div aria-hidden="true" className={styles.completeIcon}>
+        <Image
+          alt=""
+          height={88}
+          loading="eager"
+          src="/images/profile/success-check-3d.png"
+          width={88}
+        />
+      </div>
+      <h1>기본 정보 등록 완료!</h1>
+      <p>
+        이제 룩딱이 취향에 맞는
+        <br />
+        스타일을 추천해 드릴게요.
+      </p>
+      <small>잠시 후 AI 스타일리스트와의 채팅이 시작돼요.</small>
+    </main>
+  );
+}
+
 export function ProfileSetupForm() {
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -54,9 +79,11 @@ export function ProfileSetupForm() {
   const [photoValidationId, setPhotoValidationId] = useState<number>();
   const [photoErrorMessage, setPhotoErrorMessage] = useState<string>();
   const [isNotificationEnabled, setIsNotificationEnabled] = useState(true);
+  const [isComplete, setIsComplete] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const filePickerLockedRef = useRef(false);
+  const completionTimerRef = useRef<number>(undefined);
   const {
     clearErrors,
     formState: { errors, isValid },
@@ -101,16 +128,19 @@ export function ProfileSetupForm() {
         weight: Number(weight),
       });
     },
-    onSuccess: async () => {
-      queryClient.setQueryData(memberMeQueryOptions.queryKey, {
-        profileCompleted: true,
-      });
-      await queryClient.invalidateQueries({
+    onSuccess: () => {
+      setIsComplete(true);
+      router.prefetch("/chat");
+      void queryClient.invalidateQueries({
         queryKey: memberProfileQueryOptions.queryKey,
       });
-      showToast.success("기본 정보가 등록됐어요.", { id: "profile-setup" });
-      router.replace("/chat");
-      router.refresh();
+      completionTimerRef.current = window.setTimeout(() => {
+        queryClient.setQueryData(memberMeQueryOptions.queryKey, {
+          profileCompleted: true,
+        });
+        router.replace("/chat");
+        router.refresh();
+      }, COMPLETION_DURATION_MS);
     },
     onError: (error) => {
       showToast.error(
@@ -194,6 +224,15 @@ export function ProfileSetupForm() {
       if (photoUrl) URL.revokeObjectURL(photoUrl);
     };
   }, [photoUrl]);
+
+  useEffect(
+    () => () => {
+      if (completionTimerRef.current) {
+        window.clearTimeout(completionTimerRef.current);
+      }
+    },
+    [],
+  );
 
   const startPhotoValidation = (file: File) => {
     setPhotoErrorMessage(undefined);
@@ -310,6 +349,8 @@ export function ProfileSetupForm() {
       </BottomSheet>
     ));
   };
+
+  if (isComplete) return <ProfileSetupComplete />;
 
   return (
     <form
