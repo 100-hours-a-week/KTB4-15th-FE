@@ -1,7 +1,7 @@
 import ky, { HTTPError } from "ky";
 
 const apiOptions = {
-  baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL,
+  prefix: process.env.NEXT_PUBLIC_API_BASE_URL,
   credentials: "include" as const,
   timeout: 10000,
 };
