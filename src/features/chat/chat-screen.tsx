@@ -21,6 +21,7 @@ import styles from "./chat-screen.module.scss";
 import { ChatComposer } from "./ui/composer/chat-composer";
 import { ChatIntro } from "./ui/intro/chat-intro";
 import { ChatMessageList } from "./ui/message/chat-message-list";
+import { useNavigationVisibility } from "@/shared/ui/navigation";
 
 type ChatScreenProps = {
   chatRoomId?: number;
@@ -31,6 +32,7 @@ type ChatScreenProps = {
 export function ChatScreen({ chatRoomId, date }: ChatScreenProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const { isNavigationVisible } = useNavigationVisibility();
   const submissionLockRef = useRef(false);
 
   const createChatRoomMutation = useMutation({
@@ -201,7 +203,11 @@ export function ChatScreen({ chatRoomId, date }: ChatScreenProps) {
           onRetryMessage={handleRetry}
         />
       )}
-      <div className={styles.composerDock}>
+      <div
+        className={`${styles.composerDock} ${
+          isNavigationVisible ? "" : styles.navigationHidden
+        }`}
+      >
         <ChatComposer isSubmitting={isSubmitting} onSubmit={handleSubmit} />
       </div>
     </>

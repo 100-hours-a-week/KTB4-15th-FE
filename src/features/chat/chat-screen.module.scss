@@ -11,4 +11,9 @@
     var(--color-background-page) var(--space-md)
   );
   transform: translateX(50%);
+  transition: bottom var(--duration-normal) var(--easing-standard);
+}
+
+.navigationHidden {
+  bottom: env(safe-area-inset-bottom);
 }
