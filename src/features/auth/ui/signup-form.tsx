@@ -21,12 +21,11 @@ export function SignupForm() {
     useState(false);
   const {
     control,
-    formState: { errors, isSubmitting, isValid, touchedFields },
+    formState: { errors, isSubmitted, isSubmitting, isValid, touchedFields },
     handleSubmit,
     register,
   } = useForm<SignupFormValues>({
-    mode: "onBlur",
-    reValidateMode: "onChange",
+    mode: "onChange",
     resolver: zodResolver(signupFormSchema),
   });
 
@@ -61,7 +60,11 @@ export function SignupForm() {
         <InputField
           {...register("email")}
           autoComplete="email"
-          error={errors.email?.message}
+          error={
+            touchedFields.email || isSubmitted
+              ? errors.email?.message
+              : undefined
+          }
           helperText={
             touchedFields.email && !errors.email
               ? undefined
@@ -89,7 +92,11 @@ export function SignupForm() {
               />
             </IconButton>
           }
-          error={errors.password?.message}
+          error={
+            touchedFields.password || isSubmitted
+              ? errors.password?.message
+              : undefined
+          }
           helperText={
             touchedFields.password && !errors.password
               ? undefined
@@ -119,12 +126,19 @@ export function SignupForm() {
               />
             </IconButton>
           }
-          error={errors.confirmPassword?.message}
+          error={
+            touchedFields.confirmPassword || isSubmitted
+              ? errors.confirmPassword?.message
+              : undefined
+          }
           label="비밀번호 확인"
           required
           showRequiredMark={false}
           success={
-            confirmation && password === confirmation && !errors.confirmPassword
+            touchedFields.confirmPassword &&
+            confirmation &&
+            password === confirmation &&
+            !errors.confirmPassword
               ? "비밀번호가 일치해요."
               : undefined
           }

@@ -21,12 +21,11 @@ export function LoginForm() {
   const queryClient = useQueryClient();
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const {
-    formState: { errors, isValid, touchedFields, isSubmitting },
+    formState: { errors, isSubmitted, isValid, touchedFields, isSubmitting },
     handleSubmit,
     register,
   } = useForm<LoginRequest>({
-    mode: "onBlur",
-    reValidateMode: "onChange",
+    mode: "onChange",
     resolver: zodResolver(loginSchema),
   });
 
@@ -57,7 +56,11 @@ export function LoginForm() {
         <InputField
           {...register("email")}
           autoComplete="email"
-          error={errors.email?.message}
+          error={
+            touchedFields.email || isSubmitted
+              ? errors.email?.message
+              : undefined
+          }
           helperText={
             touchedFields.email && !errors.email
               ? undefined
@@ -87,7 +90,11 @@ export function LoginForm() {
               />
             </IconButton>
           }
-          error={errors.password?.message}
+          error={
+            touchedFields.password || isSubmitted
+              ? errors.password?.message
+              : undefined
+          }
           helperText={
             touchedFields.password && !errors.password
               ? undefined
