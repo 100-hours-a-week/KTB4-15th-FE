@@ -74,6 +74,26 @@ jobs:
           role-to-assume: ${{ vars.FE_BUILD_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
 
+      # Sentry 소스맵 업로드 토큰은 GitHub에 저장하지 않고 Parameter Store에서 조회한다.
+      # Docker 빌드에만 전달할 수 있도록 임시 파일로 만들고, 값은 로그에 출력하지 않는다.
+      - name: Sentry 인증 토큰 조회
+        run: |
+          TOKEN_FILE="${RUNNER_TEMP}/sentry_auth_token"
+
+          aws ssm get-parameter \
+            --region "$AWS_REGION" \
+            --name "/lookddak/prod/cicd/sentry/auth-token" \
+            --with-decryption \
+            --query "Parameter.Value" \
+            --output text > "$TOKEN_FILE"
+
+          if [[ ! -s "$TOKEN_FILE" ]]; then
+            echo "Sentry 인증 토큰을 조회하지 못했습니다."
+            exit 1
+          fi
+
+          chmod 600 "$TOKEN_FILE"
+
       - name: ECR 로그인
         id: ecr
         uses: aws-actions/amazon-ecr-login@v2
@@ -96,11 +116,15 @@ jobs:
             NEXT_PUBLIC_SENTRY_DSN=${{ vars.NEXT_PUBLIC_SENTRY_DSN }}
             SENTRY_ORG=${{ vars.SENTRY_ORG }}
             SENTRY_PROJECT=${{ vars.SENTRY_PROJECT }}
-          secrets: |
-            SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}
+          secret-files: |
+            SENTRY_AUTH_TOKEN=${{ runner.temp }}/sentry_auth_token
           tags: ${{ steps.ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ steps.vars.outputs.tag }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Sentry 인증 토큰 임시 파일 삭제
+        if: ${{ always() }}
+        run: rm -f "${RUNNER_TEMP}/sentry_auth_token"
 
   deploy:
     needs: build-and-push
