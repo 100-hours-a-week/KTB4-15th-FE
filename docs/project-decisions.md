@@ -182,6 +182,9 @@ src/
 - 사용자 행동 분석에는 Microsoft Clarity의 공식 추적 코드를 사용합니다.
 - Clarity는 프로젝트 ID가 설정된 프로덕션 빌드에서만 활성화합니다.
 - 사용자 식별 정보와 Custom Event는 수집 목적과 정책을 정한 뒤 별도로 도입합니다.
+- 오류 모니터링에는 `@sentry/nextjs`를 사용하고 브라우저, Node.js 서버와 Edge Runtime 오류를 수집합니다.
+- Sentry의 사용자 정보와 HTTP 데이터 자동 수집, 성능 추적 및 Session Replay는 초기 도입 범위에서 제외합니다.
+- Sentry 소스맵 업로드 토큰은 Docker BuildKit secret으로만 전달합니다.
 
 자세한 내용은 [분석과 모니터링](./analytics-and-monitoring.md)을 참고합니다.
 

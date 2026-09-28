@@ -16,16 +16,26 @@ RUN pnpm install --frozen-lockfile
 # (2) 코드 복사 (.dockerignore 필수)
 COPY . .
 
-# 브라우저 코드에 박히는 값이라 next build 이전에 넣어야 한다.
+# 공개 설정값과 소스맵 대상은 next build 이전에 필요하다.
 # CD 워크플로가 GitHub Environment Variable을 build-args로 전달한다.
 ARG NEXT_PUBLIC_API_BASE_URL
 ARG NEXT_PUBLIC_CLARITY_PROJECT_ID
+ARG NEXT_PUBLIC_SENTRY_DSN
+ARG SENTRY_ORG
+ARG SENTRY_PROJECT
 ENV NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL} \
-    NEXT_PUBLIC_CLARITY_PROJECT_ID=${NEXT_PUBLIC_CLARITY_PROJECT_ID}
+    NEXT_PUBLIC_CLARITY_PROJECT_ID=${NEXT_PUBLIC_CLARITY_PROJECT_ID} \
+    NEXT_PUBLIC_SENTRY_DSN=${NEXT_PUBLIC_SENTRY_DSN} \
+    SENTRY_ORG=${SENTRY_ORG} \
+    SENTRY_PROJECT=${SENTRY_PROJECT}
 
 # (3) 린트 → 빌드(타입 검사 포함). 하나라도 실패하면 이미지가 안 만들어짐
 RUN pnpm check
-RUN pnpm build
+RUN --mount=type=secret,id=SENTRY_AUTH_TOKEN \
+    if [ -f /run/secrets/SENTRY_AUTH_TOKEN ]; then \
+      export SENTRY_AUTH_TOKEN="$(cat /run/secrets/SENTRY_AUTH_TOKEN)"; \
+    fi; \
+    pnpm build
 
 # ============ 2단계: 런타임 ============
 FROM ${NODE_IMAGE} AS runtime
