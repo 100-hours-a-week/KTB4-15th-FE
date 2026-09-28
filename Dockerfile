@@ -17,9 +17,11 @@ RUN pnpm install --frozen-lockfile
 COPY . .
 
 # 브라우저 코드에 박히는 값이라 next build 이전에 넣어야 한다.
-# CD 워크플로가 GitHub Environment Variable(NEXT_PUBLIC_API_BASE_URL)을 build-args로 전달한다.
+# CD 워크플로가 GitHub Environment Variable을 build-args로 전달한다.
 ARG NEXT_PUBLIC_API_BASE_URL
-ENV NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL}
+ARG NEXT_PUBLIC_CLARITY_PROJECT_ID
+ENV NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL} \
+    NEXT_PUBLIC_CLARITY_PROJECT_ID=${NEXT_PUBLIC_CLARITY_PROJECT_ID}
 
 # (3) 린트 → 빌드(타입 검사 포함). 하나라도 실패하면 이미지가 안 만들어짐
 RUN pnpm check
