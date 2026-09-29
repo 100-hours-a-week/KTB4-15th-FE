@@ -25,6 +25,16 @@ type RecommendedProductCardProps = {
   product: RecommendedProductResponse;
 };
 
+function getProductScrollLeft(list: HTMLDivElement, card: HTMLElement) {
+  const cardLeft =
+    card.getBoundingClientRect().left -
+    list.getBoundingClientRect().left +
+    list.scrollLeft;
+  const maxScrollLeft = list.scrollWidth - list.clientWidth;
+
+  return Math.min(Math.max(cardLeft, 0), maxScrollLeft);
+}
+
 function passthroughImageLoader({ src }: ImageLoaderProps) {
   return src;
 }
@@ -162,17 +172,23 @@ export function RecommendedProductList({
 
   const handleScroll = (event: UIEvent<HTMLDivElement>) => {
     const list = event.currentTarget;
-    const firstCard = list.firstElementChild as HTMLElement | null;
+    const nextIndex = Array.from(list.children).reduce(
+      (closestIndex, child, index) => {
+        const card = child as HTMLElement;
+        const closestCard = list.children.item(closestIndex) as HTMLElement;
+        const distance = Math.abs(
+          list.scrollLeft - getProductScrollLeft(list, card),
+        );
+        const closestDistance = Math.abs(
+          list.scrollLeft - getProductScrollLeft(list, closestCard),
+        );
 
-    if (!firstCard) {
-      return;
-    }
-
-    const gap = Number.parseFloat(getComputedStyle(list).columnGap) || 0;
-    const nextIndex = Math.round(
-      list.scrollLeft / (firstCard.offsetWidth + gap),
+        return distance < closestDistance ? index : closestIndex;
+      },
+      0,
     );
-    setActiveIndex(Math.min(Math.max(nextIndex, 0), products.length - 1));
+
+    setActiveIndex(nextIndex);
   };
 
   const scrollToProduct = (index: number) => {
@@ -183,7 +199,10 @@ export function RecommendedProductList({
       return;
     }
 
-    list.scrollTo({ left: card.offsetLeft, behavior: "smooth" });
+    list.scrollTo({
+      left: getProductScrollLeft(list, card),
+      behavior: "smooth",
+    });
   };
 
   return (
