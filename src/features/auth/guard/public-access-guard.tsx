@@ -4,7 +4,7 @@ import { useEffect, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { memberMeQueryOptions } from "@/features/member";
-import styles from "./service-access-guard.module.scss";
+import styles from "./access-guard.module.scss";
 
 export function PublicAccessGuard({ children }: { children: ReactNode }) {
   const router = useRouter();

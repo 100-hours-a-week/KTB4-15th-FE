@@ -1,30 +1,27 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { memberMeQueryOptions } from "@/features/member";
-import {
-  RefreshUnauthorizedError,
-  subscribeToRefreshUnauthorized,
-} from "@/shared/api/client";
+import { RefreshUnauthorizedError } from "@/shared/api/client";
 import { Button } from "@/shared/ui/button";
-import styles from "./service-access-guard.module.scss";
+import { useSessionExpiration } from "../session/use-session-expiration";
+import styles from "./access-guard.module.scss";
 
 const PROFILE_SETUP_PATH = "/profile/setup";
 
 export function ServiceAccessGuard({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const [hasRefreshUnauthorized, setHasRefreshUnauthorized] = useState(false);
+  const { expireSession, isSessionExpired } = useSessionExpiration();
   const memberQuery = useQuery({
     ...memberMeQueryOptions,
     retry: false,
   });
   const isProfileSetupPage = pathname === PROFILE_SETUP_PATH;
   const isUnauthenticated =
-    hasRefreshUnauthorized ||
-    memberQuery.error instanceof RefreshUnauthorizedError;
+    isSessionExpired || memberQuery.error instanceof RefreshUnauthorizedError;
   const isProfileCompleted = memberQuery.data?.profileCompleted === true;
   const isProfileIncomplete =
     memberQuery.isSuccess && !memberQuery.data.profileCompleted;
@@ -32,17 +29,9 @@ export function ServiceAccessGuard({ children }: { children: ReactNode }) {
   const shouldRedirectToProfileSetup =
     isProfileIncomplete && !isProfileSetupPage;
 
-  useEffect(
-    () =>
-      subscribeToRefreshUnauthorized(() => {
-        setHasRefreshUnauthorized(true);
-      }),
-    [],
-  );
-
   useEffect(() => {
     if (isUnauthenticated) {
-      router.replace("/login?reason=session-expired");
+      expireSession();
       return;
     }
 
@@ -55,6 +44,7 @@ export function ServiceAccessGuard({ children }: { children: ReactNode }) {
       router.replace(PROFILE_SETUP_PATH);
     }
   }, [
+    expireSession,
     isUnauthenticated,
     router,
     shouldRedirectToChat,
