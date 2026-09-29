@@ -1,28 +1,28 @@
 @mixin display {
-  font-size: 2rem;
+  font-size: 1.75rem;
   font-weight: var(--font-weight-bold);
-  line-height: 2.5rem;
+  line-height: 2.25rem;
   letter-spacing: -0.025em;
 }
 
 @mixin heading-large {
-  font-size: 1.75rem;
+  font-size: 1.5rem;
   font-weight: var(--font-weight-bold);
-  line-height: 2.25rem;
+  line-height: 2rem;
   letter-spacing: -0.02em;
 }
 
 @mixin heading-medium {
-  font-size: 1.5rem;
+  font-size: 1.375rem;
   font-weight: var(--font-weight-bold);
-  line-height: 2rem;
+  line-height: 1.875rem;
   letter-spacing: -0.015em;
 }
 
 @mixin heading-small {
-  font-size: 1.25rem;
+  font-size: 1.125rem;
   font-weight: var(--font-weight-semibold);
-  line-height: 1.75rem;
+  line-height: 1.625rem;
   letter-spacing: -0.01em;
 }
 
