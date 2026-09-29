@@ -32,8 +32,8 @@ import {
   validateWeight,
 } from "@/shared/utils/profile-validation";
 import styles from "./profile-setup-form.module.scss";
-import { createMemberProfile, validateFullBodyImage } from "./api/profile";
-import { memberProfileQueryOptions } from "./api/member-profile-query";
+import { createMemberProfile, validateFullBodyImage } from "../api/profile";
+import { memberProfileQueryOptions } from "../api/member-profile-query";
 
 type ProfileSetupFormValues = {
   name: string;
