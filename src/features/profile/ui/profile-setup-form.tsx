@@ -474,7 +474,15 @@ export function ProfileSetupForm() {
                     ? "사진 검증 중 오류가 발생했어요"
                     : "전신 사진을 등록해 주세요"}
             </strong>
-            <p>실제 체형 비율을 반영해 자연스러운 가상 착용을 구현해요.</p>
+            <p
+              className={
+                displayedPhotoErrorMessage ? styles.photoInlineError : undefined
+              }
+              role={displayedPhotoErrorMessage ? "alert" : undefined}
+            >
+              {displayedPhotoErrorMessage ??
+                "실제 체형 비율을 반영해 자연스러운 가상 착용을 구현해요."}
+            </p>
             <div className={styles.photoActions}>
               <Button
                 isLoading={photoValidationMutation.isPending}
@@ -494,14 +502,8 @@ export function ProfileSetupForm() {
               </button>
             </div>
           </div>
-          <p
-            className={
-              displayedPhotoErrorMessage ? styles.photoError : styles.photoTip
-            }
-            role={displayedPhotoErrorMessage ? "alert" : undefined}
-          >
-            {displayedPhotoErrorMessage ??
-              "* 정면 각도에서 전신이 모두 나오면 가장 정확해요."}
+          <p className={styles.photoTip}>
+            * JPG·PNG / 최대 2MB / 짧은 변 480px 이상 / 전체 2,500만 픽셀 이하
           </p>
         </div>
       </section>

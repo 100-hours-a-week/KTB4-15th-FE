@@ -10,7 +10,7 @@ import {
   type MemberProfileCreateRequest,
 } from "../schema/profile";
 
-const FULL_BODY_IMAGE_VALIDATION_TIMEOUT_MS = 60_000;
+const FULL_BODY_IMAGE_VALIDATION_TIMEOUT_MS = 2 * 60 * 1000;
 
 const fullBodyImageValidationResponseSchema = z.object({
   code: z.string(),
