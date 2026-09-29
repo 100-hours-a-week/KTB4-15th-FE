@@ -3,6 +3,7 @@ export { EyeOffIcon } from "./eye";
 export {
   AiFittingIcon,
   BackIcon,
+  BottomIcon,
   CheckIcon,
   ChevronRightIcon,
   ClearIcon,
@@ -17,6 +18,7 @@ export {
   RetryIcon,
   RefreshIcon,
   SearchIcon,
+  TopIcon,
 } from "./interface-icons";
 export { PasswordVisibilityIcon } from "./password-visibility-icon";
 export type { PasswordVisibilityIconProps } from "./password-visibility-icon";

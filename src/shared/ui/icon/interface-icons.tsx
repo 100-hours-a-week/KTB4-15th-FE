@@ -236,3 +236,30 @@ export function HeartIcon({
     </Icon>
   );
 }
+
+export function TopIcon({ className }: IconProps) {
+  return (
+    <Icon className={className}>
+      <path
+        d="M8 4.5 4.5 6 2.8 10l3 1.3V20h12.4v-8.7l3-1.3-1.7-4L16 4.5A5.7 5.7 0 0 1 12 6a5.7 5.7 0 0 1-4-1.5Z"
+        stroke="currentColor"
+        strokeLinejoin="round"
+        strokeWidth="1.7"
+      />
+    </Icon>
+  );
+}
+
+export function BottomIcon({ className }: IconProps) {
+  return (
+    <Icon className={className}>
+      <path
+        d="M5.5 5.5c0-.8.4-1.2 1.2-1.2h10.6c.8 0 1.2.4 1.2 1.2l.2 5.8c.1 2 .2 4.7-.2 6.6-.1.7-.5 1-1.2.9l-3.4-.4c-.5-.1-.8-.3-1-.8L12 12.5l-1 5.1c-.1.6-.4.8-1 .8l-3.3.2c-.8 0-1.2-.3-1.2-1.1v-12Z"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.7"
+      />
+    </Icon>
+  );
+}
