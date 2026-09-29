@@ -29,6 +29,7 @@ const PHOTO_INPUT_ERROR_MESSAGES: Record<string, string> = {
 const PHOTO_SYSTEM_ERROR_MESSAGES: Record<string, string> = {
   UNAUTHORIZED:
     "사진 검증 요청을 인증하지 못했어요. 잠시 후 다시 시도해 주세요.",
+  SERVER_BUSY: "지금 사진 확인 요청이 몰리고 있어요. 잠시 후 다시 시도해 주세요.",
   PERSON_DETECTION_FAILED:
     "사진 속 인물을 확인하는 중 오류가 발생했어요. 잠시 후 다시 시도해 주세요.",
   POSE_ESTIMATION_FAILED:
