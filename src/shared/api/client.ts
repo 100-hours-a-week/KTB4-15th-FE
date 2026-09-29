@@ -1,17 +1,11 @@
 import ky, { HTTPError } from "ky";
+import { normalizeApiError, OfflineError } from "./error";
 
 const apiOptions = {
   prefix: process.env.NEXT_PUBLIC_API_BASE_URL,
   credentials: "include" as const,
   timeout: 10000,
 };
-
-export class OfflineError extends Error {
-  constructor() {
-    super("인터넷 연결을 확인해 주세요.");
-    this.name = "OfflineError";
-  }
-}
 
 function throwIfOffline() {
   if (typeof navigator !== "undefined" && !navigator.onLine) {
@@ -47,6 +41,7 @@ export const apiClient = ky.create({
   },
   hooks: {
     beforeRequest: [throwIfOffline],
+    beforeError: [({ error }) => normalizeApiError(error)],
     afterResponse: [
       async ({ request, response, retryCount }) => {
         const { pathname } = new URL(request.url);
