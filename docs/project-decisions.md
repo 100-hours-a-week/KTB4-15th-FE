@@ -65,6 +65,7 @@ src/
 - 브라우저 API Client는 Ky를 사용하고 기준 URL은 `NEXT_PUBLIC_API_BASE_URL`로 설정한다.
 - 브라우저의 서버 상태와 mutation은 TanStack Query로 관리한다.
 - Mutation은 오프라인에서 대기 후 재실행하지 않고 즉시 실패하도록 `networkMode: 'always'`를 사용한다. 명시적인 오프라인 상태는 API Client가 `OfflineError`로 변환한다.
+- API Client는 BE 공통 오류 응답에서 문자열 `code`를 확인할 수 있으면 `ApiError`로 변환하고 code와 HTTP status를 제공한다. Feature는 HTTP Client의 오류 응답 구조를 직접 파싱하지 않고 `ApiError.code`로 필요한 오류만 처리한다.
 - HttpOnly Cookie 기반 인증을 위해 `credentials: 'include'`를 적용한다.
 - timeout은 10초, retry 한도는 2회로 설정한다.
 - `NEXT_PUBLIC_` 접두사가 붙은 환경 변수는 브라우저에 공개되므로 비밀 값을 저장하지 않는다.
@@ -170,12 +171,25 @@ src/
 - 기본 정보가 없는 사용자가 일반 서비스 화면에 접근하면 `/profile/setup`으로 이동한다.
 - 기본 정보가 등록된 사용자가 `/profile/setup`에 접근하면 `/chat`으로 이동한다.
 - 서비스 접근 확인은 `GET /members/me`의 `profileCompleted`와 브라우저 API Client의 access token 갱신 흐름을 사용한다.
+- 로그인한 사용자가 로그인·회원가입 페이지에 접근하면 `GET /members/me`로 현재 세션을 확인한 뒤 프로필 상태에 맞는 서비스 화면으로 이동한다.
+- access token 갱신도 인증 실패하면 Query 캐시와 사용자 로컬 상태를 정리한 뒤 로그인 화면으로 이동한다.
 
 ## 빌드 및 배포
 
 - Docker 배포를 위해 Next.js 빌드 결과를 `standalone` 형식으로 생성한다.
 - 컨테이너 liveness 확인은 외부 의존성을 조회하지 않는 `GET /health`를 사용하며, 정상 응답은 HTTP 200과 `{ "status": "UP" }`이다.
 - 현재 Route Handler 단위 테스트는 별도 테스트 프레임워크 없이 Node.js 내장 테스트 러너를 사용한다.
+
+### 분석과 모니터링
+
+- 사용자 행동 분석에는 Microsoft Clarity의 공식 추적 코드를 사용합니다.
+- Clarity는 프로젝트 ID가 설정된 프로덕션 빌드에서만 활성화합니다.
+- 사용자 식별 정보와 Custom Event는 수집 목적과 정책을 정한 뒤 별도로 도입합니다.
+- 오류 모니터링에는 `@sentry/nextjs`를 사용하고 브라우저, Node.js 서버와 Edge Runtime 오류를 수집합니다.
+- Sentry의 사용자 정보와 HTTP 데이터 자동 수집, 성능 추적 및 Session Replay는 초기 도입 범위에서 제외합니다.
+- Sentry 소스맵 업로드 토큰은 Docker BuildKit secret으로만 전달합니다.
+
+자세한 내용은 [분석과 모니터링](./analytics-and-monitoring.md)을 참고합니다.
 
 ## 보류 항목
 

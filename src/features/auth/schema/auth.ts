@@ -8,10 +8,7 @@ export const emailSchema = z
   .string()
   .trim()
   .min(1, "이메일을 입력해주세요.")
-  .max(
-    EMAIL_MAX_LENGTH,
-    "올바른 이메일 주소 형식을 입력해주세요. (e.g. look-ddak@example.com)",
-  )
+  .max(EMAIL_MAX_LENGTH, "이메일은 254자까지만 입력할 수 있습니다.")
   .email(
     "올바른 이메일 주소 형식을 입력해주세요. (e.g. look-ddak@example.com)",
   );

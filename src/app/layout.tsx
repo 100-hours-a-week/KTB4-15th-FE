@@ -4,6 +4,7 @@ import "sonner/dist/styles.css";
 import { AppToaster } from "@/shared/ui/toast";
 import styles from "./layout.module.scss";
 import "./globals.scss";
+import { ClarityAnalytics } from "./clarity-analytics";
 import { Providers } from "./providers";
 
 export const metadata: Metadata = {
@@ -23,6 +24,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <div className={styles.appFrame}>{children}</div>
           <AppToaster />
         </Providers>
+        <ClarityAnalytics />
       </body>
     </html>
   );

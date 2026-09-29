@@ -1,4 +1,4 @@
-import { ProfileSetupForm } from "@/features/profile/profile-setup-form";
+import { ProfileSetupForm } from "@/features/profile/ui/profile-setup-form";
 import { IntroHero } from "@/shared/ui/intro-hero";
 import styles from "./page.module.scss";
 
