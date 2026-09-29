@@ -65,6 +65,7 @@ src/
 - 브라우저 API Client는 Ky를 사용하고 기준 URL은 `NEXT_PUBLIC_API_BASE_URL`로 설정한다.
 - 브라우저의 서버 상태와 mutation은 TanStack Query로 관리한다.
 - Mutation은 오프라인에서 대기 후 재실행하지 않고 즉시 실패하도록 `networkMode: 'always'`를 사용한다. 명시적인 오프라인 상태는 API Client가 `OfflineError`로 변환한다.
+- API Client는 BE 공통 오류 응답에서 문자열 `code`를 확인할 수 있으면 `ApiError`로 변환하고 code와 HTTP status를 제공한다. Feature는 HTTP Client의 오류 응답 구조를 직접 파싱하지 않고 `ApiError.code`로 필요한 오류만 처리한다.
 - HttpOnly Cookie 기반 인증을 위해 `credentials: 'include'`를 적용한다.
 - timeout은 10초, retry 한도는 2회로 설정한다.
 - `NEXT_PUBLIC_` 접두사가 붙은 환경 변수는 브라우저에 공개되므로 비밀 값을 저장하지 않는다.
@@ -170,6 +171,8 @@ src/
 - 기본 정보가 없는 사용자가 일반 서비스 화면에 접근하면 `/profile/setup`으로 이동한다.
 - 기본 정보가 등록된 사용자가 `/profile/setup`에 접근하면 `/chat`으로 이동한다.
 - 서비스 접근 확인은 `GET /members/me`의 `profileCompleted`와 브라우저 API Client의 access token 갱신 흐름을 사용한다.
+- 로그인한 사용자가 로그인·회원가입 페이지에 접근하면 `GET /members/me`로 현재 세션을 확인한 뒤 프로필 상태에 맞는 서비스 화면으로 이동한다.
+- access token 갱신도 인증 실패하면 Query 캐시와 사용자 로컬 상태를 정리한 뒤 로그인 화면으로 이동한다.
 
 ## 빌드 및 배포
 

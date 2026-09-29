@@ -49,7 +49,7 @@ export async function validateFullBodyImage(image: File) {
 
   if (result.data === null) {
     return {
-      message: getPhotoValidationMessage(result.code, result.message),
+      message: getPhotoValidationMessage(result.code),
       success: false,
     } as const;
   }

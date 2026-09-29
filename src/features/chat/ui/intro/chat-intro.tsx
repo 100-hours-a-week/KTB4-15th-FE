@@ -36,10 +36,10 @@ const SUGGESTED_QUESTIONS: SuggestedQuestion[] = [
     sourceType: "GENERAL",
   },
   {
-    title: "결혼식 하객룩 8만원대 셋업",
-    description: "격식과 트렌드를 모두 잡은 수트 셋업",
+    title: "결혼식 하객룩 8만원대 자켓",
+    description: "격식과 트렌드를 모두 잡은 자켓",
     image: suitImage,
-    message: "결혼식에 입을 8만원대 하객룩 셋업을 추천해줘",
+    message: "결혼식에 입을 8만원대 하객룩 자켓을 추천해줘",
     sourceType: "GENERAL",
   },
   {

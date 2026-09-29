@@ -6,11 +6,16 @@ const PHOTO_INPUT_ERROR_MESSAGES: Record<string, string> = {
   IMAGE_EMPTY: "사진 파일을 등록해 주세요.",
   IMAGE_FORMAT_UNSUPPORTED: "파일은 JPG, JPEG, PNG만 가능합니다.",
   IMAGE_DECODE_FAILED: "사진 파일을 읽을 수 없어요. 다른 사진을 등록해 주세요.",
+  INVALID_IMAGE: "사진 파일을 확인할 수 없어요. 다른 사진을 등록해 주세요.",
+  IMAGE_RESOLUTION_TOO_LARGE:
+    "사진의 해상도가 너무 높아요. 해상도를 낮춰 다시 등록해 주세요.",
   IMAGE_RESOLUTION_TOO_SMALL:
     "사진의 해상도가 너무 낮아요. 더 선명한 사진을 등록해 주세요.",
   IMAGE_SIZE_EXCEEDED: "파일은 10MB까지만 가능합니다.",
   IMAGE_TOO_LARGE: "파일은 10MB까지만 가능합니다.",
   IMAGE_TOO_DARK: "사진이 너무 어두워요. 밝은 곳에서 다시 촬영해 주세요.",
+  PERSON_DETECTION_FAILED:
+    "사진에서 사람을 인식하지 못했어요. 정면 전신 사진을 등록해 주세요.",
   PERSON_NOT_FOUND: "사진에서 사람을 찾을 수 없어요.",
   MULTIPLE_PERSONS: "한 명만 나온 사진을 등록해 주세요.",
   PERSON_TOO_SMALL: "전신이 더 크게 보이도록 촬영해주세요.",
@@ -46,15 +51,12 @@ export function getLocalPhotoErrorMessage(file: File) {
   return undefined;
 }
 
-export function getPhotoValidationMessage(
-  code: string,
-  message: string,
-): string {
+export function getPhotoValidationMessage(code: string): string {
   const inputMessage = PHOTO_INPUT_ERROR_MESSAGES[code];
   if (inputMessage) return inputMessage;
 
   const systemMessage = PHOTO_SYSTEM_ERROR_MESSAGES[code];
   if (systemMessage) return systemMessage;
 
-  return message;
+  return "사진을 검증하지 못했어요. 다른 사진으로 다시 시도해 주세요.";
 }
