@@ -3,7 +3,7 @@
 .landing {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2xl);
+  gap: var(--space-xl);
 }
 
 .date {
@@ -24,8 +24,8 @@
 
 .avatar {
   flex: 0 0 auto;
-  width: 48px;
-  height: 48px;
+  width: 44px;
+  height: 44px;
   border-radius: var(--radius-full);
   object-fit: cover;
 }
@@ -106,13 +106,13 @@
 .question {
   display: grid;
   width: 100%;
-  min-height: 76px;
-  grid-template-columns: 48px minmax(0, 1fr) 24px;
+  min-height: 68px;
+  grid-template-columns: 44px minmax(0, 1fr) 20px;
   align-items: center;
-  gap: var(--space-md);
+  gap: var(--space-sm);
   border: 0;
-  border-radius: var(--radius-large);
-  padding: 12px 14px;
+  border-radius: var(--radius-medium);
+  padding: 10px 12px;
   background: var(--color-background-surface);
   color: inherit;
   cursor: pointer;
@@ -129,8 +129,8 @@
 }
 
 .questionImage {
-  width: 48px;
-  height: 48px;
+  width: 44px;
+  height: 44px;
   border-radius: var(--radius-medium);
   object-fit: cover;
 }
@@ -161,8 +161,8 @@
 }
 
 .chevron {
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
   color: var(--color-gray-400);
 
   svg {

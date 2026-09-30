@@ -6,7 +6,12 @@ import { useRouter } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
 import { ApiError } from "@/shared/api/error";
 import { Button } from "@/shared/ui/button";
-import { AiFittingIcon, ChevronRightIcon, HeartIcon } from "@/shared/ui/icon";
+import {
+  AiFittingIcon,
+  BottomIcon,
+  ChevronRightIcon,
+  TopIcon,
+} from "@/shared/ui/icon";
 import { showToast } from "@/shared/ui/toast";
 import { formatPrice } from "@/shared/utils/price-format";
 import { createFittingJob } from "../api/fitting-jobs";
@@ -23,10 +28,18 @@ function passthroughImageLoader({ src }: ImageLoaderProps) {
   return src;
 }
 
-function EmptyProductIcon({ label }: { label: string }) {
+function EmptyProductIcon({
+  itemType,
+  label,
+}: {
+  itemType: ItemType;
+  label: string;
+}) {
+  const ProductIcon = itemType === "TOP" ? TopIcon : BottomIcon;
+
   return (
     <div aria-hidden="true" className={styles.emptyProductIcon}>
-      <HeartIcon />
+      <ProductIcon />
       <small>{label}</small>
     </div>
   );
@@ -66,7 +79,7 @@ function OutfitItem({
             />
           </span>
         ) : (
-          <EmptyProductIcon label={label} />
+          <EmptyProductIcon itemType={itemType} label={label} />
         )}
         <span className={styles.productCopy}>
           <strong>{product?.productName ?? "선택 안 함"}</strong>

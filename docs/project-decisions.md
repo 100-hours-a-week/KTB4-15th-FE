@@ -99,17 +99,18 @@ src/
 
 - 기본 서체는 Pretendard이며 `400`, `500`, `600`, `700` 네 가지 굵기만 사용한다.
 - 타이포그래피는 display, heading-large, heading-medium, heading-small, body-large, body-medium, label, caption SCSS mixin을 사용한다.
-- 화면 너비에 따라 타이포그래피 크기를 변경하지 않는다.
+- 모바일 단일 컬럼에 맞춘 compact 타이포그래피를 모든 화면 너비에서 동일하게 사용한다.
 
 ### 레이아웃 및 간격
 
 - 타이포그래피는 rem, Figma와 직접 대응하는 레이아웃·간격·radius·컨트롤·아이콘 크기는 px 단위를 사용한다.
 - 서비스 본체는 최대 `480px` 단일 컬럼으로 유지한다.
 - 넓은 화면에서는 서비스 본체를 중앙에 배치하며 외부 영역의 디자인은 추후 결정한다.
-- 모든 페이지의 기본 콘텐츠 좌우 여백은 root layout의 `pageContent`에서 `20px`로 공통 적용한다.
+- 모든 페이지의 기본 콘텐츠 좌우 여백은 root layout의 `pageContent`에서 `16px`로 공통 적용한다.
+- 헤더는 `52px`, 하단 내비게이션은 `56px`의 compact 규격을 사용한다. 기본 터치 영역은 최소 `44px`를 유지한다.
 - 페이지에서는 기본 좌우 여백을 중복 적용하지 않고, 필요한 세로 여백과 내부 컴포넌트 간격만 관리한다.
 - 공통 간격은 4px, 8px, 12px, 16px, 24px, 32px의 6단계 spacing 토큰을 사용한다.
-- 화면 좌우 기본 여백은 20px로 별도 관리한다.
+- 화면 좌우 기본 여백은 16px로 별도 관리한다.
 - radius는 small 8px, medium 12px, large 20px, sheet 24px, full pill로 구분한다.
 
 ### 버튼
