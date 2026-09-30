@@ -3,5 +3,8 @@
   min-height: calc(100dvh - var(--header-height) - var(--navigation-height));
   gap: var(--space-md);
   align-content: start;
-  padding-block: 0 calc(var(--navigation-height) + var(--space-lg));
+  padding-block: 0
+    calc(
+      var(--navigation-height) + env(safe-area-inset-bottom) + var(--space-lg)
+    );
 }
