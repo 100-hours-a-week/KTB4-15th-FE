@@ -97,7 +97,7 @@ export function SignupForm() {
           helperText={
             touchedFields.email && !errors.email
               ? undefined
-              : "가입하신 이메일 주소를 입력해주세요."
+              : "사용하실 이메일 주소를 입력해주세요."
           }
           label="이메일"
           onKeyDown={(event) => focusFieldOnEnter(event, "password")}
