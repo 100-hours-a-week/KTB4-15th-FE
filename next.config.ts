@@ -1,3 +1,4 @@
+import bundleAnalyzer from "@next/bundle-analyzer";
 import type { NextConfig } from "next";
 import { withSentryConfig } from "@sentry/nextjs/config";
 
@@ -11,7 +12,11 @@ const hasSentrySourceMapCredentials = Boolean(
   process.env.SENTRY_PROJECT,
 );
 
-export default withSentryConfig(nextConfig, {
+const withBundleAnalyzer = bundleAnalyzer({
+  enabled: process.env.ANALYZE === "true",
+});
+
+export default withSentryConfig(withBundleAnalyzer(nextConfig), {
   bundleSizeOptimizations: {
     excludeDebugStatements: true,
     excludeTracing: true,
