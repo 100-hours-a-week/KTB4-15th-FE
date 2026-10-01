@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, type KeyboardEvent } from "react";
+import { useEffect, useState, type KeyboardEvent } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { Button, IconButton } from "@/shared/ui/button";
-import { getApiErrorMessage } from "@/shared/api/error";
+import { ApiError, getApiErrorMessage } from "@/shared/api/error";
 import { PasswordVisibilityIcon } from "@/shared/ui/icon";
 import { InputField } from "@/shared/ui/input-field";
 import { showToast } from "@/shared/ui/toast";
@@ -24,7 +24,9 @@ export function SignupForm() {
     formState: { errors, isSubmitted, isSubmitting, isValid, touchedFields },
     handleSubmit,
     register,
+    setError,
     setFocus,
+    trigger,
   } = useForm<SignupFormValues>({
     mode: "onChange",
     resolver: zodResolver(signupFormSchema),
@@ -38,12 +40,27 @@ export function SignupForm() {
     defaultValue: "",
   });
 
+  useEffect(() => {
+    if (confirmation) {
+      void trigger("confirmPassword");
+    }
+  }, [confirmation, password, trigger]);
+
   const handleSignup = async ({ email, password }: SignupFormValues) => {
     try {
       await signup({ email, password });
       showToast.success("회원가입이 완료됐어요.", { id: "signup" });
       router.replace("/login");
     } catch (error) {
+      if (error instanceof ApiError && error.code === "EMAIL_ALREADY_EXISTS") {
+        setError(
+          "email",
+          { message: "이미 사용 중인 이메일입니다." },
+          { shouldFocus: true },
+        );
+        return;
+      }
+
       showToast.error(
         getApiErrorMessage(error, "회원가입에 실패했어요. 다시 시도해 주세요."),
         { id: "signup" },

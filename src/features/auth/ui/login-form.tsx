@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form";
 import { useQueryClient } from "@tanstack/react-query";
 import { clearFittingSelection } from "@/features/fitting/store/fitting-selection-store";
 import { memberMeQueryOptions } from "@/features/member";
-import { getApiErrorMessage } from "@/shared/api/error";
+import { ApiError, getApiErrorMessage } from "@/shared/api/error";
 import { Button, IconButton } from "@/shared/ui/button";
 import { PasswordVisibilityIcon } from "@/shared/ui/icon";
 import { InputField } from "@/shared/ui/input-field";
@@ -25,6 +25,7 @@ export function LoginForm() {
     formState: { errors, isSubmitted, isValid, touchedFields, isSubmitting },
     handleSubmit,
     register,
+    setError,
     setFocus,
   } = useForm<LoginRequest>({
     mode: "onChange",
@@ -40,6 +41,17 @@ export function LoginForm() {
       });
       router.replace(profileCompleted ? "/chat" : "/profile/setup");
     } catch (error) {
+      if (error instanceof ApiError && error.code === "INVALID_CREDENTIALS") {
+        setError(
+          "password",
+          {
+            message: "이메일 또는 비밀번호가 올바르지 않습니다.",
+          },
+          { shouldFocus: true },
+        );
+        return;
+      }
+
       showToast.error(
         getApiErrorMessage(error, "이메일 또는 비밀번호를 확인해 주세요."),
         {

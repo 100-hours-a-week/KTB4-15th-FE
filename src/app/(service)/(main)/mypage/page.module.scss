@@ -4,5 +4,7 @@
   gap: var(--space-xl);
   align-content: start;
   padding-block: var(--space-xl)
-    calc(var(--navigation-height) + var(--space-2xl));
+    calc(
+      var(--navigation-height) + env(safe-area-inset-bottom) + var(--space-2xl)
+    );
 }

@@ -1,9 +1,10 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css";
 import "sonner/dist/styles.css";
 import { AppToaster } from "@/shared/ui/toast";
 import styles from "./layout.module.scss";
 import "./globals.scss";
+import { ClarityAnalytics } from "./clarity-analytics";
 import { Providers } from "./providers";
 
 export const metadata: Metadata = {
@@ -15,6 +16,12 @@ export const metadata: Metadata = {
   },
 };
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+};
+
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="ko">
@@ -23,6 +30,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <div className={styles.appFrame}>{children}</div>
           <AppToaster />
         </Providers>
+        <ClarityAnalytics />
       </body>
     </html>
   );

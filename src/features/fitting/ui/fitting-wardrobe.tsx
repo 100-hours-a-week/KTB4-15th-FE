@@ -7,10 +7,11 @@ import { formatPrice } from "@/shared/utils/price-format";
 import { Header, HeaderIconLink, HeaderTitle } from "@/shared/ui/header";
 import {
   BackIcon,
+  BottomIcon,
   CheckIcon,
   DeleteIcon,
-  HeartIcon,
   InfoIcon,
+  TopIcon,
 } from "@/shared/ui/icon";
 import {
   useDeleteFittingCandidatesMutation,
@@ -100,6 +101,7 @@ function EmptyCandidateCard({ itemType }: { itemType: "TOP" | "BOTTOM" }) {
   const clearProduct = useFittingSelectionStore((state) => state.clearProduct);
   const isSelected = selectedProduct === null;
   const label = itemType === "TOP" ? "상의" : "하의";
+  const ProductIcon = itemType === "TOP" ? TopIcon : BottomIcon;
 
   return (
     <button
@@ -109,7 +111,7 @@ function EmptyCandidateCard({ itemType }: { itemType: "TOP" | "BOTTOM" }) {
       type="button"
     >
       <span className={`${styles.imageArea} ${styles.emptyImageArea}`}>
-        <HeartIcon />
+        <ProductIcon />
       </span>
       <span className={styles.productDetails}>
         <small>{label}</small>

@@ -1,0 +1,69 @@
+.body {
+  min-width: 320px;
+  min-height: 100%;
+  margin: 0;
+  background: var(--color-background-outer, #f2f8f5);
+  color: var(--color-text-primary, #191f28);
+  font-family: var(
+    --font-family-sans,
+    "Pretendard Variable",
+    Pretendard,
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    "Segoe UI",
+    sans-serif
+  );
+}
+
+.main {
+  box-sizing: border-box;
+  display: grid;
+  width: 100%;
+  max-width: var(--app-max-width, 480px);
+  min-height: 100dvh;
+  margin-inline: auto;
+  padding: var(--screen-padding, 20px);
+  place-items: center;
+}
+
+.card {
+  box-sizing: border-box;
+  width: 100%;
+  padding: var(--space-2xl, 32px) var(--space-xl, 24px);
+  border-radius: var(--radius-large, 20px);
+  background: var(--color-background-surface, #fff);
+  text-align: center;
+}
+
+.title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.description {
+  margin: var(--space-md, 12px) 0 var(--space-xl, 24px);
+  color: var(--color-text-secondary, #6b7684);
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.button {
+  box-sizing: border-box;
+  min-height: 48px;
+  border: 0;
+  border-radius: var(--radius-medium, 12px);
+  padding-inline: var(--space-xl, 24px);
+  background: var(--color-action-primary-default, #114b36);
+  color: var(--color-action-primary-text, #fff);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 600;
+
+  &:focus-visible {
+    outline: 3px solid var(--color-focus-ring, #a7cbbb);
+    outline-offset: 2px;
+  }
+}

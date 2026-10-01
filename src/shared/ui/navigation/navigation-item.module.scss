@@ -59,14 +59,15 @@
 }
 
 .featured {
+  padding-block: var(--space-xs);
   color: var(--color-text-primary);
 
   .icon {
     display: grid;
-    width: 56px;
-    height: 56px;
+    width: 48px;
+    height: 48px;
     place-items: center;
-    margin-top: -20px;
+    margin-top: -16px;
     border: 3px solid var(--color-background-surface);
     border-radius: var(--radius-full);
     background: var(--color-text-primary);

@@ -4,8 +4,15 @@ import Image, { type ImageLoaderProps } from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
+import { ApiError } from "@/shared/api/error";
 import { Button } from "@/shared/ui/button";
-import { AiFittingIcon, ChevronRightIcon, HeartIcon } from "@/shared/ui/icon";
+import {
+  AiFittingIcon,
+  BottomIcon,
+  ChevronRightIcon,
+  TopIcon,
+} from "@/shared/ui/icon";
+import { showToast } from "@/shared/ui/toast";
 import { formatPrice } from "@/shared/utils/price-format";
 import { createFittingJob } from "../api/fitting-jobs";
 import { setActiveFittingJobId } from "../store/active-fitting-job-storage";
@@ -21,10 +28,18 @@ function passthroughImageLoader({ src }: ImageLoaderProps) {
   return src;
 }
 
-function EmptyProductIcon({ label }: { label: string }) {
+function EmptyProductIcon({
+  itemType,
+  label,
+}: {
+  itemType: ItemType;
+  label: string;
+}) {
+  const ProductIcon = itemType === "TOP" ? TopIcon : BottomIcon;
+
   return (
     <div aria-hidden="true" className={styles.emptyProductIcon}>
-      <HeartIcon />
+      <ProductIcon />
       <small>{label}</small>
     </div>
   );
@@ -64,7 +79,7 @@ function OutfitItem({
             />
           </span>
         ) : (
-          <EmptyProductIcon label={label} />
+          <EmptyProductIcon itemType={itemType} label={label} />
         )}
         <span className={styles.productCopy}>
           <strong>{product?.productName ?? "선택 안 함"}</strong>
@@ -95,6 +110,15 @@ export function FittingSelectionPanel() {
       saveFittingJobStartedAt(fittingJobId);
       clearSelection();
       router.push(`/fitting/jobs/${fittingJobId}`);
+    },
+    onError: (error) => {
+      const message =
+        error instanceof ApiError &&
+        error.code === "FITTING_REQUEST_LIMIT_EXCEEDED"
+          ? "가상 피팅 요청 횟수(최대 10회)를 모두 사용했어요."
+          : "피팅 요청을 시작하지 못했어요. 잠시 후 다시 시도해 주세요.";
+
+      showToast.error(message, { id: "create-fitting-job" });
     },
   });
 
@@ -151,11 +175,6 @@ export function FittingSelectionPanel() {
         >
           AI 가상 피팅 시작하기
         </Button>
-        {createFittingJobMutation.isError && (
-          <p aria-live="polite" className={styles.errorMessage} role="status">
-            피팅 요청을 시작하지 못했어요. 잠시 후 다시 시도해 주세요.
-          </p>
-        )}
       </div>
     </div>
   );
