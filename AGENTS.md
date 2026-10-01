@@ -12,9 +12,9 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 ## 기준 문서
 
-- 작업 전에 `README.md`와 `docs/project-decisions.md`를 확인한다.
+- 작업 전에 `README.md`와 `docs/README.md`에서 작업과 관련된 문서를 확인한다.
 - 확정되지 않은 기술이나 정책을 임의로 도입하지 않는다.
-- 새로운 결정을 내리면 코드와 `docs/project-decisions.md`를 함께 갱신한다.
+- 새로운 결정을 내리면 코드, 관련 주제 문서와 `docs/project-decisions.md`를 함께 갱신한다.
 
 ## 프로젝트 규칙
 
