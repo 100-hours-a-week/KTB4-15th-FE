@@ -131,7 +131,7 @@ export function SignupForm() {
           helperText={
             touchedFields.password && !errors.password
               ? undefined
-              : "영문, 숫자, 대문자, 소문자, 특수문자를 포함해 8자 이상 입력해주세요."
+              : "영문 대·소문자, 숫자, 특수문자를 포함해 8~20자로 입력해주세요."
           }
           label="비밀번호"
           onKeyDown={(event) => focusFieldOnEnter(event, "confirmPassword")}
