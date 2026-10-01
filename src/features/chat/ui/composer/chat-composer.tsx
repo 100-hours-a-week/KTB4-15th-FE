@@ -43,7 +43,10 @@ export function ChatComposer({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const trimmedContent = content.trim();
   const isInputDisabled = disabled || isSubmitting;
-  const canSubmit = !isInputDisabled && trimmedContent.length > 0;
+  const canSubmit =
+    !isInputDisabled &&
+    trimmedContent.length > 0 &&
+    content.length <= MAX_LENGTH;
 
   useLayoutEffect(() => {
     const textarea = textareaRef.current;

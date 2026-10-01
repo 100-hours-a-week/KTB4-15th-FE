@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { NAME_PATTERN } from "@/shared/utils/profile-validation";
 
 export const memberProfileSchema = z.object({
   email: z.string().email(),
@@ -18,12 +19,7 @@ export const fullBodyImageValidationSchema = z.object({
 });
 
 export const memberProfileCreateRequestSchema = z.object({
-  name: z
-    .string()
-    .trim()
-    .min(1)
-    .max(10)
-    .regex(/^[가-힣A-Za-z ]+$/),
+  name: z.string().trim().min(1).max(10).regex(NAME_PATTERN),
   age: z.number().int().min(1).max(100),
   height: z.number().min(100).max(250),
   weight: z.number().min(30).max(200),
