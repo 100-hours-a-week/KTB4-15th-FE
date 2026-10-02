@@ -1,5 +1,5 @@
 const NAME_MAX_LENGTH = 10;
-export const NAME_PATTERN = /^[가-힣A-Za-z]+(?: [가-힣A-Za-z]+)*$/;
+export const NAME_PATTERN = /^[가-힣A-Za-z0-9]+(?: [가-힣A-Za-z0-9]+)*$/;
 const DECIMAL_INPUT_PATTERN = /^\d{0,3}(?:\.\d?)?$/;
 
 export function normalizeName(value: string) {
@@ -14,7 +14,7 @@ export function validateName(value: string) {
     return "*이름은 최대 10자까지 작성 가능합니다.";
   }
   if (!NAME_PATTERN.test(name)) {
-    return "*이름은 한글과 영어를 사용하고, 단어 사이는 한 칸만 띄어주세요.";
+    return "*이름은 한글, 영어, 숫자를 사용하고, 단어 사이는 한 칸만 띄어주세요.";
   }
 
   return undefined;
