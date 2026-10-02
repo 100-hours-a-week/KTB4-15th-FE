@@ -14,9 +14,10 @@ import {
   getChatGenerationStatus,
   getChatRoom,
 } from "./api/chat";
+import { Button } from "@/shared/ui/button";
 import { showToast } from "@/shared/ui/toast";
 import { getApiErrorMessage } from "@/shared/api/error";
-import type { ChatMessageResponse, ChatSourceType } from "./schema/chat";
+import type { ChatSourceType } from "./schema/chat";
 import styles from "./chat-screen.module.scss";
 import { ChatComposer } from "./ui/composer/chat-composer";
 import { ChatIntro } from "./ui/intro/chat-intro";
@@ -26,7 +27,6 @@ import { useNavigationVisibility } from "@/shared/ui/navigation";
 type ChatScreenProps = {
   chatRoomId?: number;
   date?: string;
-  initialMessages?: ChatMessageResponse[];
 };
 
 export function ChatScreen({ chatRoomId, date }: ChatScreenProps) {
@@ -88,6 +88,7 @@ export function ChatScreen({ chatRoomId, date }: ChatScreenProps) {
     getNextPageParam: (lastPage) =>
       lastPage.hasNext ? lastPage.nextCursor : undefined,
     enabled: chatRoomId != null,
+    retry: false,
   });
 
   const messages =
@@ -186,6 +187,24 @@ export function ChatScreen({ chatRoomId, date }: ChatScreenProps) {
     createChatRoomMutation.isPending ||
     sendChatMessageMutation.isPending ||
     isGenerating;
+  const isInitialChatRoomPending =
+    chatRoomId != null && chatRoomQuery.isPending;
+  const isInitialChatRoomError =
+    chatRoomId != null && chatRoomQuery.isError && chatRoomQuery.data == null;
+
+  if (isInitialChatRoomError) {
+    return (
+      <main aria-live="polite" className={styles.errorState}>
+        <div className={styles.errorContent}>
+          <h1>채팅방을 확인하지 못했어요</h1>
+          <p>존재하지 않거나 접근할 수 없는 채팅방이에요.</p>
+          <Button onClick={() => router.replace("/chat")}>
+            채팅 홈으로 이동
+          </Button>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <>
@@ -208,7 +227,11 @@ export function ChatScreen({ chatRoomId, date }: ChatScreenProps) {
           isNavigationVisible ? "" : styles.navigationHidden
         }`}
       >
-        <ChatComposer isSubmitting={isSubmitting} onSubmit={handleSubmit} />
+        <ChatComposer
+          disabled={isInitialChatRoomPending}
+          isSubmitting={isSubmitting}
+          onSubmit={handleSubmit}
+        />
       </div>
     </>
   );
