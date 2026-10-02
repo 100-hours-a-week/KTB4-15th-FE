@@ -88,7 +88,7 @@ export function ChatScreen({ chatRoomId, date }: ChatScreenProps) {
     getNextPageParam: (lastPage) =>
       lastPage.hasNext ? lastPage.nextCursor : undefined,
     enabled: chatRoomId != null,
-    retry: false
+    retry: false,
   });
 
   const messages =
