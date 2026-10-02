@@ -1,8 +1,7 @@
 ---
-name: 리팩터링
-about: 동작을 유지하면서 FE 코드 구조와 유지보수성을 개선합니다
+name: "🔧 Refactor"
+about: 코드 구조 및 유지보수성을 개선 템플릿
 title: "[Refactor] "
-labels: refactor
 ---
 
 ## 📝 배경

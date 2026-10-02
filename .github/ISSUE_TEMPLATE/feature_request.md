@@ -1,6 +1,7 @@
 ---
 name: "✨ Feature"
 about: 기능 제안 및 개선 이슈 템플릿
+title: "[FEATURE] "
 ---
 
 <!-- 작성하지 않은 항목은 모두 지워주세요 -->
