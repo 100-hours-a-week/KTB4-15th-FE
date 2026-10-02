@@ -16,7 +16,7 @@ export default async function ChatRoomPage({
     <>
       <ChatHeader />
       <main className={styles.main}>
-        <ChatScreen chatRoomId={chatRoomId} initialMessages={[]} />
+        <ChatScreen chatRoomId={chatRoomId} />
       </main>
     </>
   );
