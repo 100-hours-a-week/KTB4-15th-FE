@@ -5,6 +5,7 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import {
+  createFittingCandidate,
   deleteFittingCandidates,
   getFittingCandidates,
   type FittingCandidateItemType,
@@ -38,6 +39,18 @@ export const fittingJobQueryOptions = (fittingJobId: number) =>
       query.state.data?.status === "GENERATING" ? 3_000 : false,
     refetchOnWindowFocus: true,
   });
+
+export function useCreateFittingCandidateMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: createFittingCandidate,
+    onSuccess: () =>
+      queryClient.invalidateQueries({
+        queryKey: fittingQueryKeys.candidateListRoot,
+      }),
+  });
+}
 
 export function useDeleteFittingCandidatesMutation() {
   const queryClient = useQueryClient();

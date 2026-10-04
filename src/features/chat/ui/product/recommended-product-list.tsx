@@ -2,10 +2,8 @@
 
 import Image, { type ImageLoaderProps } from "next/image";
 import Link from "next/link";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRef, useState, type UIEvent } from "react";
-import { fittingQueryKeys } from "@/features/fitting";
-import { createFittingCandidate } from "@/features/fitting/api/fitting-candidate";
+import { useCreateFittingCandidateMutation } from "@/features/fitting";
 import { useFittingSelectionStore } from "@/features/fitting/store/fitting-selection-store";
 import type { RecommendedProductResponse } from "../../schema/chat";
 import { Button } from "@/shared/ui/button";
@@ -43,7 +41,6 @@ function RecommendedProductCard({
   index,
   product,
 }: RecommendedProductCardProps) {
-  const queryClient = useQueryClient();
   const selectProduct = useFittingSelectionStore(
     (state) => state.selectProduct,
   );
@@ -53,27 +50,27 @@ function RecommendedProductCard({
   const [fittingCandidateId, setFittingCandidateId] = useState(
     product.fittingCandidateId,
   );
-  const fittingCandidateMutation = useMutation({
-    mutationFn: () => createFittingCandidate(product.productId),
-    onSuccess: ({ fittingCandidateId }) => {
-      setFittingCandidateId(fittingCandidateId);
-      setIsFittingCandidate(true);
-      void queryClient.invalidateQueries({
-        queryKey: fittingQueryKeys.candidateListRoot,
-      });
-      showToast.success("피팅 목록에 추가했어요.", {
-        id: `add-fitting-candidate:${product.productId}`,
-      });
-    },
-    onError: (error) => {
-      showToast.error(
-        getApiErrorMessage(error, "피팅 목록에 추가하지 못했어요."),
-        {
+  const fittingCandidateMutation = useCreateFittingCandidateMutation();
+
+  const handleAddFittingCandidate = () => {
+    fittingCandidateMutation.mutate(product.productId, {
+      onSuccess: ({ fittingCandidateId }) => {
+        setFittingCandidateId(fittingCandidateId);
+        setIsFittingCandidate(true);
+        showToast.success("피팅 목록에 추가했어요.", {
           id: `add-fitting-candidate:${product.productId}`,
-        },
-      );
-    },
-  });
+        });
+      },
+      onError: (error) => {
+        showToast.error(
+          getApiErrorMessage(error, "피팅 목록에 추가하지 못했어요."),
+          {
+            id: `add-fitting-candidate:${product.productId}`,
+          },
+        );
+      },
+    });
+  };
 
   return (
     <article
@@ -147,7 +144,7 @@ function RecommendedProductCard({
               className={styles.fittingButton}
               fullWidth
               isLoading={fittingCandidateMutation.isPending}
-              onClick={() => fittingCandidateMutation.mutate()}
+              onClick={handleAddFittingCandidate}
               size="small"
               variant="primary"
             >
