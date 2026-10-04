@@ -8,11 +8,12 @@ import {
   useInfiniteQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import { createChatRoom, sendChatMessage } from "./api/chat";
+import { createChatRoom } from "./api/chat";
 import {
   chatMessageGenerationStatusQueryOptions,
   chatQueryKeys,
   chatRoomQueryOptions,
+  useSendChatMessageMutation,
 } from "./model/chat-query";
 import { Button } from "@/shared/ui/button";
 import { showToast } from "@/shared/ui/toast";
@@ -29,6 +30,13 @@ type ChatScreenProps = {
   date?: string;
 };
 
+function showSendChatMessageError(error: Error) {
+  showToast.error(
+    getApiErrorMessage(error, "메시지를 보내지 못했어요. 다시 시도해 주세요."),
+    { id: "send-chat-message" },
+  );
+}
+
 export function ChatScreen({ chatRoomId, date }: ChatScreenProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -40,40 +48,10 @@ export function ChatScreen({ chatRoomId, date }: ChatScreenProps) {
     onSuccess: (data) => {
       router.replace(`/chat/${data.chatRoomId}`);
     },
-    onError: (error) => {
-      showToast.error(
-        getApiErrorMessage(
-          error,
-          "메시지를 보내지 못했어요. 다시 시도해 주세요.",
-        ),
-        { id: "send-chat-message" },
-      );
-    },
+    onError: showSendChatMessageError,
   });
 
-  const sendChatMessageMutation = useMutation({
-    mutationFn: ({
-      chatRoomId,
-      content,
-    }: {
-      chatRoomId: number;
-      content: string;
-    }) => sendChatMessage(chatRoomId, { content }),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({
-        queryKey: chatQueryKeys.room(chatRoomId),
-      });
-    },
-    onError: (error) => {
-      showToast.error(
-        getApiErrorMessage(
-          error,
-          "메시지를 보내지 못했어요. 다시 시도해 주세요.",
-        ),
-        { id: "send-chat-message" },
-      );
-    },
-  });
+  const sendChatMessageMutation = useSendChatMessageMutation();
 
   const chatRoomQuery = useInfiniteQuery(chatRoomQueryOptions(chatRoomId));
 
@@ -137,7 +115,10 @@ export function ChatScreen({ chatRoomId, date }: ChatScreenProps) {
         return;
       }
 
-      await sendChatMessageMutation.mutateAsync({ chatRoomId, content });
+      await sendChatMessageMutation.mutateAsync(
+        { chatRoomId, content },
+        { onError: showSendChatMessageError },
+      );
     } finally {
       submissionLockRef.current = false;
     }
@@ -155,7 +136,10 @@ export function ChatScreen({ chatRoomId, date }: ChatScreenProps) {
     submissionLockRef.current = true;
 
     void sendChatMessageMutation
-      .mutateAsync({ chatRoomId, content })
+      .mutateAsync(
+        { chatRoomId, content },
+        { onError: showSendChatMessageError },
+      )
       .catch(() => undefined)
       .finally(() => {
         submissionLockRef.current = false;

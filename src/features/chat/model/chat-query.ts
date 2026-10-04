@@ -10,6 +10,7 @@ import {
   getChatRoom,
   getChatRooms,
   renameChatRoom,
+  sendChatMessage,
 } from "../api/chat";
 
 export const chatQueryKeys = {
@@ -87,5 +88,23 @@ export function useDeleteChatRoomMutation() {
     mutationFn: deleteChatRoom,
     onSuccess: () =>
       queryClient.invalidateQueries({ queryKey: chatQueryKeys.roomList }),
+  });
+}
+
+export function useSendChatMessageMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      chatRoomId,
+      content,
+    }: {
+      chatRoomId: number;
+      content: string;
+    }) => sendChatMessage(chatRoomId, { content }),
+    onSuccess: (_, { chatRoomId }) =>
+      queryClient.invalidateQueries({
+        queryKey: chatQueryKeys.room(chatRoomId),
+      }),
   });
 }
