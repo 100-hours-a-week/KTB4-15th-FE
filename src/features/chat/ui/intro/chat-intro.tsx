@@ -1,7 +1,8 @@
 "use client";
 
 import Image, { type StaticImageData } from "next/image";
-import { useMemberProfileQuery } from "@/features/profile";
+import { useQuery } from "@tanstack/react-query";
+import { memberProfileQueryOptions } from "@/features/profile";
 import { ChevronRightIcon } from "@/shared/ui/icon";
 import type { ChatSourceType } from "../../schema/chat";
 import aiImage from "../../icon/ai.png";
@@ -60,7 +61,7 @@ type ChatIntroProps = {
 };
 
 export function ChatIntro({ date, onSelectQuestion }: ChatIntroProps) {
-  const memberProfileQuery = useMemberProfileQuery();
+  const memberProfileQuery = useQuery(memberProfileQueryOptions);
   const memberName = memberProfileQuery.data?.name;
 
   return (

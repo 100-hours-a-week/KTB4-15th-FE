@@ -3,10 +3,11 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { useMemberProfileQuery } from "@/features/profile/api/member-profile-query";
+import { useQuery } from "@tanstack/react-query";
+import { memberProfileQueryOptions } from "@/features/profile";
 import { Header, HeaderIconLink, HeaderTitle } from "@/shared/ui/header";
 import { BackIcon, CloseIcon, RefreshIcon, SearchIcon } from "@/shared/ui/icon";
-import { useFittingJobStatusQuery } from "../api/fitting-job-query";
+import { fittingJobQueryOptions } from "../model/fitting-query";
 import { clearActiveFittingJobId } from "../store/active-fitting-job-storage";
 import {
   clearFittingJobProgress,
@@ -57,7 +58,7 @@ function FittingProgressView({
   completed: boolean;
   fittingJobId: number;
 }) {
-  const { data: memberProfile } = useMemberProfileQuery();
+  const { data: memberProfile } = useQuery(memberProfileQueryOptions);
   const [startedAt] = useState(() => getFittingJobStartedAt(fittingJobId));
   const [progress, setProgress] = useState(() =>
     getSimulatedProgress(startedAt ?? Date.now()),
@@ -147,7 +148,7 @@ function FittingProgressView({
 }
 
 function FittingResultView({ result }: { result: FittingResult }) {
-  const { data: memberProfile } = useMemberProfileQuery();
+  const { data: memberProfile } = useQuery(memberProfileQueryOptions);
   const [isImageOpen, setIsImageOpen] = useState(false);
 
   useEffect(() => {
@@ -296,7 +297,9 @@ function FittingResultView({ result }: { result: FittingResult }) {
 }
 
 export function FittingJobScreen({ fittingJobId }: FittingJobScreenProps) {
-  const { data, isError, isPending } = useFittingJobStatusQuery(fittingJobId);
+  const { data, isError, isPending } = useQuery(
+    fittingJobQueryOptions(fittingJobId),
+  );
   const [isResultReady, setIsResultReady] = useState(false);
 
   useEffect(() => {

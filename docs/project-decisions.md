@@ -20,6 +20,15 @@
 - 서버 상태는 TanStack Query, 서버 저장 전 여러 화면에서 공유하는 임시 상태는 Zustand로 관리합니다.
 - 사용자 흐름과 비즈니스 규칙은 [도메인 문서](./domains/README.md)에서 관리합니다.
 
+### TanStack Query 규칙
+
+- Query key는 도메인부터 시작하는 배열로 작성합니다. 고정 segment는 소문자 단일 단어를 사용하고, 목록은 복수형, 단일 리소스는 단수형으로 구분합니다.
+- 목록·상세·필터처럼 같은 리소스의 key가 반복되면 model의 key 정의나 factory를 재사용합니다. Query와 invalidation에서 같은 정의를 사용합니다.
+- Query variable은 해당 Query key에 포함합니다.
+- 재사용할 Query 설정은 `queryOptions` 또는 `infiniteQueryOptions`로 만들고, 컴포넌트에서는 `useQuery`나 `useInfiniteQuery`로 실행합니다.
+- `staleTime`은 데이터의 기본 freshness 정책입니다. mutation으로 서버 데이터가 변경되면 관련 Query를 명시적으로 무효화합니다.
+- Query 무효화는 캐시를 즉시 삭제하는 것이 아니라 stale 상태로 표시하는 동작입니다. 비활성 Query는 다음 활성화 시 최신 데이터를 가져옵니다.
+
 자세한 구조는 [아키텍처](./architecture.md)를 참고합니다.
 
 ## API와 오류 처리

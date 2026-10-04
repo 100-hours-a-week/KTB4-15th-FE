@@ -1,7 +1,7 @@
 import { apiClient } from "@/shared/api/client";
 import { parseResponse } from "@/shared/api/response";
 import {
-  chatGenerationResponse,
+  chatMessageGenerationStatusResponse,
   chatRoomListResponse,
   createChatRoomResponse,
   renameChatRoomRequest,
@@ -32,7 +32,7 @@ export async function sendChatMessage(
   return parseResponse(response, sendChatMessageResponse);
 }
 
-export async function getChatGenerationStatus(
+export async function getChatMessageGenerationStatus(
   chatRoomId: number,
   messageId: number,
 ) {
@@ -40,7 +40,7 @@ export async function getChatGenerationStatus(
     `chat-rooms/${chatRoomId}/messages/${messageId}/status`,
   );
 
-  return parseResponse(response, chatGenerationResponse);
+  return parseResponse(response, chatMessageGenerationStatusResponse);
 }
 
 export async function getChatRoom(

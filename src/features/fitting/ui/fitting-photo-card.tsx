@@ -1,7 +1,8 @@
 "use client";
 
 import Image, { type ImageLoaderProps } from "next/image";
-import { useMemberProfileQuery } from "@/features/profile/api/member-profile-query";
+import { useQuery } from "@tanstack/react-query";
+import { memberProfileQueryOptions } from "@/features/profile";
 import styles from "./fitting-photo-card.module.scss";
 
 function passthroughImageLoader({ src }: ImageLoaderProps) {
@@ -9,7 +10,9 @@ function passthroughImageLoader({ src }: ImageLoaderProps) {
 }
 
 export function FittingPhotoCard() {
-  const { data: memberProfile, isPending } = useMemberProfileQuery();
+  const { data: memberProfile, isPending } = useQuery(
+    memberProfileQueryOptions,
+  );
   const fullBodyImageUrl =
     memberProfile?.fullBodyImageUrl ?? "/images/profile/full-body-example.png";
 
