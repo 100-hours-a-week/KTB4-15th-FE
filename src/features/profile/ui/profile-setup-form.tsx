@@ -33,7 +33,7 @@ import {
 } from "@/shared/utils/profile-validation";
 import styles from "./profile-setup-form.module.scss";
 import { createMemberProfile, validateFullBodyImage } from "../api/profile";
-import { memberProfileQueryOptions } from "../api/member-profile-query";
+import { memberProfileQueryOptions } from "../model/member-profile-query";
 
 type ProfileSetupFormValues = {
   name: string;
