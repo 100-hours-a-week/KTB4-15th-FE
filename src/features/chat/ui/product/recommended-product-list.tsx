@@ -4,8 +4,8 @@ import Image, { type ImageLoaderProps } from "next/image";
 import Link from "next/link";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRef, useState, type UIEvent } from "react";
+import { fittingQueryKeys } from "@/features/fitting";
 import { createFittingCandidate } from "@/features/fitting/api/fitting-candidate";
-import { FITTING_CANDIDATES_QUERY_KEY } from "@/features/fitting/api/fitting-candidate-query";
 import { useFittingSelectionStore } from "@/features/fitting/store/fitting-selection-store";
 import type { RecommendedProductResponse } from "../../schema/chat";
 import { Button } from "@/shared/ui/button";
@@ -59,7 +59,7 @@ function RecommendedProductCard({
       setFittingCandidateId(fittingCandidateId);
       setIsFittingCandidate(true);
       void queryClient.invalidateQueries({
-        queryKey: FITTING_CANDIDATES_QUERY_KEY,
+        queryKey: fittingQueryKeys.candidateListRoot,
       });
       showToast.success("피팅 목록에 추가했어요.", {
         id: `add-fitting-candidate:${product.productId}`,

@@ -1,3 +1,4 @@
+export { fittingQueryKeys } from "./model/fitting-query";
 export { FittingEntryGuard } from "./ui/fitting-entry-guard";
 export { FittingJobScreen } from "./ui/fitting-job-screen";
 export { FittingPhotoCard } from "./ui/fitting-photo-card";

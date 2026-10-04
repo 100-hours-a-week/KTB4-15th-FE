@@ -3,6 +3,7 @@
 import Image, { type ImageLoaderProps } from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { formatPrice } from "@/shared/utils/price-format";
 import { Header, HeaderIconLink, HeaderTitle } from "@/shared/ui/header";
 import {
@@ -14,9 +15,9 @@ import {
   TopIcon,
 } from "@/shared/ui/icon";
 import {
+  fittingCandidatesQueryOptions,
   useDeleteFittingCandidatesMutation,
-  useFittingCandidatesQuery,
-} from "../api/fitting-candidate-query";
+} from "../model/fitting-query";
 import { useFittingSelectionStore } from "../store/fitting-selection-store";
 import { useRestoreFittingSelection } from "../store/use-restore-fitting-selection";
 import type { FittingCandidate } from "../schema/fitting-candidate";
@@ -140,7 +141,9 @@ export function FittingWardrobe({ initialFilter }: FittingWardrobeProps) {
     isError,
     isFetchingNextPage,
     isPending,
-  } = useFittingCandidatesQuery(filter === "ALL" ? undefined : filter);
+  } = useInfiniteQuery(
+    fittingCandidatesQueryOptions(filter === "ALL" ? undefined : filter),
+  );
   const loadMoreRef = useRef<HTMLDivElement>(null);
   const top = useFittingSelectionStore((state) => state.top);
   const bottom = useFittingSelectionStore((state) => state.bottom);

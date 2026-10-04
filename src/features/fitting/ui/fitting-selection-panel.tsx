@@ -14,7 +14,7 @@ import {
 } from "@/shared/ui/icon";
 import { showToast } from "@/shared/ui/toast";
 import { formatPrice } from "@/shared/utils/price-format";
-import { createFittingJob } from "../api/fitting-jobs";
+import { createFittingJob } from "../api/fitting-job";
 import { setActiveFittingJobId } from "../store/active-fitting-job-storage";
 import { saveFittingJobStartedAt } from "../store/fitting-job-progress-storage";
 import { useFittingSelectionStore } from "../store/fitting-selection-store";

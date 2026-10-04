@@ -7,7 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import { memberProfileQueryOptions } from "@/features/profile";
 import { Header, HeaderIconLink, HeaderTitle } from "@/shared/ui/header";
 import { BackIcon, CloseIcon, RefreshIcon, SearchIcon } from "@/shared/ui/icon";
-import { useFittingJobStatusQuery } from "../api/fitting-job-query";
+import { fittingJobQueryOptions } from "../model/fitting-query";
 import { clearActiveFittingJobId } from "../store/active-fitting-job-storage";
 import {
   clearFittingJobProgress,
@@ -297,7 +297,9 @@ function FittingResultView({ result }: { result: FittingResult }) {
 }
 
 export function FittingJobScreen({ fittingJobId }: FittingJobScreenProps) {
-  const { data, isError, isPending } = useFittingJobStatusQuery(fittingJobId);
+  const { data, isError, isPending } = useQuery(
+    fittingJobQueryOptions(fittingJobId),
+  );
   const [isResultReady, setIsResultReady] = useState(false);
 
   useEffect(() => {
