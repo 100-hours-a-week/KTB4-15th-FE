@@ -69,6 +69,7 @@
 - 인증 요청 실패는 안정적인 Toast id를 사용해 중복 Toast를 갱신합니다.
 - 로그인 실패의 기본 메시지는 이메일 또는 비밀번호를 확인하도록 안내합니다.
 - 인증 갱신에 실패한 상태에서는 보호된 화면을 렌더링하지 않습니다.
+- 로그인과 회원가입 화면은 회원 상태 조회를 기다리지 않고 표시하며, 로그인 상태가 확인되면 프로필 상태에 맞는 서비스 화면으로 이동합니다.
 - 회원 상태 조회 자체가 실패하면 서비스 화면에서 재시도 UI를 제공합니다.
 
 ## 관련 코드
@@ -76,7 +77,7 @@
 - `src/features/auth`: 인증 API, Schema와 Form
 - `src/features/auth/ui/service-access-guard.tsx`: 서비스 접근 제어
 - `src/shared/api/client.ts`: `401` 처리와 Token 갱신
-- `src/app/(public)/login`, `src/app/(public)/signup`: 공개 Route
+- `src/app/(public)/(auth)/login`, `src/app/(public)/(auth)/signup`: 인증 Route
 - `src/app/(service)/layout.tsx`: 보호된 Route의 Guard 적용
 
 ## 보류 항목
