@@ -90,8 +90,7 @@
 - `src/features/fitting/schema`: 후보와 Job Schema
 - `src/features/fitting/store`: 선택, 활성 Job과 진행 시간 저장
 - `src/features/fitting/ui`: 피팅 홈, 옷장, 진행과 결과 UI
-- `src/app/(service)/(main)/fitting`: 피팅 홈과 Job Route
-- `src/app/(service)/(subpage)/fitting/wardrobe`: 옷장 Route
+- `src/app/(service)/fitting`: 피팅 홈, 옷장과 Job Route
 
 ## 보류 항목
 

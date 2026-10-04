@@ -92,8 +92,8 @@
 - `src/features/profile`: Profile 등록·조회와 화면 UI
 - `src/features/profile`: Profile 등록과 전신 사진 선택·검증·촬영 가이드
 - `src/shared/utils/profile-validation.ts`: Profile 입력 검증
-- `src/app/(service)/(standalone)/profile/setup`: 등록 Route
-- `src/app/(service)/(main)/mypage`: 조회 Route
+- `src/app/(service)/profile/setup`: 등록 Route
+- `src/app/(service)/mypage`: 조회 Route
 
 ## 보류 항목
 
