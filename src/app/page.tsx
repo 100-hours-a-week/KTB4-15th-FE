@@ -1,7 +1,6 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-
-const ONBOARDING_COOKIE_NAME = "look-ddak-onboarding-completed";
+import { ONBOARDING_COOKIE_NAME } from "@/features/onboarding/model/onboarding-cookie";
 
 export default async function Home() {
   const cookieStore = await cookies();

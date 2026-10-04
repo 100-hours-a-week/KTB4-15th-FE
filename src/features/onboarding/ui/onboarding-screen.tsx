@@ -7,10 +7,11 @@ import chatStyleImage from "../../../../public/images/onboarding/chat-style.png"
 import saveTimeImage from "../../../../public/images/onboarding/save-time.png";
 import virtualFittingImage from "../../../../public/images/onboarding/virtual-fitting.png";
 import { Button } from "@/shared/ui/button";
+import {
+  ONBOARDING_COOKIE_MAX_AGE,
+  ONBOARDING_COOKIE_NAME,
+} from "../model/onboarding-cookie";
 import styles from "./onboarding-screen.module.scss";
-
-const ONBOARDING_COOKIE_NAME = "look-ddak-onboarding-completed";
-const ONBOARDING_COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
 
 type OnboardingItem = {
   image: StaticImageData;
