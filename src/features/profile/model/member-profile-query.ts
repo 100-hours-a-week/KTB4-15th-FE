@@ -3,7 +3,7 @@ import {
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query";
-import { createMemberProfile, getMemberProfile } from "../api/profile";
+import { createMemberProfile, getMemberProfile } from "../api/member-profile";
 
 export const memberProfileQueryOptions = queryOptions({
   queryKey: ["member", "profile"],
