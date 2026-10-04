@@ -21,15 +21,13 @@ import {
   RenameChatDialog,
 } from "@/features/chat/ui/dialog/chat-dialogs";
 import { formatKoreanRelativeDateTime } from "@/shared/utils/date-format";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import {
-  useInfiniteQuery,
-  useMutation,
-  useQueryClient,
-} from "@tanstack/react-query";
-import { deleteChatRoom, getChatRooms, renameChatRoom } from "../../api/chat";
+  chatRoomListQueryOptions,
+  useDeleteChatRoomMutation,
+  useRenameChatRoomMutation,
+} from "../../model/chat-query";
 import styles from "./chat-sidebar.module.scss";
-
-const CHAT_ROOMS_QUERY_KEY = ["chatRooms"] as const;
 
 type ChatSidebarProps = {
   onOpenChange: (open: boolean) => void;
@@ -39,54 +37,16 @@ type ChatSidebarProps = {
 export function ChatSidebar({ open, onOpenChange }: ChatSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const queryClient = useQueryClient();
   const chatRoomListRef = useRef<HTMLElement>(null);
   const loadMoreRef = useRef<HTMLDivElement>(null);
 
   const chatRoomQuery = useInfiniteQuery({
-    queryKey: CHAT_ROOMS_QUERY_KEY,
-    queryFn: ({ pageParam }) => getChatRooms(pageParam),
-    initialPageParam: null as number | null,
-    getNextPageParam: (lastPage) =>
-      lastPage.hasNext && lastPage.nextCursor !== null
-        ? lastPage.nextCursor
-        : undefined,
+    ...chatRoomListQueryOptions,
     enabled: open,
   });
 
-  const renameChatRoomMutation = useMutation({
-    mutationFn: ({
-      chatRoomId,
-      title,
-    }: {
-      chatRoomId: number;
-      title: string;
-    }) => renameChatRoom(chatRoomId, { title }),
-    onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: CHAT_ROOMS_QUERY_KEY }),
-    onError: (error) => {
-      showToast.error(
-        getApiErrorMessage(error, "채팅방 이름을 수정하지 못했어요."),
-        {
-          id: "rename-chat-room",
-        },
-      );
-    },
-  });
-
-  const deleteChatRoomMutation = useMutation({
-    mutationFn: deleteChatRoom,
-    onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: CHAT_ROOMS_QUERY_KEY }),
-    onError: (error) => {
-      showToast.error(
-        getApiErrorMessage(error, "채팅방을 삭제하지 못했어요."),
-        {
-          id: "delete-chat-room",
-        },
-      );
-    },
-  });
+  const renameChatRoomMutation = useRenameChatRoomMutation();
+  const deleteChatRoomMutation = useDeleteChatRoomMutation();
 
   const chatRooms =
     chatRoomQuery.data?.pages.flatMap((page) => page.items) ?? [];
@@ -146,6 +106,12 @@ export function ChatSidebar({ open, onOpenChange }: ChatSidebarProps) {
                   id: "rename-chat-room",
                 });
               },
+              onError: (error) => {
+                showToast.error(
+                  getApiErrorMessage(error, "채팅방 이름을 수정하지 못했어요."),
+                  { id: "rename-chat-room" },
+                );
+              },
             },
           );
         }}
@@ -172,6 +138,12 @@ export function ChatSidebar({ open, onOpenChange }: ChatSidebarProps) {
               if (pathname === `/chat/${chatRoomId}`) {
                 router.push("/chat");
               }
+            },
+            onError: (error) => {
+              showToast.error(
+                getApiErrorMessage(error, "채팅방을 삭제하지 못했어요."),
+                { id: "delete-chat-room" },
+              );
             },
           });
         }}
