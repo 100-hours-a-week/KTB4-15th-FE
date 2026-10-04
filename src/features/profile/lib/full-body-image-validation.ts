@@ -22,7 +22,6 @@ const PHOTO_INPUT_ERROR_MESSAGES: Record<string, string> = {
   LEGS_NOT_VISIBLE: "양다리가 모두 보이도록 촬영해 주세요.",
   NOT_FRONTAL: "카메라를 정면으로 바라보고 촬영해 주세요.",
   IMAGE_TOO_DARK: "사진이 너무 어두워요. 밝은 곳에서 다시 촬영해 주세요.",
-
   IMAGE_SIZE_EXCEEDED: "이미지 크기는 2MB 이하여야 합니다.",
 };
 

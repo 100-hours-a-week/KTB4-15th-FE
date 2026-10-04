@@ -13,11 +13,6 @@ export const memberProfileSchema = z.object({
 
 export type MemberProfile = z.infer<typeof memberProfileSchema>;
 
-export const fullBodyImageValidationSchema = z.object({
-  validationId: z.number().int().positive(),
-  fullBodyImageUrl: z.string().url(),
-});
-
 export const memberProfileCreateRequestSchema = z.object({
   name: z.string().trim().min(1).max(10).regex(NAME_PATTERN),
   age: z.number().int().min(1).max(100),

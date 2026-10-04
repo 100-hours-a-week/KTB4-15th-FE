@@ -54,9 +54,10 @@ src/
 TanStack Query를 사용하는 Feature는 서버 상태의 책임을 다음처럼 나눕니다.
 
 - `api/`: HTTP 요청과 응답 파싱만 담당합니다.
+- `hooks/`: 한 Feature 안에서 UI 상태와 사용자 흐름을 조율하는 Hook을 둡니다.
 - `model/`: Query key, `queryOptions`, mutation hook과 캐시 동기화를 둡니다.
 - `ui/`: Query option을 `useQuery`나 `useInfiniteQuery`로 실행하고, 사용자 입력과 화면 상태를 처리합니다.
-- `index.ts`: 다른 Feature에서 사용할 Query option과 hook만 공개합니다. 같은 Feature 내부에서는 상대 경로 import를 사용할 수 있습니다.
+- `index.ts`: 다른 Feature에서 필요한 Query option, Hook과 컴포넌트만 공개합니다. 같은 Feature 내부에서는 상대 경로 import를 사용할 수 있습니다.
 
 Query option은 재사용할 설정과 key를 한곳에 모으고, `useQuery`는 해당 option을 실행하는 역할만 맡깁니다. 캐시 무효화처럼 여러 화면에 영향을 주는 서버 상태 동기화는 model hook에서 처리하고, 토스트·라우팅·완료 화면 같은 UI 효과는 화면에 남깁니다.
 
