@@ -4,6 +4,7 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import {
+  createChatRoom,
   deleteChatRoom,
   getChatRoom,
   getChatRooms,
@@ -41,6 +42,16 @@ export const chatRoomQueryOptions = (chatRoomId?: number) =>
     enabled: chatRoomId != null,
     retry: false,
   });
+
+export function useCreateChatRoomMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: createChatRoom,
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: chatRoomQueryKeys.list }),
+  });
+}
 
 export function useRenameChatRoomMutation() {
   const queryClient = useQueryClient();

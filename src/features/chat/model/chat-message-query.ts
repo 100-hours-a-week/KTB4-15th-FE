@@ -1,6 +1,8 @@
+import { useEffect } from "react";
 import {
   queryOptions,
   useMutation,
+  useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
 import { getChatMessageGenerationStatus, sendChatMessage } from "../api/chat";
@@ -28,6 +30,30 @@ export const chatMessageGenerationStatusQueryOptions = (
     refetchInterval: (query) =>
       query.state.data?.generationStatus === "GENERATING" ? 2_000 : false,
   });
+
+export function useChatMessageGenerationStatusQuery(
+  chatRoomId?: number,
+  messageId?: number | null,
+) {
+  const queryClient = useQueryClient();
+  const query = useQuery(
+    chatMessageGenerationStatusQueryOptions(chatRoomId, messageId),
+  );
+
+  useEffect(() => {
+    const generationStatus = query.data?.generationStatus;
+
+    if (generationStatus !== "COMPLETED" && generationStatus !== "FAILED") {
+      return;
+    }
+
+    void queryClient.invalidateQueries({
+      queryKey: chatRoomQueryKeys.detail(chatRoomId),
+    });
+  }, [chatRoomId, query.data?.generationStatus, queryClient]);
+
+  return query;
+}
 
 export function useSendChatMessageMutation() {
   const queryClient = useQueryClient();

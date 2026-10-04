@@ -1,21 +1,15 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import { useRouter } from "next/navigation";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import {
-  useMutation,
-  useQuery,
-  useInfiniteQuery,
-  useQueryClient,
-} from "@tanstack/react-query";
-import { createChatRoom } from "./api/chat";
-import {
-  chatMessageGenerationStatusQueryOptions,
+  useChatMessageGenerationStatusQuery,
   useSendChatMessageMutation,
 } from "./model/chat-message-query";
 import {
-  chatRoomQueryKeys,
   chatRoomQueryOptions,
+  useCreateChatRoomMutation,
 } from "./model/chat-room-query";
 import { Button } from "@/shared/ui/button";
 import { showToast } from "@/shared/ui/toast";
@@ -41,17 +35,10 @@ function showSendChatMessageError(error: Error) {
 
 export function ChatScreen({ chatRoomId, date }: ChatScreenProps) {
   const router = useRouter();
-  const queryClient = useQueryClient();
   const { isNavigationVisible } = useNavigationVisibility();
   const submissionLockRef = useRef(false);
 
-  const createChatRoomMutation = useMutation({
-    mutationFn: createChatRoom,
-    onSuccess: (data) => {
-      router.replace(`/chat/${data.chatRoomId}`);
-    },
-    onError: showSendChatMessageError,
-  });
+  const createChatRoomMutation = useCreateChatRoomMutation();
 
   const sendChatMessageMutation = useSendChatMessageMutation();
 
@@ -68,30 +55,14 @@ export function ChatScreen({ chatRoomId, date }: ChatScreenProps) {
         message.generationStatus === "GENERATING",
     )?.messageId ?? null;
 
-  const chatMessageGenerationStatusQuery = useQuery(
-    chatMessageGenerationStatusQueryOptions(chatRoomId, generatingMessageId),
+  const chatMessageGenerationStatusQuery = useChatMessageGenerationStatusQuery(
+    chatRoomId,
+    generatingMessageId,
   );
 
   const handleLoadPreviousMessages = async () => {
     await chatRoomQuery.fetchNextPage();
   };
-
-  useEffect(() => {
-    const generationStatus =
-      chatMessageGenerationStatusQuery.data?.generationStatus;
-
-    if (generationStatus !== "COMPLETED" && generationStatus !== "FAILED") {
-      return;
-    }
-
-    void queryClient.invalidateQueries({
-      queryKey: chatRoomQueryKeys.detail(chatRoomId),
-    });
-  }, [
-    chatMessageGenerationStatusQuery.data?.generationStatus,
-    chatRoomId,
-    queryClient,
-  ]);
 
   const isGenerating =
     generatingMessageId != null &&
@@ -110,10 +81,15 @@ export function ChatScreen({ chatRoomId, date }: ChatScreenProps) {
 
     try {
       if (chatRoomId == null) {
-        await createChatRoomMutation.mutateAsync({
-          content,
-          sourceType,
-        });
+        await createChatRoomMutation.mutateAsync(
+          { content, sourceType },
+          {
+            onSuccess: (data) => {
+              router.replace(`/chat/${data.chatRoomId}`);
+            },
+            onError: showSendChatMessageError,
+          },
+        );
         return;
       }
 
