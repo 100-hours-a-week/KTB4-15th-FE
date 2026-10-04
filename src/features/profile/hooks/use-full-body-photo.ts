@@ -77,6 +77,8 @@ export function useFullBodyPhoto({
 
   const handlePhotoPickerCancel = useCallback(async () => {
     filePickerLockedRef.current = false;
+    if (photoUrl) return;
+
     let isCameraPermissionDenied = false;
 
     try {
@@ -93,7 +95,7 @@ export function useFullBodyPhoto({
         ? "카메라 권한이 필요해요. 설정에서 권한을 허용하거나 로컬 사진 등록을 선택해주세요."
         : "사진 등록이 취소되었습니다.",
     );
-  }, []);
+  }, [photoUrl]);
 
   useEffect(() => {
     const input = fileInputRef.current;

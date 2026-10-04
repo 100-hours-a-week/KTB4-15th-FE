@@ -47,7 +47,7 @@ export function useProfileSetup() {
           { id: "profile-setup" },
         );
       },
-    },);
+    });
   };
 
   return {
