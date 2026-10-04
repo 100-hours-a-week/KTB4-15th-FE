@@ -32,18 +32,14 @@ import {
   validateWeight,
 } from "@/shared/utils/profile-validation";
 import styles from "./profile-setup-form.module.scss";
-import { createMemberProfile, validateFullBodyImage } from "../api/profile";
-import { memberProfileQueryOptions } from "../model/member-profile-query";
+import { validateFullBodyImage } from "../api/profile";
+import { useCreateMemberProfileMutation } from "../model/member-profile-query";
 
 type ProfileSetupFormValues = {
   name: string;
   age: string;
   height: string;
   weight: string;
-};
-
-type ProfileSetupMutationValues = ProfileSetupFormValues & {
-  fullBodyImageValidationId: number;
 };
 
 const COMPLETION_DURATION_MS = 1700;
@@ -111,47 +107,7 @@ export function ProfileSetupForm() {
       setPhotoValidationId(undefined);
     },
   });
-  const profileSetupMutation = useMutation({
-    mutationFn: async ({
-      age,
-      height,
-      name,
-      weight,
-      fullBodyImageValidationId,
-    }: ProfileSetupMutationValues) => {
-      return createMemberProfile({
-        age: Number(age),
-        fullBodyImageValidationId,
-        height: Number(height),
-        name,
-        priceAlertEnabled: isNotificationEnabled,
-        weight: Number(weight),
-      });
-    },
-    onSuccess: () => {
-      setIsComplete(true);
-      router.prefetch("/chat");
-      void queryClient.invalidateQueries({
-        queryKey: memberProfileQueryOptions.queryKey,
-      });
-      completionTimerRef.current = window.setTimeout(() => {
-        queryClient.setQueryData(memberMeQueryOptions.queryKey, {
-          profileCompleted: true,
-        });
-        router.replace("/chat");
-        router.refresh();
-      }, COMPLETION_DURATION_MS);
-    },
-    onError: (error) => {
-      showToast.error(
-        getApiErrorMessage(
-          error,
-          "기본 정보를 등록하지 못했어요. 다시 시도해 주세요.",
-        ),
-        { id: "profile-setup" },
-      );
-    },
-  });
+  const profileSetupMutation = useCreateMemberProfileMutation();
   const displayedPhotoErrorMessage =
     photoErrorMessage ??
     (photoValidationMutation.error
@@ -161,17 +117,54 @@ export function ProfileSetupForm() {
         )
       : undefined);
 
+  const handleProfileSetupSuccess = () => {
+    setIsComplete(true);
+    router.prefetch("/chat");
+    completionTimerRef.current = window.setTimeout(() => {
+      queryClient.setQueryData(memberMeQueryOptions.queryKey, {
+        profileCompleted: true,
+      });
+      router.replace("/chat");
+      router.refresh();
+    }, COMPLETION_DURATION_MS);
+  };
+
+  const handleProfileSetupError = (error: Error) => {
+    showToast.error(
+      getApiErrorMessage(
+        error,
+        "기본 정보를 등록하지 못했어요. 다시 시도해 주세요.",
+      ),
+      { id: "profile-setup" },
+    );
+  };
+
   const handleProfileSubmit = (values: ProfileSetupFormValues) => {
     if (!photoValidationId) {
       setPhotoErrorMessage("전신 사진 검증을 완료해 주세요.");
       return;
     }
 
-    profileSetupMutation.mutate({
-      ...values,
-      fullBodyImageValidationId: photoValidationId,
-    });
+    profileSetupMutation.mutate(
+      {
+        age: Number(values.age),
+        fullBodyImageValidationId: photoValidationId,
+        height: Number(values.height),
+        name: values.name,
+        priceAlertEnabled: isNotificationEnabled,
+        weight: Number(values.weight),
+      },
+      {
+        onError: handleProfileSetupError,
+        onSuccess: handleProfileSetupSuccess,
+      },
+    );
   };
+
+  const handleFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    void handleSubmit(handleProfileSubmit)(event);
+  };
+
   const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.value.length > 10) {
       setValue("name", event.target.value.slice(0, 10), {
@@ -353,11 +346,7 @@ export function ProfileSetupForm() {
   if (isComplete) return <ProfileSetupComplete />;
 
   return (
-    <form
-      className={styles.form}
-      noValidate
-      onSubmit={handleSubmit(handleProfileSubmit)}
-    >
+    <form className={styles.form} noValidate onSubmit={handleFormSubmit}>
       <section className={styles.section}>
         <div className={styles.sectionHeading}>
           <h3>기본 정보</h3>
