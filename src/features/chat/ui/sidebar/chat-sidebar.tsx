@@ -26,7 +26,7 @@ import {
   chatRoomListQueryOptions,
   useDeleteChatRoomMutation,
   useRenameChatRoomMutation,
-} from "../../model/chat-query";
+} from "../../model/chat-room-query";
 import styles from "./chat-sidebar.module.scss";
 
 type ChatSidebarProps = {

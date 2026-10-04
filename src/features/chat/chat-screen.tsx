@@ -11,10 +11,12 @@ import {
 import { createChatRoom } from "./api/chat";
 import {
   chatMessageGenerationStatusQueryOptions,
-  chatQueryKeys,
-  chatRoomQueryOptions,
   useSendChatMessageMutation,
-} from "./model/chat-query";
+} from "./model/chat-message-query";
+import {
+  chatRoomQueryKeys,
+  chatRoomQueryOptions,
+} from "./model/chat-room-query";
 import { Button } from "@/shared/ui/button";
 import { showToast } from "@/shared/ui/toast";
 import { getApiErrorMessage } from "@/shared/api/error";
@@ -83,7 +85,7 @@ export function ChatScreen({ chatRoomId, date }: ChatScreenProps) {
     }
 
     void queryClient.invalidateQueries({
-      queryKey: chatQueryKeys.room(chatRoomId),
+      queryKey: chatRoomQueryKeys.detail(chatRoomId),
     });
   }, [
     chatMessageGenerationStatusQuery.data?.generationStatus,
