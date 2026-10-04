@@ -2,13 +2,15 @@ import { z } from "zod";
 
 export const CHAT_ROOM_TITLE_MAX_LENGTH = 20;
 
-export const chatGenerationStatus = z.enum([
+export const chatMessageGenerationStatus = z.enum([
   "GENERATING",
   "COMPLETED",
   "FAILED",
 ]);
 
-export type ChatGenerationStatus = z.infer<typeof chatGenerationStatus>;
+export type ChatMessageGenerationStatus = z.infer<
+  typeof chatMessageGenerationStatus
+>;
 export type ChatSourceType = "GENERAL" | "WISHLIST";
 
 export type CreateChatRoomRequest = {
@@ -70,7 +72,7 @@ export const chatMessageBase = z.object({
 
 export const userMessageResponse = chatMessageBase.extend({
   senderType: z.literal("USER"),
-  generationStatus: chatGenerationStatus,
+  generationStatus: chatMessageGenerationStatus,
   recommendation: z.null(),
 });
 
@@ -101,20 +103,25 @@ export const chatRoomDetailResponse = z.object({
 
 export type ChatRoomDetailResponse = z.infer<typeof chatRoomDetailResponse>;
 
-export const chatGenerationResponse = z.discriminatedUnion("generationStatus", [
-  z.object({
-    generationStatus: z.enum(["GENERATING", "FAILED"]),
-    message: z.null(),
-  }),
-  z.object({
-    generationStatus: z.literal("COMPLETED"),
-    message: aiMessageResponse,
-  }),
-]);
+export const chatMessageGenerationStatusResponse = z.discriminatedUnion(
+  "generationStatus",
+  [
+    z.object({
+      generationStatus: z.enum(["GENERATING", "FAILED"]),
+      message: z.null(),
+    }),
+    z.object({
+      generationStatus: z.literal("COMPLETED"),
+      message: aiMessageResponse,
+    }),
+  ],
+);
 
-export type ChatGenerationResponse = z.infer<typeof chatGenerationResponse>;
+export type ChatMessageGenerationStatusResponse = z.infer<
+  typeof chatMessageGenerationStatusResponse
+>;
 
-export type ChatGenerationErrorCode =
+export type ChatMessageGenerationErrorCode =
   | "INVALID_INPUT_VALUE"
   | "UNAUTHORIZED"
   | "CHAT_ROOM_ACCESS_DENIED"
@@ -122,8 +129,8 @@ export type ChatGenerationErrorCode =
   | "CHAT_MESSAGE_NOT_FOUND"
   | "INTERNAL_SERVER_ERROR";
 
-export type ChatGenerationErrorResponse = {
-  code: ChatGenerationErrorCode;
+export type ChatMessageGenerationErrorResponse = {
+  code: ChatMessageGenerationErrorCode;
   data: null;
   message: string;
 };

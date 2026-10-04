@@ -8,12 +8,12 @@ import {
   useInfiniteQuery,
   useQueryClient,
 } from "@tanstack/react-query";
+import { createChatRoom, sendChatMessage } from "./api/chat";
 import {
-  createChatRoom,
-  sendChatMessage,
-  getChatGenerationStatus,
-  getChatRoom,
-} from "./api/chat";
+  chatMessageGenerationStatusQueryOptions,
+  chatQueryKeys,
+  chatRoomQueryOptions,
+} from "./model/chat-query";
 import { Button } from "@/shared/ui/button";
 import { showToast } from "@/shared/ui/toast";
 import { getApiErrorMessage } from "@/shared/api/error";
@@ -61,7 +61,7 @@ export function ChatScreen({ chatRoomId, date }: ChatScreenProps) {
     }) => sendChatMessage(chatRoomId, { content }),
     onSuccess: () => {
       void queryClient.invalidateQueries({
-        queryKey: ["chatRoom", chatRoomId],
+        queryKey: chatQueryKeys.room(chatRoomId),
       });
     },
     onError: (error) => {
@@ -75,21 +75,7 @@ export function ChatScreen({ chatRoomId, date }: ChatScreenProps) {
     },
   });
 
-  const chatRoomQuery = useInfiniteQuery({
-    queryKey: ["chatRoom", chatRoomId],
-    queryFn: ({ pageParam }) => {
-      if (chatRoomId == null) {
-        throw new Error("채팅방 ID가 없습니다.");
-      }
-
-      return getChatRoom(chatRoomId, pageParam);
-    },
-    initialPageParam: null as number | null,
-    getNextPageParam: (lastPage) =>
-      lastPage.hasNext ? lastPage.nextCursor : undefined,
-    enabled: chatRoomId != null,
-    retry: false,
-  });
+  const chatRoomQuery = useInfiniteQuery(chatRoomQueryOptions(chatRoomId));
 
   const messages =
     chatRoomQuery.data?.pages.toReversed().flatMap((page) => page.messages) ??
@@ -102,42 +88,35 @@ export function ChatScreen({ chatRoomId, date }: ChatScreenProps) {
         message.generationStatus === "GENERATING",
     )?.messageId ?? null;
 
-  const chatGenerationQuery = useQuery({
-    queryKey: ["chatGenerationStatus", chatRoomId, generatingMessageId],
-    queryFn: () => {
-      if (chatRoomId == null || generatingMessageId == null) {
-        throw new Error("폴링에 필요한 ID가 없습니다.");
-      }
-
-      return getChatGenerationStatus(chatRoomId, generatingMessageId);
-    },
-    enabled: chatRoomId != null && generatingMessageId != null,
-    refetchInterval: (query) => {
-      const generationStatus = query.state.data?.generationStatus;
-      return generationStatus === "GENERATING" ? 2000 : false;
-    },
-  });
+  const chatMessageGenerationStatusQuery = useQuery(
+    chatMessageGenerationStatusQueryOptions(chatRoomId, generatingMessageId),
+  );
 
   const handleLoadPreviousMessages = async () => {
     await chatRoomQuery.fetchNextPage();
   };
 
   useEffect(() => {
-    const generationStatus = chatGenerationQuery.data?.generationStatus;
+    const generationStatus =
+      chatMessageGenerationStatusQuery.data?.generationStatus;
 
     if (generationStatus !== "COMPLETED" && generationStatus !== "FAILED") {
       return;
     }
 
     void queryClient.invalidateQueries({
-      queryKey: ["chatRoom", chatRoomId],
+      queryKey: chatQueryKeys.room(chatRoomId),
     });
-  }, [chatGenerationQuery.data?.generationStatus, chatRoomId, queryClient]);
+  }, [
+    chatMessageGenerationStatusQuery.data?.generationStatus,
+    chatRoomId,
+    queryClient,
+  ]);
 
   const isGenerating =
     generatingMessageId != null &&
-    chatGenerationQuery.data?.generationStatus !== "COMPLETED" &&
-    chatGenerationQuery.data?.generationStatus !== "FAILED";
+    chatMessageGenerationStatusQuery.data?.generationStatus !== "COMPLETED" &&
+    chatMessageGenerationStatusQuery.data?.generationStatus !== "FAILED";
 
   const handleSubmit = async (
     content: string,
