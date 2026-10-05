@@ -2,9 +2,11 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { memberProfileQueryOptions } from "@/features/profile";
+import { Button } from "@/shared/ui/button";
 import { Header, HeaderIconLink, HeaderTitle } from "@/shared/ui/header";
 import { BackIcon, CloseIcon, RefreshIcon, SearchIcon } from "@/shared/ui/icon";
 import { fittingJobQueryOptions } from "../model/fitting-query";
@@ -297,10 +299,17 @@ function FittingResultView({ result }: { result: FittingResult }) {
 }
 
 export function FittingJobScreen({ fittingJobId }: FittingJobScreenProps) {
+  const router = useRouter();
   const { data, isError, isPending } = useQuery(
     fittingJobQueryOptions(fittingJobId),
   );
   const [isResultReady, setIsResultReady] = useState(false);
+
+  const handleReturnToFitting = () => {
+    clearActiveFittingJobId(fittingJobId);
+    clearFittingJobProgress(fittingJobId);
+    router.replace("/fitting");
+  };
 
   useEffect(() => {
     if (data?.status === "FAILED") {
@@ -334,6 +343,12 @@ export function FittingJobScreen({ fittingJobId }: FittingJobScreenProps) {
         <main className={styles.main}>
           <h2>피팅 작업을 확인하지 못했어요</h2>
           <p>잠시 후 다시 시도해 주세요.</p>
+          <Button
+            className={styles.recoveryButton}
+            onClick={handleReturnToFitting}
+          >
+            피팅 홈으로 이동
+          </Button>
         </main>
       </>
     );
@@ -346,6 +361,12 @@ export function FittingJobScreen({ fittingJobId }: FittingJobScreenProps) {
         <main className={styles.main}>
           <h2>가상 피팅 생성에 실패했어요</h2>
           <p>피팅 홈에서 다시 시도해 주세요.</p>
+          <Button
+            className={styles.recoveryButton}
+            onClick={handleReturnToFitting}
+          >
+            피팅 홈으로 이동
+          </Button>
         </main>
       </>
     );
