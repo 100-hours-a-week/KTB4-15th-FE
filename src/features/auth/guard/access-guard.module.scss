@@ -11,10 +11,54 @@
   background: var(--color-background-page);
   text-align: center;
 
+  h1 {
+    @include type.heading-small;
+
+    margin: 0;
+  }
+
   p {
     @include type.body-medium;
 
     margin: 0;
     color: var(--color-text-secondary);
+  }
+}
+
+.loadingStatus {
+  opacity: 0;
+  animation: loading-status-reveal var(--duration-fast) var(--easing-standard)
+    forwards;
+  animation-delay: 400ms;
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--color-gray-200);
+  border-top-color: var(--color-green-700);
+  border-radius: var(--radius-full);
+  animation: loading-spin var(--duration-spinner) linear infinite;
+}
+
+@keyframes loading-status-reveal {
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes loading-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loadingStatus {
+    animation-duration: 1ms;
+  }
+
+  .spinner {
+    animation: none;
   }
 }

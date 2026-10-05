@@ -1,6 +1,6 @@
 # API와 인증
 
-마지막 업데이트: 2026-09-28
+마지막 업데이트: 2026-10-05
 
 이 문서는 백엔드 전체 API 명세가 아니라 프론트엔드의 통신 및 인증 처리 기준을 설명합니다.
 
@@ -56,6 +56,7 @@ Server Component과 Route Handler에서는 `src/shared/api/server.ts`의 `server
 - 인증되지 않은 사용자: `/login?reason=session-expired`
 - 프로필을 완료하지 않은 사용자: `/profile/setup`
 - 프로필을 완료한 사용자가 `/profile/setup`에 접근: `/chat`
+- 사용자 정보 조회가 짧게 끝나면 로딩 화면을 생략하고, 조회가 이어질 때만 현재 상태를 안내
 - 사용자 정보 조회 실패: 현재 화면에서 재시도 UI 제공
 
 ## 오류 표시 원칙
