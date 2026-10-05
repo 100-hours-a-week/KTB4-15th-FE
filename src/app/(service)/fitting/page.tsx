@@ -9,8 +9,7 @@ import styles from "./page.module.scss";
 
 export default function FittingPage() {
   return (
-    <>
-      <FittingEntryGuard />
+    <FittingEntryGuard>
       <Header left={<HeaderTitle>피팅</HeaderTitle>} />
       <main className={styles.main}>
         <IntroHero
@@ -21,6 +20,6 @@ export default function FittingPage() {
         <FittingPhotoCard />
         <FittingSelectionPanel />
       </main>
-    </>
+    </FittingEntryGuard>
   );
 }
