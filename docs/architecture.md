@@ -17,17 +17,22 @@ App Router의 최상위 라우트 그룹은 `(public)`과 `(service)`로 구분�
 
 ```text
 src/app/
-├── (public)/                  # 로그인하지 않은 사용자도 접근 가능
+├── (public)/                  # 온보딩과 인증 화면
+│   └── (auth)/               # 로그인 사용자를 서비스로 돌려보내는 인증 화면
 ├── (service)/                # 인증 및 프로필 확인이 필요한 화면
-│   ├── (main)/               # 하단 내비게이션이 있는 주요 화면
-│   ├── (subpage)/            # 주요 화면에서 진입하는 상세·작업 화면
-│   └── (standalone)/         # 프로필 입력 등 독립된 서비스 흐름
+│   ├── chat/                  # 채팅 도메인 화면
+│   ├── fitting/               # 피팅 도메인 화면
+│   ├── mypage/                # 마이 페이지
+│   └── profile/               # 프로필 도메인 화면
 └── health/                    # 외부 의존성이 없는 상태 확인 Route
 ```
 
-- `/`는 첫 방문자에게 3단계 온보딩을 보여줍니다. 완료하거나 건너뛴 기록이 있으면 `/login`으로 이동합니다.
+- `/`는 온보딩 완료 쿠키가 없으면 `/onboarding`, 있으면 `/login`으로 이동합니다. `/onboarding`은 첫 방문자에게 3단계 소개를 보여주며, 완료하거나 건너뛰면 쿠키를 저장하고 `/login`으로 이동합니다.
 - 로그인 완료 후 기본 진입 화면은 `/chat`입니다.
 - 회원가입 직후 기본 정보 입력 화면은 `/profile/setup`입니다.
+- `/onboarding`은 회원 상태를 조회하지 않습니다. `/login`과 `/signup`은 화면을 바로 표시한 뒤 로그인 상태가 확인되면 프로필 상태에 맞는 서비스 화면으로 이동합니다.
+- 서비스 공통 `ServiceShell`에서 현재 경로에 따라 하단 Navigation, 페이지 표면과 Tab 전환을 적용합니다.
+- 하단 Navigation은 `/chat`과 하위 대화방, `/fitting`, `/mypage`에서만 표시합니다. `/fitting/wardrobe`, `/fitting/jobs/[fittingJobId]`, `/profile/setup`에서는 표시하지 않습니다.
 - 같은 헤더가 여러 하위 경로에서 유지되면 가장 가까운 공통 `layout.tsx`에 배치합니다. 한 화면에만 필요하면 `page.tsx`에서 선언합니다.
 
 ## 소스 구조

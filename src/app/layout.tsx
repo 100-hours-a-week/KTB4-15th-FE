@@ -10,10 +10,6 @@ import { Providers } from "./providers";
 export const metadata: Metadata = {
   title: "LOOK DDAK",
   description: "LOOK DDAK 서비스",
-  icons: {
-    icon: "/icon.svg",
-    shortcut: "/icon.svg",
-  },
 };
 
 export const viewport: Viewport = {
