@@ -20,7 +20,7 @@
 - Cookie 전달: `credentials: "include"`
 - Timeout: 10초
 - Retry 한도: 1회
-- 오프라인 상태: 요청 전에 확인하여 `OfflineError`로 변환
+- 오프라인, 네트워크 연결 실패와 Timeout은 사용자용 안내 문구로 변환
 
 `NEXT_PUBLIC_` 접두사가 붙은 환경 변수는 브라우저 번들에 포함되므로 비밀 값을 저장하지 않습니다.
 

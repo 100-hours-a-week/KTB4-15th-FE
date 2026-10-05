@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { GET } from "./route.ts";
+import { GET } from "../../src/app/health/route.ts";
 
 test("GET /health returns an UP liveness response", async () => {
   const response = GET();
