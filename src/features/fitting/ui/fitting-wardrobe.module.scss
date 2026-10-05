@@ -222,9 +222,16 @@
 .stateMessage {
   @include type.body-medium;
 
+  display: grid;
+  justify-items: center;
+  gap: var(--space-md);
   margin: var(--space-2xl) 0;
   color: var(--color-text-secondary);
   text-align: center;
+
+  p {
+    margin: 0;
+  }
 }
 
 .loadMore {

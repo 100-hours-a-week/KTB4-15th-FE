@@ -157,9 +157,7 @@ export function ChatScreen({ chatRoomId, date }: ChatScreenProps) {
                 : void chatRoomQuery.refetch()
             }
           >
-            {isChatRoomMissingOrForbidden
-              ? "채팅 홈으로 이동"
-              : "다시 시도"}
+            {isChatRoomMissingOrForbidden ? "채팅 홈으로 이동" : "다시 시도"}
           </Button>
         </div>
       </main>
