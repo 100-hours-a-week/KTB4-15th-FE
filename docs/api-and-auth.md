@@ -65,5 +65,8 @@ Server Component과 Route Handler에서는 `src/shared/api/server.ts`의 `server
 - 일시적인 작업 결과: Toast로 안내
 - 화면 전체 조회 실패: Error State로 표시
 - 인증 만료: 로그인 화면으로 이동하고 세션 만료 안내
+- 존재하지 않는 Route 또는 리소스: `not-found.tsx`로 복구 동선 제공
+- 처리되지 않은 서비스 Route 렌더링 오류: `(service)/error.tsx`에서 기록하고 재시도 제공
+- Root Layout까지 렌더링할 수 없는 오류: `global-error.tsx`에서 최종 처리
 
 인증 Cookie 이름, 만료 시간, 갱신 주기와 CSRF 정책은 백엔드와 합의 후 이 문서에 반영합니다.
