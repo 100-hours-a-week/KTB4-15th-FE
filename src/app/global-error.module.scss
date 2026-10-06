@@ -27,12 +27,14 @@
   place-items: center;
 }
 
+.serviceMain {
+  min-height: calc(100dvh - var(--navigation-height, 56px));
+}
+
 .card {
   box-sizing: border-box;
   width: 100%;
   padding: var(--space-2xl, 32px) var(--space-xl, 24px);
-  border-radius: var(--radius-large, 20px);
-  background: var(--color-background-surface, #fff);
   text-align: center;
 }
 
@@ -52,6 +54,9 @@
 
 .button {
   box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   min-height: 48px;
   border: 0;
   border-radius: var(--radius-medium, 12px);
@@ -61,6 +66,7 @@
   cursor: pointer;
   font: inherit;
   font-weight: 600;
+  text-decoration: none;
 
   &:focus-visible {
     outline: 3px solid var(--color-focus-ring, #a7cbbb);

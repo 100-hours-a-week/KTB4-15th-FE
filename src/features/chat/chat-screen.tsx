@@ -13,7 +13,7 @@ import {
 } from "./model/chat-room-query";
 import { Button } from "@/shared/ui/button";
 import { showToast } from "@/shared/ui/toast";
-import { getApiErrorMessage } from "@/shared/api/error";
+import { ApiError, getApiErrorMessage } from "@/shared/api/error";
 import type { ChatSourceType } from "./schema/chat";
 import styles from "./chat-screen.module.scss";
 import { ChatComposer } from "./ui/composer/chat-composer";
@@ -132,15 +132,32 @@ export function ChatScreen({ chatRoomId, date }: ChatScreenProps) {
     chatRoomId != null && chatRoomQuery.isPending;
   const isInitialChatRoomError =
     chatRoomId != null && chatRoomQuery.isError && chatRoomQuery.data == null;
+  const isChatRoomMissingOrForbidden =
+    chatRoomQuery.error instanceof ApiError &&
+    (chatRoomQuery.error.code === "CHAT_ROOM_NOT_FOUND" ||
+      chatRoomQuery.error.code === "CHAT_ROOM_ACCESS_DENIED");
 
   if (isInitialChatRoomError) {
     return (
-      <main aria-live="polite" className={styles.errorState}>
+      <main className={styles.errorState} role="alert">
         <div className={styles.errorContent}>
           <h1>채팅방을 확인하지 못했어요</h1>
-          <p>존재하지 않거나 접근할 수 없는 채팅방이에요.</p>
-          <Button onClick={() => router.replace("/chat")}>
-            채팅 홈으로 이동
+          <p>
+            {isChatRoomMissingOrForbidden
+              ? "존재하지 않거나 접근할 수 없는 채팅방이에요."
+              : "잠시 후 다시 시도해 주세요."}
+          </p>
+          <Button
+            isLoading={
+              !isChatRoomMissingOrForbidden && chatRoomQuery.isFetching
+            }
+            onClick={() =>
+              isChatRoomMissingOrForbidden
+                ? router.replace("/chat")
+                : void chatRoomQuery.refetch()
+            }
+          >
+            {isChatRoomMissingOrForbidden ? "채팅 홈으로 이동" : "다시 시도"}
           </Button>
         </div>
       </main>
