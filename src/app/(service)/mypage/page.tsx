@@ -1,5 +1,10 @@
+import { Suspense } from "react";
 import { FittingResultSection } from "@/features/fitting";
-import { AccountSection, MemberProfileSection } from "@/features/profile";
+import { AccountSection } from "@/features/profile";
+import {
+  MemberProfileSection,
+  MemberProfileSkeleton,
+} from "@/features/profile/ui/member-profile-section";
 import { Header, HeaderTitle, NotificationLink } from "@/shared/ui/header";
 import styles from "./page.module.scss";
 
@@ -11,7 +16,9 @@ export default function MyPage() {
         right={<NotificationLink />}
       />
       <main className={styles.main}>
-        <MemberProfileSection />
+        <Suspense fallback={<MemberProfileSkeleton />}>
+          <MemberProfileSection />
+        </Suspense>
         <FittingResultSection />
         <AccountSection />
       </main>
