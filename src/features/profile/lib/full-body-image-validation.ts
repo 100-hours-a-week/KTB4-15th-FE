@@ -1,4 +1,4 @@
-const MAX_PHOTO_BYTES = 2 * 1024 * 1024;
+const MAX_PHOTO_BYTES = 10 * 1024 * 1024;
 const SUPPORTED_PHOTO_EXTENSIONS = new Set(["jpg", "jpeg", "png"]);
 const SUPPORTED_PHOTO_TYPES = new Set(["image/jpeg", "image/png"]);
 
@@ -9,7 +9,7 @@ const PHOTO_INPUT_ERROR_MESSAGES: Record<string, string> = {
   IMAGE_FORMAT_UNSUPPORTED: "JPG, JPEG 또는 PNG 이미지만 등록해 주세요.",
   IMAGE_DECODE_FAILED:
     "이미지 파일을 읽을 수 없어요. 다른 이미지를 선택해 주세요.",
-  IMAGE_TOO_LARGE: "이미지 크기는 2MB 이하여야 합니다.",
+  IMAGE_TOO_LARGE: "이미지 크기는 10MB 이하여야 합니다.",
   IMAGE_RESOLUTION_TOO_LARGE:
     "이미지 해상도가 너무 높아요. 더 작은 이미지를 등록해 주세요.",
   IMAGE_RESOLUTION_TOO_SMALL: "짧은 변이 480px 이상인 이미지를 등록해 주세요.",
@@ -22,7 +22,7 @@ const PHOTO_INPUT_ERROR_MESSAGES: Record<string, string> = {
   LEGS_NOT_VISIBLE: "양다리가 모두 보이도록 촬영해 주세요.",
   NOT_FRONTAL: "카메라를 정면으로 바라보고 촬영해 주세요.",
   IMAGE_TOO_DARK: "사진이 너무 어두워요. 밝은 곳에서 다시 촬영해 주세요.",
-  IMAGE_SIZE_EXCEEDED: "이미지 크기는 2MB 이하여야 합니다.",
+  IMAGE_SIZE_EXCEEDED: "이미지 크기는 10MB 이하여야 합니다.",
 };
 
 const PHOTO_SYSTEM_ERROR_MESSAGES: Record<string, string> = {

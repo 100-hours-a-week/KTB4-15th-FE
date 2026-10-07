@@ -130,7 +130,7 @@ export function ProfilePhotoSection({
           </div>
         </div>
         <p className={styles.photoTip}>
-          * JPG·PNG / 최대 2MB / 짧은 변 480px 이상 / 전체 2,500만 픽셀 이하
+          * JPG·PNG / 최대 10MB / 짧은 변 480px 이상 / 전체 2,500만 픽셀 이하
         </p>
       </div>
     </section>
