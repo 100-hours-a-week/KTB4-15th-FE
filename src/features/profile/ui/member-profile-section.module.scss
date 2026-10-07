@@ -65,18 +65,6 @@
   font-weight: var(--font-weight-regular);
 }
 
-.errorState {
-  display: grid;
-  place-items: center;
-  min-height: 280px;
-  color: var(--color-text-secondary);
-  text-align: center;
-}
-
-.retryButton {
-  margin-top: var(--space-lg);
-}
-
 .skeleton {
   overflow: hidden;
   min-height: 238px;
