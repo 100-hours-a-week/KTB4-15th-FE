@@ -57,17 +57,27 @@ export function ServiceAccessGuard({ children }: { children: ReactNode }) {
 
   if (canRenderPage) return children;
 
+  if (memberQuery.isPending) {
+    return (
+      <main
+        aria-busy="true"
+        aria-live="polite"
+        className={`${styles.status} ${styles.loadingStatus}`}
+        role="status"
+      >
+        <span aria-hidden="true" className={styles.spinner} />
+        <h1>사용자 정보를 확인하고 있어요</h1>
+        <p>잠시만 기다려 주세요.</p>
+      </main>
+    );
+  }
+
   if (
-    memberQuery.isPending ||
     isUnauthenticated ||
     shouldRedirectToChat ||
     shouldRedirectToProfileSetup
   ) {
-    return (
-      <main aria-busy="true" className={styles.status}>
-        <p>사용자 정보를 확인하고 있어요.</p>
-      </main>
-    );
+    return null;
   }
 
   return (

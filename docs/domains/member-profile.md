@@ -90,11 +90,10 @@
 
 - `src/features/member`: 회원 상태 API와 Schema
 - `src/features/profile`: Profile 등록·조회와 화면 UI
-- `src/features/full-body-image`: 전신 사진 촬영 가이드
+- `src/features/profile`: Profile 등록과 전신 사진 선택·검증·촬영 가이드
 - `src/shared/utils/profile-validation.ts`: Profile 입력 검증
-- `src/shared/utils/full-body-image-validation.ts`: 사진의 로컬·서버 오류 변환
-- `src/app/(service)/(standalone)/profile/setup`: 등록 Route
-- `src/app/(service)/(main)/mypage`: 조회 Route
+- `src/app/(service)/profile/setup`: 등록 Route
+- `src/app/(service)/mypage`: 조회 Route
 
 ## 보류 항목
 

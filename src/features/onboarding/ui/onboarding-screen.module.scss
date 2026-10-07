@@ -1,0 +1,184 @@
+@use "@/styles/typography" as type;
+
+.main {
+  min-height: 100dvh;
+  background: var(--color-background-surface);
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding-bottom: max(24px, env(safe-area-inset-bottom));
+}
+
+.header {
+  display: flex;
+  min-height: var(--header-height);
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logo {
+  color: var(--color-text-brand);
+  font-size: 0.875rem;
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.08em;
+}
+
+.skipButton,
+.loginButton {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.skipButton {
+  min-height: var(--control-height);
+  padding: 0 4px 0 16px;
+  color: var(--color-text-secondary);
+  font-size: 0.9375rem;
+  font-weight: var(--font-weight-medium);
+}
+
+.content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  padding-bottom: var(--space-sm);
+}
+
+.visual {
+  position: relative;
+  display: grid;
+  width: min(82vw, 320px);
+  aspect-ratio: 1;
+  place-items: center;
+  align-self: center;
+  isolation: isolate;
+}
+
+.glow {
+  position: absolute;
+  z-index: -1;
+  width: 78%;
+  aspect-ratio: 1;
+  border-radius: var(--radius-full);
+  background: var(--color-green-50);
+}
+
+.image {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
+.imageEnter {
+  animation: image-enter var(--duration-slow) var(--easing-standard);
+}
+
+.copy {
+  min-height: 168px;
+  text-align: center;
+
+  h1 {
+    @include type.heading-large;
+
+    margin: var(--space-sm) 0 0;
+    font-weight: var(--font-weight-bold);
+    letter-spacing: -0.025em;
+    white-space: pre-line;
+  }
+}
+
+.eyebrow {
+  @include type.label;
+
+  margin: 0;
+  color: var(--color-text-brand);
+  font-weight: var(--font-weight-semibold);
+}
+
+.description {
+  @include type.body-medium;
+
+  margin: var(--space-md) 0 0;
+  color: var(--color-text-secondary);
+  white-space: pre-line;
+}
+
+.footer {
+  display: flex;
+  min-height: 128px;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.pagination {
+  display: flex;
+  height: 20px;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-sm);
+}
+
+.dot,
+.activeDot {
+  height: 8px;
+  border: 0;
+  border-radius: var(--radius-full);
+  padding: 0;
+  cursor: pointer;
+  transition:
+    width var(--duration-normal) var(--easing-standard),
+    background-color var(--duration-normal) var(--easing-standard);
+}
+
+.dot {
+  width: 8px;
+  background: var(--color-gray-200);
+}
+
+.activeDot {
+  width: 24px;
+  background: var(--color-green-700);
+}
+
+.loginButton {
+  min-height: 32px;
+  padding: 0 var(--space-md);
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+@keyframes image-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (height <= 720px) {
+  .visual {
+    width: min(68dvh, 300px);
+  }
+
+  .copy {
+    min-height: 170px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .imageEnter {
+    animation: none;
+  }
+}

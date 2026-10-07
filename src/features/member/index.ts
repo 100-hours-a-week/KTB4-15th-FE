@@ -1,1 +1,1 @@
-export { memberMeQueryOptions } from "./api/member-query";
+export { memberMeQueryOptions } from "./model/member-query";

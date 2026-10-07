@@ -1,7 +1,8 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/shared/ui/button";
-import { useMemberProfileQuery } from "../api/member-profile-query";
+import { memberProfileQueryOptions } from "../model/member-profile-query";
 import styles from "./member-profile-section.module.scss";
 
 function formatMeasurement(value: number) {
@@ -11,7 +12,7 @@ function formatMeasurement(value: number) {
 }
 
 export function MemberProfileSection() {
-  const profileQuery = useMemberProfileQuery();
+  const profileQuery = useQuery(memberProfileQueryOptions);
 
   if (profileQuery.isError) {
     return (

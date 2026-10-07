@@ -1,6 +1,6 @@
 # FE 프로젝트 결정 사항
 
-마지막 업데이트: 2026-10-01
+마지막 업데이트: 2026-10-04
 
 프로젝트 전반에 영향을 주는 확정 사항과 보류 항목을 요약합니다. 현재 구현의 상세한 동작은 [FE 문서 목록](./README.md)과 [도메인 문서](./domains/README.md)를 기준으로 합니다.
 
@@ -14,11 +14,20 @@
 ## 애플리케이션 구조
 
 - 최상위 Route Group은 공개 화면의 `(public)`과 인증이 필요한 `(service)`로 구분합니다.
-- 서비스 화면은 하단 Navigation이 있는 `(main)`, 상세·작업 화면인 `(subpage)`, 독립 흐름인 `(standalone)`으로 나눕니다.
+- 서비스 라우트는 URL과 같은 도메인 계층으로 구성하고, 공통 `ServiceShell`에서 경로별 하단 Navigation과 화면 표면을 결정합니다.
 - Route 전용 코드는 `app`, 비즈니스 기능은 `features`, 둘 이상의 Feature가 공유하는 코드는 `shared`에 배치합니다.
 - 폴더는 실제 코드가 필요한 시점에 만들며 빈 폴더 유지를 위한 파일은 추가하지 않습니다.
 - 서버 상태는 TanStack Query, 서버 저장 전 여러 화면에서 공유하는 임시 상태는 Zustand로 관리합니다.
 - 사용자 흐름과 비즈니스 규칙은 [도메인 문서](./domains/README.md)에서 관리합니다.
+
+### TanStack Query 규칙
+
+- Query key는 도메인부터 시작하는 배열로 작성합니다. 고정 segment는 소문자 단일 단어를 사용하고, 목록은 복수형, 단일 리소스는 단수형으로 구분합니다.
+- 목록·상세·필터처럼 같은 리소스의 key가 반복되면 model의 key 정의나 factory를 재사용합니다. Query와 invalidation에서 같은 정의를 사용합니다.
+- Query variable은 해당 Query key에 포함합니다.
+- 재사용할 Query 설정은 `queryOptions` 또는 `infiniteQueryOptions`로 만들고, 컴포넌트에서는 `useQuery`나 `useInfiniteQuery`로 실행합니다.
+- `staleTime`은 데이터의 기본 freshness 정책입니다. mutation으로 서버 데이터가 변경되면 관련 Query를 명시적으로 무효화합니다.
+- Query 무효화는 캐시를 즉시 삭제하는 것이 아니라 stale 상태로 표시하는 동작입니다. 비활성 Query는 다음 활성화 시 최신 데이터를 가져옵니다.
 
 자세한 구조는 [아키텍처](./architecture.md)를 참고합니다.
 
@@ -26,7 +35,7 @@
 
 - 브라우저 API Client는 Ky와 `NEXT_PUBLIC_API_BASE_URL`을 사용하고 Cookie를 포함합니다.
 - 브라우저 요청의 기본 Timeout은 10초, Retry 한도는 1회입니다.
-- 오프라인 요청은 `OfflineError`, 문자열 오류 Code가 있는 HTTP 오류는 `ApiError`로 정규화합니다.
+- 오프라인 요청은 `OfflineError`, 문자열 오류 Code가 있는 HTTP 오류는 `ApiError`로 정규화하고 Ky의 네트워크·Timeout 오류는 사용자용 문구로 변환합니다.
 - Feature는 HTTP 응답을 다시 파싱하지 않고 필요한 오류만 `ApiError.code`로 처리합니다.
 - 서버 요청은 Next.js `fetch`와 서버 전용 `API_BASE_URL`을 사용하며 현재 요청의 Cookie를 전달합니다.
 - 서버의 원문 오류 메시지는 사용자에게 직접 노출하지 않습니다.

@@ -1,6 +1,6 @@
 # API와 인증
 
-마지막 업데이트: 2026-09-28
+마지막 업데이트: 2026-10-05
 
 이 문서는 백엔드 전체 API 명세가 아니라 프론트엔드의 통신 및 인증 처리 기준을 설명합니다.
 
@@ -20,7 +20,7 @@
 - Cookie 전달: `credentials: "include"`
 - Timeout: 10초
 - Retry 한도: 1회
-- 오프라인 상태: 요청 전에 확인하여 `OfflineError`로 변환
+- 오프라인, 네트워크 연결 실패와 Timeout은 사용자용 안내 문구로 변환
 
 `NEXT_PUBLIC_` 접두사가 붙은 환경 변수는 브라우저 번들에 포함되므로 비밀 값을 저장하지 않습니다.
 
@@ -56,6 +56,7 @@ Server Component과 Route Handler에서는 `src/shared/api/server.ts`의 `server
 - 인증되지 않은 사용자: `/login?reason=session-expired`
 - 프로필을 완료하지 않은 사용자: `/profile/setup`
 - 프로필을 완료한 사용자가 `/profile/setup`에 접근: `/chat`
+- 사용자 정보 조회가 짧게 끝나면 로딩 화면을 생략하고, 조회가 이어질 때만 현재 상태를 안내
 - 사용자 정보 조회 실패: 현재 화면에서 재시도 UI 제공
 
 ## 오류 표시 원칙
@@ -64,5 +65,8 @@ Server Component과 Route Handler에서는 `src/shared/api/server.ts`의 `server
 - 일시적인 작업 결과: Toast로 안내
 - 화면 전체 조회 실패: Error State로 표시
 - 인증 만료: 로그인 화면으로 이동하고 세션 만료 안내
+- 존재하지 않는 Route 또는 리소스: `not-found.tsx`로 복구 동선 제공
+- 처리되지 않은 서비스 Route 렌더링 오류: `(service)/error.tsx`에서 기록하고 재시도 제공
+- Root Layout까지 렌더링할 수 없는 오류: `global-error.tsx`에서 최종 처리
 
 인증 Cookie 이름, 만료 시간, 갱신 주기와 CSRF 정책은 백엔드와 합의 후 이 문서에 반영합니다.

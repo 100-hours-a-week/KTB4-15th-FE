@@ -3,7 +3,9 @@
 import Image, { type ImageLoaderProps } from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { formatPrice } from "@/shared/utils/price-format";
+import { Button } from "@/shared/ui/button";
 import { Header, HeaderIconLink, HeaderTitle } from "@/shared/ui/header";
 import {
   BackIcon,
@@ -14,9 +16,9 @@ import {
   TopIcon,
 } from "@/shared/ui/icon";
 import {
+  fittingCandidatesQueryOptions,
   useDeleteFittingCandidatesMutation,
-  useFittingCandidatesQuery,
-} from "../api/fitting-candidate-query";
+} from "../model/fitting-query";
 import { useFittingSelectionStore } from "../store/fitting-selection-store";
 import { useRestoreFittingSelection } from "../store/use-restore-fitting-selection";
 import type { FittingCandidate } from "../schema/fitting-candidate";
@@ -138,9 +140,13 @@ export function FittingWardrobe({ initialFilter }: FittingWardrobeProps) {
     fetchNextPage,
     hasNextPage,
     isError,
+    isFetching,
     isFetchingNextPage,
     isPending,
-  } = useFittingCandidatesQuery(filter === "ALL" ? undefined : filter);
+    refetch,
+  } = useInfiniteQuery(
+    fittingCandidatesQueryOptions(filter === "ALL" ? undefined : filter),
+  );
   const loadMoreRef = useRef<HTMLDivElement>(null);
   const top = useFittingSelectionStore((state) => state.top);
   const bottom = useFittingSelectionStore((state) => state.bottom);
@@ -149,6 +155,7 @@ export function FittingWardrobe({ initialFilter }: FittingWardrobeProps) {
   const deleteMutation = useDeleteFittingCandidatesMutation();
   const selectedCount = Number(Boolean(top)) + Number(Boolean(bottom));
   const products = data?.pages.flatMap((page) => page.items) ?? [];
+  const isInitialError = isError && data == null;
   const totalCount = data?.pages[0]?.totalCount ?? products.length;
   const visibleCandidateIds = products.map(
     (product) => product.fittingCandidateId,
@@ -298,8 +305,18 @@ export function FittingWardrobe({ initialFilter }: FittingWardrobeProps) {
           {isPending && (
             <p className={styles.stateMessage}>옷장을 불러오고 있어요.</p>
           )}
-          {isError && (
-            <p className={styles.stateMessage}>옷장을 불러오지 못했어요.</p>
+          {isInitialError && (
+            <div className={styles.stateMessage} role="alert">
+              <p>옷장을 불러오지 못했어요.</p>
+              <Button
+                isLoading={isFetching}
+                onClick={() => void refetch()}
+                size="small"
+                variant="secondary"
+              >
+                다시 시도
+              </Button>
+            </div>
           )}
           {!isPending && !isError && products.length === 0 && (
             <p className={styles.stateMessage}>담아둔 상품이 아직 없어요.</p>

@@ -1,22 +1,19 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import { useRouter } from "next/navigation";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import {
-  useMutation,
-  useQuery,
-  useInfiniteQuery,
-  useQueryClient,
-} from "@tanstack/react-query";
+  useChatMessageGenerationStatusQuery,
+  useSendChatMessageMutation,
+} from "./model/chat-message-query";
 import {
-  createChatRoom,
-  sendChatMessage,
-  getChatGenerationStatus,
-  getChatRoom,
-} from "./api/chat";
+  chatRoomQueryOptions,
+  useCreateChatRoomMutation,
+} from "./model/chat-room-query";
 import { Button } from "@/shared/ui/button";
 import { showToast } from "@/shared/ui/toast";
-import { getApiErrorMessage } from "@/shared/api/error";
+import { ApiError, getApiErrorMessage } from "@/shared/api/error";
 import type { ChatSourceType } from "./schema/chat";
 import styles from "./chat-screen.module.scss";
 import { ChatComposer } from "./ui/composer/chat-composer";
@@ -29,67 +26,23 @@ type ChatScreenProps = {
   date?: string;
 };
 
+function showSendChatMessageError(error: Error) {
+  showToast.error(
+    getApiErrorMessage(error, "메시지를 보내지 못했어요. 다시 시도해 주세요."),
+    { id: "send-chat-message" },
+  );
+}
+
 export function ChatScreen({ chatRoomId, date }: ChatScreenProps) {
   const router = useRouter();
-  const queryClient = useQueryClient();
   const { isNavigationVisible } = useNavigationVisibility();
   const submissionLockRef = useRef(false);
 
-  const createChatRoomMutation = useMutation({
-    mutationFn: createChatRoom,
-    onSuccess: (data) => {
-      router.replace(`/chat/${data.chatRoomId}`);
-    },
-    onError: (error) => {
-      showToast.error(
-        getApiErrorMessage(
-          error,
-          "메시지를 보내지 못했어요. 다시 시도해 주세요.",
-        ),
-        { id: "send-chat-message" },
-      );
-    },
-  });
+  const createChatRoomMutation = useCreateChatRoomMutation();
 
-  const sendChatMessageMutation = useMutation({
-    mutationFn: ({
-      chatRoomId,
-      content,
-    }: {
-      chatRoomId: number;
-      content: string;
-    }) => sendChatMessage(chatRoomId, { content }),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({
-        queryKey: ["chatRoom", chatRoomId],
-      });
-    },
-    onError: (error) => {
-      showToast.error(
-        getApiErrorMessage(
-          error,
-          "메시지를 보내지 못했어요. 다시 시도해 주세요.",
-        ),
-        { id: "send-chat-message" },
-      );
-    },
-  });
+  const sendChatMessageMutation = useSendChatMessageMutation();
 
-  const chatRoomQuery = useInfiniteQuery({
-    queryKey: ["chatRoom", chatRoomId],
-    queryFn: ({ pageParam }) => {
-      if (chatRoomId == null) {
-        throw new Error("채팅방 ID가 없습니다.");
-      }
-
-      return getChatRoom(chatRoomId, pageParam);
-    },
-    initialPageParam: null as number | null,
-    getNextPageParam: (lastPage) =>
-      lastPage.hasNext ? lastPage.nextCursor : undefined,
-    enabled: chatRoomId != null,
-    retry: false,
-  });
+  const chatRoomQuery = useInfiniteQuery(chatRoomQueryOptions(chatRoomId));
 
   const messages =
     chatRoomQuery.data?.pages.toReversed().flatMap((page) => page.messages) ??
@@ -102,42 +55,19 @@ export function ChatScreen({ chatRoomId, date }: ChatScreenProps) {
         message.generationStatus === "GENERATING",
     )?.messageId ?? null;
 
-  const chatGenerationQuery = useQuery({
-    queryKey: ["chatGenerationStatus", chatRoomId, generatingMessageId],
-    queryFn: () => {
-      if (chatRoomId == null || generatingMessageId == null) {
-        throw new Error("폴링에 필요한 ID가 없습니다.");
-      }
-
-      return getChatGenerationStatus(chatRoomId, generatingMessageId);
-    },
-    enabled: chatRoomId != null && generatingMessageId != null,
-    refetchInterval: (query) => {
-      const generationStatus = query.state.data?.generationStatus;
-      return generationStatus === "GENERATING" ? 2000 : false;
-    },
-  });
+  const chatMessageGenerationStatusQuery = useChatMessageGenerationStatusQuery(
+    chatRoomId,
+    generatingMessageId,
+  );
 
   const handleLoadPreviousMessages = async () => {
     await chatRoomQuery.fetchNextPage();
   };
 
-  useEffect(() => {
-    const generationStatus = chatGenerationQuery.data?.generationStatus;
-
-    if (generationStatus !== "COMPLETED" && generationStatus !== "FAILED") {
-      return;
-    }
-
-    void queryClient.invalidateQueries({
-      queryKey: ["chatRoom", chatRoomId],
-    });
-  }, [chatGenerationQuery.data?.generationStatus, chatRoomId, queryClient]);
-
   const isGenerating =
     generatingMessageId != null &&
-    chatGenerationQuery.data?.generationStatus !== "COMPLETED" &&
-    chatGenerationQuery.data?.generationStatus !== "FAILED";
+    chatMessageGenerationStatusQuery.data?.generationStatus !== "COMPLETED" &&
+    chatMessageGenerationStatusQuery.data?.generationStatus !== "FAILED";
 
   const handleSubmit = async (
     content: string,
@@ -151,14 +81,22 @@ export function ChatScreen({ chatRoomId, date }: ChatScreenProps) {
 
     try {
       if (chatRoomId == null) {
-        await createChatRoomMutation.mutateAsync({
-          content,
-          sourceType,
-        });
+        await createChatRoomMutation.mutateAsync(
+          { content, sourceType },
+          {
+            onSuccess: (data) => {
+              router.replace(`/chat/${data.chatRoomId}`);
+            },
+            onError: showSendChatMessageError,
+          },
+        );
         return;
       }
 
-      await sendChatMessageMutation.mutateAsync({ chatRoomId, content });
+      await sendChatMessageMutation.mutateAsync(
+        { chatRoomId, content },
+        { onError: showSendChatMessageError },
+      );
     } finally {
       submissionLockRef.current = false;
     }
@@ -176,7 +114,10 @@ export function ChatScreen({ chatRoomId, date }: ChatScreenProps) {
     submissionLockRef.current = true;
 
     void sendChatMessageMutation
-      .mutateAsync({ chatRoomId, content })
+      .mutateAsync(
+        { chatRoomId, content },
+        { onError: showSendChatMessageError },
+      )
       .catch(() => undefined)
       .finally(() => {
         submissionLockRef.current = false;
@@ -191,15 +132,32 @@ export function ChatScreen({ chatRoomId, date }: ChatScreenProps) {
     chatRoomId != null && chatRoomQuery.isPending;
   const isInitialChatRoomError =
     chatRoomId != null && chatRoomQuery.isError && chatRoomQuery.data == null;
+  const isChatRoomMissingOrForbidden =
+    chatRoomQuery.error instanceof ApiError &&
+    (chatRoomQuery.error.code === "CHAT_ROOM_NOT_FOUND" ||
+      chatRoomQuery.error.code === "CHAT_ROOM_ACCESS_DENIED");
 
   if (isInitialChatRoomError) {
     return (
-      <main aria-live="polite" className={styles.errorState}>
+      <main className={styles.errorState} role="alert">
         <div className={styles.errorContent}>
           <h1>채팅방을 확인하지 못했어요</h1>
-          <p>존재하지 않거나 접근할 수 없는 채팅방이에요.</p>
-          <Button onClick={() => router.replace("/chat")}>
-            채팅 홈으로 이동
+          <p>
+            {isChatRoomMissingOrForbidden
+              ? "존재하지 않거나 접근할 수 없는 채팅방이에요."
+              : "잠시 후 다시 시도해 주세요."}
+          </p>
+          <Button
+            isLoading={
+              !isChatRoomMissingOrForbidden && chatRoomQuery.isFetching
+            }
+            onClick={() =>
+              isChatRoomMissingOrForbidden
+                ? router.replace("/chat")
+                : void chatRoomQuery.refetch()
+            }
+          >
+            {isChatRoomMissingOrForbidden ? "채팅 홈으로 이동" : "다시 시도"}
           </Button>
         </div>
       </main>

@@ -1,28 +1,9 @@
 "use client";
 
-import Image from "next/image";
-import { useRouter } from "next/navigation";
-import { overlay } from "overlay-kit";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  FullBodyImageGuide,
-  getLocalPhotoErrorMessage,
-} from "@/features/full-body-image";
-import { memberMeQueryOptions } from "@/features/member";
-import { getApiErrorMessage } from "@/shared/api/error";
-import {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  type KeyboardEvent,
-} from "react";
+import { useState, type KeyboardEvent } from "react";
 import { useForm } from "react-hook-form";
-import { BottomSheet } from "@/shared/ui/bottom-sheet";
 import { Button, Toggle } from "@/shared/ui/button";
-import { InfoIcon } from "@/shared/ui/icon";
 import { InputField } from "@/shared/ui/input-field";
-import { showToast } from "@/shared/ui/toast";
 import {
   normalizeName,
   sanitizeDecimalInput,
@@ -32,8 +13,9 @@ import {
   validateWeight,
 } from "@/shared/utils/profile-validation";
 import styles from "./profile-setup-form.module.scss";
-import { createMemberProfile, validateFullBodyImage } from "../api/profile";
-import { memberProfileQueryOptions } from "../api/member-profile-query";
+import { useProfileSetup } from "../hooks/use-profile-setup";
+import { ProfilePhotoSection } from "./profile-photo-section";
+import { ProfileSetupComplete } from "./profile-setup-complete";
 
 type ProfileSetupFormValues = {
   name: string;
@@ -42,48 +24,15 @@ type ProfileSetupFormValues = {
   weight: string;
 };
 
-type ProfileSetupMutationValues = ProfileSetupFormValues & {
-  fullBodyImageValidationId: number;
-};
-
-const COMPLETION_DURATION_MS = 1700;
-
-function ProfileSetupComplete() {
-  return (
-    <main aria-live="polite" className={styles.complete} role="status">
-      <div aria-hidden="true" className={styles.completeIcon}>
-        <Image
-          alt=""
-          height={88}
-          loading="eager"
-          src="/images/profile/success-check-3d.png"
-          width={88}
-        />
-      </div>
-      <h1>기본 정보 등록 완료!</h1>
-      <p>
-        이제 룩딱이 취향에 맞는
-        <br />
-        스타일을 추천해 드릴게요.
-      </p>
-      <small>잠시 후 AI 스타일리스트와의 채팅이 시작돼요.</small>
-    </main>
-  );
-}
-
 export function ProfileSetupForm() {
-  const router = useRouter();
-  const queryClient = useQueryClient();
-  const [photo, setPhoto] = useState<File>();
-  const [photoUrl, setPhotoUrl] = useState<string>();
-  const [photoValidationId, setPhotoValidationId] = useState<number>();
-  const [photoErrorMessage, setPhotoErrorMessage] = useState<string>();
   const [isNotificationEnabled, setIsNotificationEnabled] = useState(true);
-  const [isComplete, setIsComplete] = useState(false);
-
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const filePickerLockedRef = useRef(false);
-  const completionTimerRef = useRef<number>(undefined);
+  const [photoValidationId, setPhotoValidationId] = useState<number>();
+  const {
+    isComplete,
+    isPending: isProfileSetupPending,
+    reset: resetProfileSetup,
+    submit: submitProfileSetup,
+  } = useProfileSetup();
   const {
     clearErrors,
     formState: { errors, isValid },
@@ -94,84 +43,31 @@ export function ProfileSetupForm() {
     setValue,
   } = useForm<ProfileSetupFormValues>({ mode: "onChange" });
   const nameField = register("name", { validate: validateName });
-  const photoValidationMutation = useMutation({
-    mutationFn: validateFullBodyImage,
-    onSuccess: (result) => {
-      if (!result.success) {
-        setPhotoValidationId(undefined);
-        setPhotoErrorMessage(result.message);
-        return;
-      }
 
-      setPhotoErrorMessage(undefined);
-      setPhotoValidationId(result.data.validationId);
-      setPhotoUrl(result.data.fullBodyImageUrl);
-    },
-    onError: () => {
-      setPhotoValidationId(undefined);
-    },
-  });
-  const profileSetupMutation = useMutation({
-    mutationFn: async ({
-      age,
-      height,
-      name,
-      weight,
-      fullBodyImageValidationId,
-    }: ProfileSetupMutationValues) => {
-      return createMemberProfile({
-        age: Number(age),
-        fullBodyImageValidationId,
-        height: Number(height),
-        name,
-        priceAlertEnabled: isNotificationEnabled,
-        weight: Number(weight),
-      });
-    },
-    onSuccess: () => {
-      setIsComplete(true);
-      router.prefetch("/chat");
-      void queryClient.invalidateQueries({
-        queryKey: memberProfileQueryOptions.queryKey,
-      });
-      completionTimerRef.current = window.setTimeout(() => {
-        queryClient.setQueryData(memberMeQueryOptions.queryKey, {
-          profileCompleted: true,
-        });
-        router.replace("/chat");
-        router.refresh();
-      }, COMPLETION_DURATION_MS);
-    },
-    onError: (error) => {
-      showToast.error(
-        getApiErrorMessage(
-          error,
-          "기본 정보를 등록하지 못했어요. 다시 시도해 주세요.",
-        ),
-        { id: "profile-setup" },
-      );
-    },
-  });
-  const displayedPhotoErrorMessage =
-    photoErrorMessage ??
-    (photoValidationMutation.error
-      ? getApiErrorMessage(
-          photoValidationMutation.error,
-          "전신 사진을 검증하지 못했어요. 다시 시도해 주세요.",
-        )
-      : undefined);
+  const handlePhotoValidationChange = (validationId?: number) => {
+    if (!validationId) resetProfileSetup();
+    setPhotoValidationId(validationId);
+  };
 
   const handleProfileSubmit = (values: ProfileSetupFormValues) => {
     if (!photoValidationId) {
-      setPhotoErrorMessage("전신 사진 검증을 완료해 주세요.");
       return;
     }
 
-    profileSetupMutation.mutate({
-      ...values,
+    submitProfileSetup({
+      age: Number(values.age),
       fullBodyImageValidationId: photoValidationId,
+      height: Number(values.height),
+      name: values.name,
+      priceAlertEnabled: isNotificationEnabled,
+      weight: Number(values.weight),
     });
   };
+
+  const handleFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    void handleSubmit(handleProfileSubmit)(event);
+  };
+
   const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.value.length > 10) {
       setValue("name", event.target.value.slice(0, 10), {
@@ -219,145 +115,10 @@ export function ProfileSetupForm() {
     event.currentTarget.blur();
   };
 
-  useEffect(() => {
-    return () => {
-      if (photoUrl) URL.revokeObjectURL(photoUrl);
-    };
-  }, [photoUrl]);
-
-  useEffect(
-    () => () => {
-      if (completionTimerRef.current) {
-        window.clearTimeout(completionTimerRef.current);
-      }
-    },
-    [],
-  );
-
-  const startPhotoValidation = (file: File) => {
-    setPhotoErrorMessage(undefined);
-    photoValidationMutation.mutate(file);
-  };
-
-  const clearSelectedPhoto = () => {
-    setPhoto(undefined);
-    setPhotoValidationId(undefined);
-    setPhotoUrl((currentUrl) => {
-      if (currentUrl) URL.revokeObjectURL(currentUrl);
-      return undefined;
-    });
-  };
-
-  const handlePhotoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    window.setTimeout(() => {
-      filePickerLockedRef.current = false;
-    }, 300);
-
-    profileSetupMutation.reset();
-    photoValidationMutation.reset();
-    const localErrorMessage = getLocalPhotoErrorMessage(file);
-
-    if (localErrorMessage) {
-      clearSelectedPhoto();
-      setPhotoErrorMessage(localErrorMessage);
-      event.target.value = "";
-      return;
-    }
-
-    setPhoto(file);
-    setPhotoValidationId(undefined);
-    setPhotoUrl((currentUrl) => {
-      if (currentUrl) URL.revokeObjectURL(currentUrl);
-      return URL.createObjectURL(file);
-    });
-    startPhotoValidation(file);
-  };
-
-  const handlePhotoPickerCancel = useCallback(async () => {
-    filePickerLockedRef.current = false;
-    let isCameraPermissionDenied = false;
-
-    try {
-      const permission = await navigator.permissions?.query({
-        name: "camera" as PermissionName,
-      });
-      isCameraPermissionDenied = permission?.state === "denied";
-    } catch {
-      // Some browsers do not expose camera permission state for file inputs.
-    }
-
-    setPhotoErrorMessage(
-      isCameraPermissionDenied
-        ? "카메라 권한이 필요해요. 설정에서 권한을 허용하거나 로컬 사진 등록을 선택해주세요."
-        : "사진 등록이 취소되었습니다.",
-    );
-  }, []);
-
-  useEffect(() => {
-    const input = fileInputRef.current;
-    if (!input) return;
-
-    const handleCancel = () => void handlePhotoPickerCancel();
-    input.addEventListener("cancel", handleCancel);
-
-    return () => input.removeEventListener("cancel", handleCancel);
-  }, [handlePhotoPickerCancel]);
-
-  const openPhotoPicker = () => {
-    if (filePickerLockedRef.current || photoValidationMutation.isPending) {
-      return;
-    }
-
-    const input = fileInputRef.current;
-    if (!input) return;
-
-    filePickerLockedRef.current = true;
-    window.addEventListener(
-      "focus",
-      () => {
-        window.setTimeout(() => {
-          filePickerLockedRef.current = false;
-        }, 300);
-      },
-      { once: true },
-    );
-    input.value = "";
-    input.click();
-  };
-
-  const openFullBodyImageGuide = () => {
-    overlay.open(({ close, isOpen, unmount }) => (
-      <BottomSheet
-        description="더 자연스러운 가상 피팅을 위해 아래 내용을 확인해주세요."
-        eyebrow="PHOTO GUIDE"
-        onExit={unmount}
-        onOpenChange={(nextOpen) => {
-          if (!nextOpen) close();
-        }}
-        open={isOpen}
-        title="전신 사진 촬영 가이드"
-      >
-        <FullBodyImageGuide
-          onStartShooting={() => {
-            close();
-            openPhotoPicker();
-          }}
-        />
-      </BottomSheet>
-    ));
-  };
-
   if (isComplete) return <ProfileSetupComplete />;
 
   return (
-    <form
-      className={styles.form}
-      noValidate
-      onSubmit={handleSubmit(handleProfileSubmit)}
-    >
+    <form className={styles.form} noValidate onSubmit={handleFormSubmit}>
       <section className={styles.section}>
         <div className={styles.sectionHeading}>
           <h3>기본 정보</h3>
@@ -421,92 +182,10 @@ export function ProfileSetupForm() {
         </div>
       </section>
 
-      <section className={styles.photoSection}>
-        <h3>
-          전신 사진<span aria-hidden="true">*</span>
-        </h3>
-        <p>정면 전신 사진을 등록해야 회원 가입이 가능합니다.</p>
-        <div className={styles.photoCard}>
-          <button
-            aria-label="전신 사진 선택"
-            className={styles.photoPreview}
-            disabled={photoValidationMutation.isPending}
-            onClick={openPhotoPicker}
-            type="button"
-          >
-            {photoUrl ? (
-              // Blob URLs are local previews and cannot be handled by next/image.
-              // eslint-disable-next-line @next/next/no-img-element
-              <img alt="선택한 전신 사진 미리보기" src={photoUrl} />
-            ) : (
-              <Image
-                alt="전신 사진 촬영 예시"
-                height={128}
-                src="/images/profile/full-body-example.png"
-                width={96}
-              />
-            )}
-          </button>
-          <input
-            accept=".jpg,.jpeg,.png,image/jpeg,image/png"
-            className={styles.fileInput}
-            onChange={handlePhotoChange}
-            ref={fileInputRef}
-            required
-            type="file"
-          />
-          <div className={styles.photoDetails}>
-            <strong
-              className={
-                displayedPhotoErrorMessage && !photoValidationId
-                  ? styles.photoStatusError
-                  : photoValidationId
-                    ? styles.photoStatusSuccess
-                    : undefined
-              }
-            >
-              <i aria-hidden="true" />{" "}
-              {photoValidationMutation.isPending
-                ? "사진을 검증하고 있어요"
-                : photoValidationId
-                  ? "사진 검증이 완료되었어요"
-                  : displayedPhotoErrorMessage
-                    ? "사진 검증 중 오류가 발생했어요"
-                    : "전신 사진을 등록해 주세요"}
-            </strong>
-            <p
-              className={
-                displayedPhotoErrorMessage ? styles.photoInlineError : undefined
-              }
-              role={displayedPhotoErrorMessage ? "alert" : undefined}
-            >
-              {displayedPhotoErrorMessage ??
-                "실제 체형 비율을 반영해 자연스러운 가상 착용을 구현해요."}
-            </p>
-            <div className={styles.photoActions}>
-              <Button
-                isLoading={photoValidationMutation.isPending}
-                onClick={openPhotoPicker}
-                size="small"
-                type="button"
-                variant="secondary"
-              >
-                사진 {photoUrl ? "변경" : "등록"}
-              </Button>
-              <button
-                className={styles.guideButton}
-                onClick={openFullBodyImageGuide}
-                type="button"
-              >
-                <InfoIcon /> 촬영 가이드
-              </button>
-            </div>
-          </div>
-          <p className={styles.photoTip}>
-            * JPG·PNG / 최대 2MB / 짧은 변 480px 이상 / 전체 2,500만 픽셀 이하
-          </p>
-        </div>
-      </section>
+      <ProfilePhotoSection
+        onValidationChange={handlePhotoValidationChange}
+        validationId={photoValidationId}
+      />
 
       <section className={styles.notificationSection}>
         <div>
@@ -522,18 +201,13 @@ export function ProfileSetupForm() {
 
       <Button
         className={styles.submitButton}
-        disabled={
-          !isValid ||
-          !photo ||
-          !photoValidationId ||
-          photoValidationMutation.isPending
-        }
+        disabled={!isValid || !photoValidationId}
         fullWidth
-        isLoading={profileSetupMutation.isPending}
+        isLoading={isProfileSetupPending}
         size="large"
         type="submit"
       >
-        {profileSetupMutation.isPending
+        {isProfileSetupPending
           ? "정보를 등록하고 있어요"
           : "정보 등록하고 시작하기"}
       </Button>

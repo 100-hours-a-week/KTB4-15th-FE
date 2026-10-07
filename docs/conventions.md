@@ -34,7 +34,7 @@
 pnpm format:check # Prettier 검사
 pnpm lint         # ESLint와 Stylelint 검사
 pnpm type-check   # Next.js Type 생성과 TypeScript 검사
-pnpm test         # Health Route 테스트
+pnpm test         # Unit 테스트
 pnpm check        # format, lint, type-check 일괄 실행
 ```
 

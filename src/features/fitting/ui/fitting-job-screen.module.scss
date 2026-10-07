@@ -29,6 +29,10 @@
   }
 }
 
+.recoveryButton {
+  margin-top: var(--space-xl);
+}
+
 .progressMain {
   display: flex;
   min-height: calc(100dvh - var(--header-height) - var(--navigation-height));

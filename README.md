@@ -25,7 +25,7 @@ pnpm dev
 ```bash
 pnpm dev          # 개발 서버
 pnpm build        # 프로덕션 빌드
-pnpm test         # Health Route 테스트
+pnpm test         # Unit 테스트
 pnpm lint         # ESLint와 Stylelint 검사
 pnpm lint:fix     # 수정 가능한 lint 오류 자동 수정
 pnpm format       # Prettier 포맷 적용
@@ -49,10 +49,16 @@ pnpm check        # 포맷, lint, 타입 검사 일괄 실행
 ```text
 src/
 ├── app/                         # Route, Layout, Page
-│   ├── (public)/
+│   ├── (public)/                # 온보딩과 인증 화면
+│   │   ├── (auth)/            # 로그인, 회원가입 화면
+│   │   └── onboarding/        # 최초 진입 온보딩
 │   └── (service)/
-│       ├── (main)/             # 하단 내비게이션이 있는 주요 화면
-│       └── (standalone)/       # 독립된 서비스 흐름
+│       ├── layout.tsx          # 서비스 인증 공통 적용
+│       ├── service-shell.tsx   # Navigation, PageShell, 화면 전환
+│       ├── chat/               # 채팅 화면
+│       ├── fitting/            # 가상 피팅 화면
+│       ├── mypage/             # 마이 페이지
+│       └── profile/            # 프로필 화면
 ├── features/                    # 비즈니스 기능별 UI, API 타입, Fixture
 ├── shared/
 │   ├── api/                     # 공통 API 응답 타입과 서버·클라이언트 요청 설정
@@ -61,6 +67,6 @@ src/
 └── styles/                      # 전역 Design Token과 Mixin
 ```
 
-라우트 그룹 이름은 URL에 포함되지 않습니다. 라우트 전용 코드는 `app`에, 도메인 기능은 `features`에, 둘 이상의 기능에서 재사용하는 UI와 Utility는 `shared`에 배치합니다.
+서비스 라우트는 URL의 도메인 계층과 같은 폴더 구조로 구성합니다. `(service)/layout.tsx`는 인증을 공통 적용하고, `service-shell.tsx`는 현재 경로에 따른 네비게이션과 페이지 표면을 관리합니다. 라우트 전용 코드는 `app`에, 도메인 기능은 `features`에, 둘 이상의 기능에서 재사용하는 UI와 Utility는 `shared`에 배치합니다.
 
 상세한 구조와 개발 기준은 [FE 문서](./docs/README.md)에서 관리합니다. README는 프로젝트 실행에 필요한 기본 정보와 문서 진입점에 집중합니다.
