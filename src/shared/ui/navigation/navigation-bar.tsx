@@ -26,7 +26,6 @@ const NAVIGATION_ITEMS = [
     href: "/wishlists",
     icon: WishlistIcon,
     activeIcon: WishlistActiveIcon,
-    available: false,
   },
   {
     label: "피팅",
