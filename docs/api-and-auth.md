@@ -1,6 +1,6 @@
 # API와 인증
 
-마지막 업데이트: 2026-10-05
+마지막 업데이트: 2026-10-08
 
 이 문서는 백엔드 전체 API 명세가 아니라 프론트엔드의 통신 및 인증 처리 기준을 설명합니다.
 
@@ -37,6 +37,15 @@ Server Component과 Route Handler에서는 `src/shared/api/server.ts`의 `server
 - 공통 Client 수준의 자동 Retry는 적용하지 않음
 
 `API_BASE_URL`이 없으면 초기화 단계에서 오류를 발생시키며, `server-only`로 클라이언트 번들 포함을 방지합니다.
+
+## API 모킹
+
+개발 환경에서 `NEXT_PUBLIC_API_MOCKING=enabled`를 설정하면 MSW가 활성화됩니다.
+
+- 브라우저의 `apiClient` 요청은 Service Worker로 처리합니다.
+- Node.js 서버의 `serverApi` 요청은 `setupServer`로 처리합니다.
+- 두 환경은 `src/mocks/handlers.ts`의 Handler를 공유합니다.
+- Handler가 없는 요청은 경고를 출력하고 실제 API로 전달합니다.
 
 ## 인증 갱신
 
