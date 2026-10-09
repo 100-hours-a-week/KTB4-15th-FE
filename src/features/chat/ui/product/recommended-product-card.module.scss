@@ -35,9 +35,8 @@
 
 .wishlistButton {
   position: absolute;
-  top: var(--space-md);
+  top: var(--space-xs);
   right: var(--space-md);
-  background: var(--color-background-surface);
   color: var(--color-text-primary);
 
   > span {
