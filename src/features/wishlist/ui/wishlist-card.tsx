@@ -4,6 +4,7 @@ import Image, { type ImageLoaderProps } from "next/image";
 import { useState } from "react";
 import { getApiErrorMessage } from "@/shared/api/error";
 import { IconButton } from "@/shared/ui/button";
+import { ImageViewerDialog } from "@/shared/ui/dialog";
 import { HeartIcon } from "@/shared/ui/icon";
 import { showToast } from "@/shared/ui/toast";
 import { formatPrice } from "@/shared/utils/price-format";
@@ -21,6 +22,7 @@ function passthroughImageLoader({ src }: ImageLoaderProps) {
 
 export function WishlistCard({ product }: { product: WishlistItem }) {
   const [imageFailed, setImageFailed] = useState(!product.productImageUrl);
+  const [isImageOpen, setIsImageOpen] = useState(false);
   const [wishlistId, setWishlistId] = useState<number | null>(
     product.wishlistId,
   );
@@ -59,28 +61,35 @@ export function WishlistCard({ product }: { product: WishlistItem }) {
 
   return (
     <article className={styles.card}>
+      {imageFailed ? (
+        <span className={styles.imageArea}>
+          <span className={styles.imageFallback}>이미지 없음</span>
+        </span>
+      ) : (
+        <button
+          aria-label={`${product.productName} 이미지 확대`}
+          className={`${styles.imageArea} ${styles.imageButton}`}
+          onClick={() => setIsImageOpen(true)}
+          type="button"
+        >
+          <Image
+            alt=""
+            className={styles.productImage}
+            fill
+            loader={passthroughImageLoader}
+            onError={() => setImageFailed(true)}
+            sizes="84px"
+            src={product.productImageUrl}
+          />
+        </button>
+      )}
       <a
-        aria-label={`${product.productName} 상품 보기`}
+        aria-label={`${product.productName} 구매 페이지로 이동`}
         className={styles.productLink}
         href={product.purchaseUrl}
         rel="noopener noreferrer"
         target="_blank"
       >
-        <span className={styles.imageArea}>
-          {imageFailed ? (
-            <span className={styles.imageFallback}>이미지 없음</span>
-          ) : (
-            <Image
-              alt=""
-              className={styles.productImage}
-              fill
-              loader={passthroughImageLoader}
-              onError={() => setImageFailed(true)}
-              sizes="84px"
-              src={product.productImageUrl}
-            />
-          )}
-        </span>
         <span className={styles.details}>
           <strong>{product.productName}</strong>
           {priceChanged && (
@@ -105,6 +114,16 @@ export function WishlistCard({ product }: { product: WishlistItem }) {
       >
         <HeartIcon filled={isWishlisted} />
       </IconButton>
+
+      {!imageFailed && (
+        <ImageViewerDialog
+          alt={product.productName}
+          onError={() => setImageFailed(true)}
+          onOpenChange={setIsImageOpen}
+          open={isImageOpen}
+          src={product.productImageUrl}
+        />
+      )}
     </article>
   );
 }
