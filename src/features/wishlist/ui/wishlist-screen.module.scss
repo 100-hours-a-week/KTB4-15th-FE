@@ -1,0 +1,56 @@
+@use "@/styles/typography" as type;
+
+.screen {
+  min-height: calc(100dvh - var(--header-height) - var(--navigation-height));
+  padding-block: var(--space-xl) var(--space-2xl);
+}
+
+.count {
+  @include type.body-medium;
+
+  margin: 0 0 var(--space-md);
+  color: var(--color-text-secondary);
+}
+
+.list {
+  display: grid;
+  gap: var(--space-md);
+}
+
+.state,
+.empty {
+  @include type.body-medium;
+
+  display: grid;
+  justify-items: center;
+  gap: var(--space-md);
+  margin: 30dvh 0 0;
+  color: var(--color-text-secondary);
+  text-align: center;
+
+  p {
+    margin: 0;
+  }
+}
+
+.empty a {
+  @include type.label;
+
+  display: inline-flex;
+  min-height: var(--control-height);
+  align-items: center;
+  border-radius: var(--radius-medium);
+  padding-inline: var(--space-xl);
+  background: var(--color-action-primary-default);
+  color: var(--color-action-primary-text);
+  text-decoration: none;
+}
+
+.loadMore {
+  @include type.caption;
+
+  display: grid;
+  min-height: 44px;
+  place-items: center;
+  color: var(--color-text-secondary);
+}
