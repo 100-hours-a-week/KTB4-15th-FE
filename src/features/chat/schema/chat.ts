@@ -49,6 +49,7 @@ export const recommendedProductResponse = z.object({
   purchaseUrl: z.string(),
   recommendedReason: z.string().optional(),
   isWishlisted: z.boolean(),
+  wishlistId: z.number().int().positive().nullable(),
   isFittingCandidate: z.boolean(),
   fittingCandidateId: z.number().int().positive().nullable(),
 });

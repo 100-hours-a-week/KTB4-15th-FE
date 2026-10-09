@@ -7,6 +7,7 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { formatPrice } from "@/shared/utils/price-format";
 import { Button } from "@/shared/ui/button";
 import { Header, HeaderIconLink, HeaderTitle } from "@/shared/ui/header";
+import { LoadingMessage } from "@/shared/ui/loading-message";
 import {
   BackIcon,
   BottomIcon,
@@ -53,6 +54,8 @@ function CandidateCard({
   onToggleDelete,
   product,
 }: CandidateCardProps) {
+  const [imageFailed, setImageFailed] = useState(!product.productImageUrl);
+  const ProductFallbackIcon = product.itemType === "TOP" ? TopIcon : BottomIcon;
   const selectedProductId = useFittingSelectionStore((state) =>
     product.itemType === "TOP" ? state.top?.productId : state.bottom?.productId,
   );
@@ -74,15 +77,23 @@ function CandidateCard({
       }
       type="button"
     >
-      <span className={styles.imageArea}>
-        <Image
-          alt=""
-          className={styles.productImage}
-          fill
-          loader={passthroughImageLoader}
-          sizes="72px"
-          src={product.productImageUrl}
-        />
+      <span
+        aria-label={imageFailed ? "상품 이미지 없음" : undefined}
+        className={`${styles.imageArea} ${imageFailed ? styles.emptyImageArea : ""}`}
+      >
+        {imageFailed ? (
+          <ProductFallbackIcon />
+        ) : (
+          <Image
+            alt=""
+            className={styles.productImage}
+            fill
+            loader={passthroughImageLoader}
+            onError={() => setImageFailed(true)}
+            sizes="72px"
+            src={product.productImageUrl}
+          />
+        )}
       </span>
       <span className={styles.productDetails}>
         <small>{product.color}</small>
@@ -303,7 +314,9 @@ export function FittingWardrobe({ initialFilter }: FittingWardrobeProps) {
             <EmptyCandidateCard itemType={filter} />
           )}
           {isPending && (
-            <p className={styles.stateMessage}>옷장을 불러오고 있어요.</p>
+            <LoadingMessage className={styles.stateMessage}>
+              옷장을 불러오고 있어요
+            </LoadingMessage>
           )}
           {isInitialError && (
             <div className={styles.stateMessage} role="alert">

@@ -7,8 +7,9 @@ import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { memberProfileQueryOptions } from "@/features/profile";
 import { Button } from "@/shared/ui/button";
+import { ImageViewerDialog } from "@/shared/ui/dialog";
 import { Header, HeaderIconLink, HeaderTitle } from "@/shared/ui/header";
-import { BackIcon, CloseIcon, RefreshIcon, SearchIcon } from "@/shared/ui/icon";
+import { BackIcon, RefreshIcon, SearchIcon } from "@/shared/ui/icon";
 import { fittingJobQueryOptions } from "../model/fitting-query";
 import { clearActiveFittingJobId } from "../store/active-fitting-job-storage";
 import {
@@ -153,22 +154,6 @@ function FittingResultView({ result }: { result: FittingResult }) {
   const { data: memberProfile } = useQuery(memberProfileQueryOptions);
   const [isImageOpen, setIsImageOpen] = useState(false);
 
-  useEffect(() => {
-    if (!isImageOpen) return;
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setIsImageOpen(false);
-    };
-
-    document.body.style.overflow = "hidden";
-    window.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      document.body.style.overflow = "";
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [isImageOpen]);
-
   return (
     <>
       <ResultHeader />
@@ -262,38 +247,12 @@ function FittingResultView({ result }: { result: FittingResult }) {
         </div>
       </main>
 
-      {isImageOpen && (
-        <div
-          aria-label="가상 피팅 결과 이미지 크게 보기"
-          aria-modal="true"
-          className={styles.imageViewer}
-          onClick={() => setIsImageOpen(false)}
-          role="dialog"
-        >
-          <button
-            aria-label="이미지 크게 보기 닫기"
-            className={styles.imageViewerClose}
-            onClick={() => setIsImageOpen(false)}
-            type="button"
-          >
-            <CloseIcon />
-          </button>
-          <div
-            className={styles.imageViewerContent}
-            onClick={(event) => event.stopPropagation()}
-          >
-            <Image
-              alt="선택한 상품을 착용한 가상 피팅 결과 크게 보기"
-              className={styles.imageViewerImage}
-              fill
-              loading="eager"
-              sizes="100vw"
-              src={result.resultImageUrl}
-              unoptimized
-            />
-          </div>
-        </div>
-      )}
+      <ImageViewerDialog
+        alt="선택한 상품을 착용한 가상 피팅 결과 크게 보기"
+        onOpenChange={setIsImageOpen}
+        open={isImageOpen}
+        src={result.resultImageUrl}
+      />
     </>
   );
 }

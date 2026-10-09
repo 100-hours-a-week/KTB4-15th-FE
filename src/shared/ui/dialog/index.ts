@@ -5,3 +5,4 @@ export {
   DialogTitle,
   type DialogProps,
 } from "./dialog";
+export { ImageViewerDialog } from "./image-viewer-dialog";
