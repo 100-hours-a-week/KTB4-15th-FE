@@ -53,6 +53,8 @@ function CandidateCard({
   onToggleDelete,
   product,
 }: CandidateCardProps) {
+  const [imageFailed, setImageFailed] = useState(!product.productImageUrl);
+  const ProductFallbackIcon = product.itemType === "TOP" ? TopIcon : BottomIcon;
   const selectedProductId = useFittingSelectionStore((state) =>
     product.itemType === "TOP" ? state.top?.productId : state.bottom?.productId,
   );
@@ -74,15 +76,23 @@ function CandidateCard({
       }
       type="button"
     >
-      <span className={styles.imageArea}>
-        <Image
-          alt=""
-          className={styles.productImage}
-          fill
-          loader={passthroughImageLoader}
-          sizes="72px"
-          src={product.productImageUrl}
-        />
+      <span
+        aria-label={imageFailed ? "상품 이미지 없음" : undefined}
+        className={`${styles.imageArea} ${imageFailed ? styles.emptyImageArea : ""}`}
+      >
+        {imageFailed ? (
+          <ProductFallbackIcon />
+        ) : (
+          <Image
+            alt=""
+            className={styles.productImage}
+            fill
+            loader={passthroughImageLoader}
+            onError={() => setImageFailed(true)}
+            sizes="72px"
+            src={product.productImageUrl}
+          />
+        )}
       </span>
       <span className={styles.productDetails}>
         <small>{product.color}</small>

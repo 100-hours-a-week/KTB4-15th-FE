@@ -5,7 +5,7 @@ import { useState } from "react";
 import { getApiErrorMessage } from "@/shared/api/error";
 import { IconButton } from "@/shared/ui/button";
 import { ImageViewerDialog } from "@/shared/ui/dialog";
-import { HeartIcon } from "@/shared/ui/icon";
+import { BottomIcon, HeartIcon, TopIcon } from "@/shared/ui/icon";
 import { showToast } from "@/shared/ui/toast";
 import { formatPrice } from "@/shared/utils/price-format";
 import { getPriceChangeText } from "../lib/wishlist-display";
@@ -21,6 +21,7 @@ function passthroughImageLoader({ src }: ImageLoaderProps) {
 }
 
 export function WishlistCard({ product }: { product: WishlistItem }) {
+  const ProductFallbackIcon = product.itemType === "TOP" ? TopIcon : BottomIcon;
   const [imageFailed, setImageFailed] = useState(!product.productImageUrl);
   const [isImageOpen, setIsImageOpen] = useState(false);
   const [wishlistId, setWishlistId] = useState<number | null>(
@@ -63,7 +64,9 @@ export function WishlistCard({ product }: { product: WishlistItem }) {
     <article className={styles.card}>
       {imageFailed ? (
         <span className={styles.imageArea}>
-          <span className={styles.imageFallback}>이미지 없음</span>
+          <span aria-label="상품 이미지 없음" className={styles.imageFallback}>
+            <ProductFallbackIcon />
+          </span>
         </span>
       ) : (
         <button

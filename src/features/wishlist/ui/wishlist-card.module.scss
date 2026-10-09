@@ -40,12 +40,15 @@
 }
 
 .imageFallback {
-  @include type.caption;
-
   display: grid;
   height: 100%;
   place-items: center;
   color: var(--color-text-secondary);
+
+  svg {
+    width: 32px;
+    height: 32px;
+  }
 }
 
 .details {
