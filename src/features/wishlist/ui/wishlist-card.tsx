@@ -81,7 +81,7 @@ export function WishlistCard({ product }: { product: WishlistItem }) {
             fill
             loader={passthroughImageLoader}
             onError={() => setImageFailed(true)}
-            sizes="84px"
+            sizes="96px"
             src={product.productImageUrl}
           />
         </button>

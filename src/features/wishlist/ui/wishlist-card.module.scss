@@ -3,7 +3,7 @@
 .card {
   position: relative;
   display: grid;
-  grid-template-columns: 84px minmax(0, 1fr) 44px;
+  grid-template-columns: 96px minmax(0, 1fr) 44px;
   align-items: start;
   gap: var(--space-md);
   min-height: 120px;
@@ -22,8 +22,8 @@
 .imageArea {
   position: relative;
   overflow: hidden;
-  width: 84px;
-  height: 84px;
+  width: 96px;
+  height: 96px;
   border-radius: var(--radius-medium);
   background: var(--color-background-subtle);
 }
@@ -92,6 +92,8 @@
 }
 
 .deleteButton {
+  align-self: start;
+  margin-top: 26px;
   color: var(--color-text-primary);
 
   &[aria-pressed="true"] {
