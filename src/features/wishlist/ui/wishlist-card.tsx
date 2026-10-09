@@ -2,6 +2,7 @@
 
 import Image, { type ImageLoaderProps } from "next/image";
 import { useState } from "react";
+import { recordPurchaseLinkClick } from "@/features/product";
 import { getApiErrorMessage } from "@/shared/api/error";
 import { IconButton } from "@/shared/ui/button";
 import { ImageViewerDialog } from "@/shared/ui/dialog";
@@ -90,6 +91,11 @@ export function WishlistCard({ product }: { product: WishlistItem }) {
         aria-label={`${product.productName} 구매 페이지로 이동`}
         className={styles.productLink}
         href={product.purchaseUrl}
+        onClick={() => {
+          void recordPurchaseLinkClick(product.productId).catch(
+            () => undefined,
+          );
+        }}
         rel="noopener noreferrer"
         target="_blank"
       >
