@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Button } from "@/shared/ui/button";
+import { LoadingMessage } from "@/shared/ui/loading-message";
 import { wishlistListQueryOptions } from "../model/wishlist-query";
 import { WishlistCard } from "./wishlist-card";
 import styles from "./wishlist-screen.module.scss";
@@ -41,7 +42,9 @@ export function WishlistScreen() {
     <>
       <main className={styles.screen}>
         {isPending && (
-          <p className={styles.state}>찜 목록을 불러오고 있어요.</p>
+          <LoadingMessage className={styles.state}>
+            찜 목록을 불러오고 있어요
+          </LoadingMessage>
         )}
         {isInitialError && (
           <div className={styles.state} role="alert">

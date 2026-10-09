@@ -7,6 +7,7 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { formatPrice } from "@/shared/utils/price-format";
 import { Button } from "@/shared/ui/button";
 import { Header, HeaderIconLink, HeaderTitle } from "@/shared/ui/header";
+import { LoadingMessage } from "@/shared/ui/loading-message";
 import {
   BackIcon,
   BottomIcon,
@@ -313,7 +314,9 @@ export function FittingWardrobe({ initialFilter }: FittingWardrobeProps) {
             <EmptyCandidateCard itemType={filter} />
           )}
           {isPending && (
-            <p className={styles.stateMessage}>옷장을 불러오고 있어요.</p>
+            <LoadingMessage className={styles.stateMessage}>
+              옷장을 불러오고 있어요
+            </LoadingMessage>
           )}
           {isInitialError && (
             <div className={styles.stateMessage} role="alert">
