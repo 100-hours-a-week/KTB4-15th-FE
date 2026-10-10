@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { ChevronRightIcon } from "@/shared/ui/icon";
 import styles from "./fitting-result-section.module.scss";
 
 export function FittingResultSection() {
@@ -10,7 +9,6 @@ export function FittingResultSection() {
       </h2>
       <Link className={styles.link} href="/fitting-results">
         <span>가상 피팅 저장 목록</span>
-        <ChevronRightIcon />
       </Link>
     </section>
   );

@@ -18,16 +18,47 @@
 .link {
   @include type.heading-small;
 
+  position: relative;
   display: flex;
   min-height: var(--control-height-large);
   align-items: center;
   justify-content: space-between;
+  border-radius: var(--radius-medium);
   color: var(--color-text-primary);
+  isolation: isolate;
   text-decoration: none;
+
+  &::after {
+    position: absolute;
+    z-index: 1;
+    border-radius: inherit;
+    background: currentcolor;
+    content: "";
+    inset: 0;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--duration-fast) var(--easing-standard);
+  }
+
+  &:active::after {
+    opacity: 0.12;
+  }
 
   svg {
     width: 24px;
     height: 24px;
     color: var(--color-text-secondary);
+  }
+}
+
+@media (hover: hover) {
+  .link:hover::after {
+    opacity: 0.06;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .link::after {
+    transition: none;
   }
 }
