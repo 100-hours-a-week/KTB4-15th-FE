@@ -21,3 +21,9 @@ export async function createMemberProfile(payload: MemberProfileCreateRequest) {
 
   return parseResponse(response, memberProfileCreateResponseSchema);
 }
+
+export async function updateFullBodyImage(fullBodyImageValidationId: number) {
+  await apiClient.patch("members/me/profile", {
+    json: { fullBodyImageValidationId },
+  });
+}

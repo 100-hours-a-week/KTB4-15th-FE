@@ -11,6 +11,29 @@ function formatMeasurement(value: number) {
   }).format(value);
 }
 
+function MeasurementValue({
+  unit,
+  value,
+}: {
+  unit: string;
+  value: number | null;
+}) {
+  if (value === null) {
+    return (
+      <dd aria-label="미등록" className={styles.emptyValue}>
+        -
+      </dd>
+    );
+  }
+
+  return (
+    <dd>
+      {formatMeasurement(value)}
+      <span className={styles.unit}>{unit}</span>
+    </dd>
+  );
+}
+
 export function MemberProfileSection() {
   const profileQuery = useQuery(memberProfileQueryOptions);
 
@@ -55,24 +78,15 @@ export function MemberProfileSection() {
       <dl className={styles.measurements}>
         <div className={styles.measurement}>
           <dt>키</dt>
-          <dd>
-            {formatMeasurement(profile.height)}
-            <span className={styles.unit}>cm</span>
-          </dd>
+          <MeasurementValue unit="cm" value={profile.height} />
         </div>
         <div className={styles.measurement}>
           <dt>몸무게</dt>
-          <dd>
-            {formatMeasurement(profile.weight)}
-            <span className={styles.unit}>kg</span>
-          </dd>
+          <MeasurementValue unit="kg" value={profile.weight} />
         </div>
         <div className={styles.measurement}>
           <dt>나이</dt>
-          <dd>
-            {profile.age}
-            <span className={styles.unit}>세</span>
-          </dd>
+          <MeasurementValue unit="세" value={profile.age} />
         </div>
       </dl>
     </section>

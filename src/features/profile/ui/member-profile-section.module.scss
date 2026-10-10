@@ -65,6 +65,11 @@
   font-weight: var(--font-weight-regular);
 }
 
+.measurement .emptyValue {
+  color: var(--color-text-secondary);
+  font-weight: var(--font-weight-regular);
+}
+
 .errorState {
   display: grid;
   place-items: center;
