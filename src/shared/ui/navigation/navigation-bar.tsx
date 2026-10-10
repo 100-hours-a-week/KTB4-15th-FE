@@ -45,7 +45,6 @@ const NAVIGATION_ITEMS = [
     href: "/ranking",
     icon: RankingIcon,
     activeIcon: RankingActiveIcon,
-    available: false,
   },
   {
     label: "마이",

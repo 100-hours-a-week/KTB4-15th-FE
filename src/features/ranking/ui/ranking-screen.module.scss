@@ -1,0 +1,48 @@
+@use "@/styles/typography" as type;
+
+.tabs {
+  display: flex;
+  gap: var(--space-2xl);
+  height: 52px;
+  align-items: flex-end;
+}
+
+.tab {
+  @include type.body-large;
+
+  position: relative;
+  height: 100%;
+  padding: 0;
+  color: var(--color-text-secondary);
+  font-weight: var(--font-weight-semibold);
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+
+  &[aria-pressed="true"] {
+    color: var(--color-text-primary);
+
+    &::after {
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      height: 3px;
+      background: var(--color-text-primary);
+      border-radius: var(--radius-full);
+      content: "";
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: 2px;
+  }
+}
+
+.screen {
+  min-height: calc(
+    100dvh - var(--header-height) - 52px - var(--navigation-height)
+  );
+  padding-bottom: calc(var(--navigation-height) + var(--space-xl));
+}
