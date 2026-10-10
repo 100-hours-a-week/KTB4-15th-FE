@@ -3,7 +3,8 @@
 import Image, { type ImageLoaderProps } from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { memberProfileQueryOptions } from "@/features/profile";
 import { ApiError } from "@/shared/api/error";
 import { Button } from "@/shared/ui/button";
 import {
@@ -95,13 +96,15 @@ function OutfitItem({
 export function FittingSelectionPanel() {
   useRestoreFittingSelection();
   const router = useRouter();
+  const { data: memberProfile } = useQuery(memberProfileQueryOptions);
   const top = useFittingSelectionStore((state) => state.top);
   const bottom = useFittingSelectionStore((state) => state.bottom);
   const clearSelection = useFittingSelectionStore(
     (state) => state.clearSelection,
   );
   const selectedCount = Number(Boolean(top)) + Number(Boolean(bottom));
-  const canStart = selectedCount > 0;
+  const hasFullBodyImage = Boolean(memberProfile?.fullBodyImageUrl);
+  const canStart = selectedCount > 0 && hasFullBodyImage;
 
   const createFittingJobMutation = useMutation({
     mutationFn: createFittingJob,
@@ -123,7 +126,7 @@ export function FittingSelectionPanel() {
   });
 
   const handleStartFitting = () => {
-    if (!top && !bottom) return;
+    if ((!top && !bottom) || !hasFullBodyImage) return;
 
     createFittingJobMutation.mutate({
       ...(top && { topProductId: top.productId }),
@@ -163,8 +166,13 @@ export function FittingSelectionPanel() {
       </section>
 
       <div className={styles.actionArea}>
-        <p>상의 또는 하의를 선택하면 피팅을 시작할 수 있어요</p>
+        <p>
+          {hasFullBodyImage
+            ? "상의 또는 하의를 선택하면 피팅을 시작할 수 있어요"
+            : "가상 피팅을 시작하려면 전신 사진을 등록해 주세요"}
+        </p>
         <Button
+          className={styles.startButton}
           disabled={!canStart}
           fullWidth
           isLoading={createFittingJobMutation.isPending}
