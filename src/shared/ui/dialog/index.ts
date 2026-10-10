@@ -1,3 +1,4 @@
+export { ConfirmDialog } from "./confirm-dialog";
 export {
   Dialog,
   DialogClose,
