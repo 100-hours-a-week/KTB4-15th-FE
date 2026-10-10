@@ -60,5 +60,24 @@
   min-height: calc(
     100dvh - var(--header-height) - 52px - var(--navigation-height)
   );
-  padding-bottom: calc(var(--navigation-height) + var(--space-xl));
+}
+
+.state {
+  display: grid;
+  min-height: 240px;
+  place-content: center;
+  justify-items: center;
+  gap: var(--space-md);
+  color: var(--color-text-secondary);
+  text-align: center;
+}
+
+.list {
+  padding-inline: var(--space-md);
+  border-radius: var(--radius-medium);
+  background: var(--color-background-surface);
+
+  > :last-child {
+    border-bottom: 0;
+  }
 }
