@@ -1,6 +1,8 @@
 import { z } from "zod";
 import { productItemTypeSchema } from "@/shared/schema/product";
 
+export const FITTING_OUTFIT_NAME_MAX_LENGTH = 20;
+
 export const fittingResultProductSchema = z.object({
   productId: z.number().int().positive(),
   itemType: productItemTypeSchema,
@@ -12,7 +14,7 @@ export const fittingResultProductSchema = z.object({
 export const fittingOutfitNameSchema = z
   .string()
   .min(1)
-  .max(20)
+  .max(FITTING_OUTFIT_NAME_MAX_LENGTH)
   .refine((value) => value.trim().length > 0);
 
 export const fittingResultCreateRequestSchema = z.object({

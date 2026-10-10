@@ -357,50 +357,49 @@
   }
 }
 
-.nameCard,
 .commentCard {
   border-radius: var(--radius-large);
   padding: var(--space-lg);
   background: var(--color-background-surface);
 }
 
-.nameHeading {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-
-  label,
-  span {
-    @include type.caption;
-
-    margin: 0;
-  }
-
-  span {
-    color: var(--color-text-secondary);
-  }
+.resultForm {
+  display: grid;
+  gap: var(--space-xl);
 }
 
 .outfitName {
   @include type.body-medium;
 
-  width: 100%;
-  margin-top: var(--space-sm);
-  border: 0;
-  border-radius: var(--radius-small);
-  padding: var(--space-md);
-  background: var(--color-gray-100);
+  border: 1px solid transparent;
+  border-radius: var(--radius-medium);
+  padding: var(--space-medium);
+  background: var(--color-background-surface);
   color: var(--color-text-primary);
-  cursor: default;
+  cursor: text;
   font-weight: var(--font-weight-medium);
   outline: none;
+
+  &:focus {
+    border-color: var(--color-border-brand);
+    box-shadow: 0 0 0 3px var(--color-focus-ring);
+  }
+
+  &:disabled {
+    color: var(--color-text-disabled);
+    cursor: not-allowed;
+  }
+
+  &:read-only:not(:disabled) {
+    cursor: default;
+  }
 }
 
-.nameCard > p {
+.nameLength {
   @include type.caption;
 
-  margin: var(--space-sm) 0 0;
   color: var(--color-text-secondary);
+  white-space: nowrap;
 }
 
 .commentCard {

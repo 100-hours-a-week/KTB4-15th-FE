@@ -64,7 +64,7 @@ export function FittingJobScreen({ fittingJobId }: FittingJobScreenProps) {
     return (
       <>
         <ProgressHeader />
-        <main className={styles.main}>
+        <main className={styles.errorMain}>
           <h2>피팅 작업을 확인하지 못했어요</h2>
           <p>잠시 후 다시 시도해 주세요.</p>
           <Button
@@ -82,7 +82,7 @@ export function FittingJobScreen({ fittingJobId }: FittingJobScreenProps) {
     return (
       <>
         <ProgressHeader />
-        <main className={styles.main}>
+        <main className={styles.errorMain}>
           <h2>가상 피팅 생성에 실패했어요</h2>
           <p>피팅 홈에서 다시 시도해 주세요.</p>
           <Button
@@ -97,7 +97,9 @@ export function FittingJobScreen({ fittingJobId }: FittingJobScreenProps) {
   }
 
   if (data.status === "COMPLETED" && data.result && isResultReady) {
-    return <FittingResultView result={data.result} />;
+    return (
+      <FittingResultView fittingJobId={fittingJobId} result={data.result} />
+    );
   }
 
   return (
