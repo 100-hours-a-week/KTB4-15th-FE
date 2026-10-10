@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
+import { recordPurchaseLinkClick } from "@/features/product";
 import { ApiError, getApiErrorMessage } from "@/shared/api/error";
 import { Button } from "@/shared/ui/button";
 import { ConfirmDialog, ImageViewerDialog } from "@/shared/ui/dialog";
@@ -146,7 +147,19 @@ export function FittingResultView({
           <h2>선택한 상품 조합</h2>
           <div className={styles.products}>
             {result.products.map((product) => (
-              <article className={styles.productCard} key={product.productId}>
+              <a
+                aria-label={`${product.productName} 구매 페이지로 이동`}
+                className={styles.productCard}
+                href={product.purchaseUrl}
+                key={product.productId}
+                onClick={() => {
+                  void recordPurchaseLinkClick(product.productId).catch(
+                    () => undefined,
+                  );
+                }}
+                rel="noopener noreferrer"
+                target="_blank"
+              >
                 <span className={styles.productImageArea}>
                   <Image
                     alt=""
@@ -161,7 +174,7 @@ export function FittingResultView({
                   <small>{product.itemType === "TOP" ? "상의" : "하의"}</small>
                   <strong>{product.productName}</strong>
                 </span>
-              </article>
+              </a>
             ))}
           </div>
         </section>
