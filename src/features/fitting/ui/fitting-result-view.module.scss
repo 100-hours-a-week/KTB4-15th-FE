@@ -215,3 +215,41 @@
     height: 20px;
   }
 }
+
+.primaryLink {
+  @include type.body-large;
+
+  display: flex;
+  min-height: var(--control-height-large);
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  border-radius: var(--radius-medium);
+  background: var(--color-action-primary-default);
+  color: var(--color-action-primary-text);
+  font-weight: var(--font-weight-semibold);
+
+  svg {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+.deleteButton {
+  @include type.label;
+
+  display: flex;
+  min-height: var(--control-height);
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs);
+  border: 0;
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+}

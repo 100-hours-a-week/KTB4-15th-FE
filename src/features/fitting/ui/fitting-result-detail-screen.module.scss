@@ -1,0 +1,15 @@
+@use "@/styles/typography" as type;
+
+.state {
+  @include type.body-medium;
+
+  display: grid;
+  min-height: calc(100dvh - var(--header-height));
+  place-items: center;
+  color: var(--color-text-secondary);
+  text-align: center;
+
+  p {
+    margin: 0 0 var(--space-lg);
+  }
+}

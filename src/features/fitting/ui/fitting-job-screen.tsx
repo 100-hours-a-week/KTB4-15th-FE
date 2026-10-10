@@ -4,7 +4,8 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/shared/ui/button";
-import { Header, HeaderTitle } from "@/shared/ui/header";
+import { Header, HeaderIconLink, HeaderTitle } from "@/shared/ui/header";
+import { BackIcon } from "@/shared/ui/icon";
 import { fittingJobQueryOptions } from "../model/fitting-query";
 import { clearActiveFittingJobId } from "../store/active-fitting-job-storage";
 import { clearFittingJobProgress } from "../store/fitting-job-progress-storage";
@@ -98,7 +99,17 @@ export function FittingJobScreen({ fittingJobId }: FittingJobScreenProps) {
 
   if (data.status === "COMPLETED" && data.result && isResultReady) {
     return (
-      <FittingResultView fittingJobId={fittingJobId} result={data.result} />
+      <>
+        <Header
+          center={<HeaderTitle>가상 피팅 결과</HeaderTitle>}
+          left={
+            <HeaderIconLink aria-label="피팅으로 돌아가기" href="/fitting">
+              <BackIcon />
+            </HeaderIconLink>
+          }
+        />
+        <FittingResultView fittingJobId={fittingJobId} result={data.result} />
+      </>
     );
   }
 

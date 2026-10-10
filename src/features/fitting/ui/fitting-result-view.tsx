@@ -2,36 +2,63 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
 import { ApiError, getApiErrorMessage } from "@/shared/api/error";
 import { Button } from "@/shared/ui/button";
-import { ImageViewerDialog } from "@/shared/ui/dialog";
-import { Header, HeaderIconLink, HeaderTitle } from "@/shared/ui/header";
-import { BackIcon, RefreshIcon, SearchIcon } from "@/shared/ui/icon";
+import { ConfirmDialog, ImageViewerDialog } from "@/shared/ui/dialog";
+import { DeleteIcon, RefreshIcon, SearchIcon } from "@/shared/ui/icon";
 import { InputField } from "@/shared/ui/input-field";
 import { showToast } from "@/shared/ui/toast";
-import { useCreateFittingResultMutation } from "../model/fitting-query";
+import {
+  useCreateFittingResultMutation,
+  useDeleteFittingResultMutation,
+  useUpdateFittingResultOutfitNameMutation,
+} from "../model/fitting-query";
 import type { FittingJobStatusResponse } from "../schema/fitting-job";
 import {
   FITTING_OUTFIT_NAME_MAX_LENGTH,
   fittingOutfitNameSchema,
+  type FittingResultDetail,
 } from "../schema/fitting-result";
 import styles from "./fitting-result-view.module.scss";
 
-type FittingResult = NonNullable<FittingJobStatusResponse["result"]>;
+type FittingJobResult = NonNullable<FittingJobStatusResponse["result"]>;
+
+type FittingResultViewProps =
+  | {
+      fittingJobId: number;
+      fittingResultId?: never;
+      result: FittingJobResult;
+    }
+  | {
+      fittingJobId?: never;
+      fittingResultId: number;
+      result: FittingResultDetail;
+    };
 
 export function FittingResultView({
   fittingJobId,
+  fittingResultId,
   result,
-}: {
-  fittingJobId: number;
-  result: FittingResult;
-}) {
+}: FittingResultViewProps) {
+  const router = useRouter();
   const [isImageOpen, setIsImageOpen] = useState(false);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [outfitName, setOutfitName] = useState(result.outfitName);
+  const [lastSavedOutfitName, setLastSavedOutfitName] = useState(
+    result.outfitName,
+  );
   const [nameError, setNameError] = useState("");
   const [isSaved, setIsSaved] = useState(false);
+  const isDetail = fittingResultId !== undefined;
   const createFittingResultMutation = useCreateFittingResultMutation();
+  const updateFittingResultMutation =
+    useUpdateFittingResultOutfitNameMutation();
+  const deleteFittingResultMutation = useDeleteFittingResultMutation();
+  const isSubmitting =
+    createFittingResultMutation.isPending ||
+    updateFittingResultMutation.isPending;
 
   const handleSave = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -43,6 +70,32 @@ export function FittingResultView({
     }
 
     setNameError("");
+    if (isDetail) {
+      if (normalizedOutfitName === lastSavedOutfitName) return;
+
+      updateFittingResultMutation.mutate(
+        {
+          fittingResultId,
+          request: { outfitName: normalizedOutfitName },
+        },
+        {
+          onError: (error) =>
+            showToast.error(
+              getApiErrorMessage(error, "코디명을 수정하지 못했어요."),
+              { id: "update-fitting-result" },
+            ),
+          onSuccess: () => {
+            setOutfitName(normalizedOutfitName);
+            setLastSavedOutfitName(normalizedOutfitName);
+            showToast.success("코디명을 수정했어요.", {
+              id: "update-fitting-result",
+            });
+          },
+        },
+      );
+      return;
+    }
+
     createFittingResultMutation.mutate(
       { fittingJobId, outfitName: normalizedOutfitName },
       {
@@ -68,16 +121,26 @@ export function FittingResultView({
     );
   };
 
+  const handleDelete = () => {
+    if (!isDetail) return;
+
+    deleteFittingResultMutation.mutate(fittingResultId, {
+      onError: (error) =>
+        showToast.error(
+          getApiErrorMessage(error, "가상 피팅 기록을 삭제하지 못했어요."),
+          { id: "delete-fitting-result" },
+        ),
+      onSuccess: () => {
+        showToast.success("가상 피팅 기록을 삭제했어요.", {
+          id: "delete-fitting-result",
+        });
+        router.replace("/fitting-results");
+      },
+    });
+  };
+
   return (
     <>
-      <Header
-        center={<HeaderTitle>가상 피팅 결과</HeaderTitle>}
-        left={
-          <HeaderIconLink aria-label="피팅으로 돌아가기" href="/fitting">
-            <BackIcon />
-          </HeaderIconLink>
-        }
-      />
       <main className={styles.resultMain}>
         <section className={styles.productsSection}>
           <h2>선택한 상품 조합</h2>
@@ -129,7 +192,7 @@ export function FittingResultView({
         <form className={styles.resultForm} onSubmit={handleSave}>
           <InputField
             className={styles.outfitName}
-            disabled={createFittingResultMutation.isPending}
+            disabled={isSubmitting}
             endAdornment={
               <span className={styles.nameLength}>
                 {outfitName.length}/{FITTING_OUTFIT_NAME_MAX_LENGTH}
@@ -139,13 +202,16 @@ export function FittingResultView({
             id="fitting-outfit-name"
             label="코디명"
             maxLength={FITTING_OUTFIT_NAME_MAX_LENGTH}
+            onBlur={(event) => {
+              if (isDetail) event.currentTarget.form?.requestSubmit();
+            }}
             onChange={(event) => {
               setOutfitName(
                 event.target.value.slice(0, FITTING_OUTFIT_NAME_MAX_LENGTH),
               );
               setNameError("");
             }}
-            readOnly={isSaved}
+            readOnly={!isDetail && isSaved}
             reserveHelperSpace={false}
             value={outfitName}
           />
@@ -162,19 +228,37 @@ export function FittingResultView({
           </section>
 
           <div className={styles.resultActions}>
-            <Button
-              disabled={isSaved}
-              fullWidth
-              isLoading={createFittingResultMutation.isPending}
-              size="large"
-              type="submit"
-            >
-              {isSaved ? "저장 완료" : "가상 피팅 저장"}
-            </Button>
-            <Link className={styles.retryLink} href="/fitting">
-              <RefreshIcon />
-              다른 조합 피팅하기
-            </Link>
+            {isDetail ? (
+              <>
+                <Link className={styles.primaryLink} href="/fitting">
+                  <RefreshIcon />
+                  다른 조합 피팅하기
+                </Link>
+                <button
+                  className={styles.deleteButton}
+                  onClick={() => setIsDeleteOpen(true)}
+                  type="button"
+                >
+                  <DeleteIcon />이 피팅 기록 삭제
+                </button>
+              </>
+            ) : (
+              <>
+                <Button
+                  disabled={isSaved}
+                  fullWidth
+                  isLoading={createFittingResultMutation.isPending}
+                  size="large"
+                  type="submit"
+                >
+                  {isSaved ? "저장 완료" : "가상 피팅 저장"}
+                </Button>
+                <Link className={styles.retryLink} href="/fitting">
+                  <RefreshIcon />
+                  다른 조합 피팅하기
+                </Link>
+              </>
+            )}
           </div>
         </form>
       </main>
@@ -185,6 +269,18 @@ export function FittingResultView({
         open={isImageOpen}
         src={result.resultImageUrl}
       />
+
+      {isDetail && (
+        <ConfirmDialog
+          confirmLabel="삭제하기"
+          description="삭제한 가상 피팅 결과는 복구할 수 없습니다."
+          isLoading={deleteFittingResultMutation.isPending}
+          onConfirm={handleDelete}
+          onOpenChange={setIsDeleteOpen}
+          open={isDeleteOpen}
+          title="이 피팅 기록을 삭제할까요?"
+        />
+      )}
     </>
   );
 }

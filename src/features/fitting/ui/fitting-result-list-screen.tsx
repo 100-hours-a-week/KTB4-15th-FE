@@ -1,6 +1,7 @@
 "use client";
 
 import Image, { type ImageLoaderProps } from "next/image";
+import Link from "next/link";
 import { useEffect, useRef } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Button } from "@/shared/ui/button";
@@ -68,7 +69,12 @@ export function FittingResultListScreen() {
       {results.length > 0 && (
         <div className={styles.list}>
           {results.map((result) => (
-            <article className={styles.card} key={result.fittingResultId}>
+            <Link
+              aria-label={`${result.outfitName} 상세 보기`}
+              className={styles.card}
+              href={`/fitting-results/${result.fittingResultId}`}
+              key={result.fittingResultId}
+            >
               <div className={styles.imageArea}>
                 <Image
                   alt={`${result.outfitName} 가상 피팅 결과`}
@@ -85,7 +91,7 @@ export function FittingResultListScreen() {
                 </time>
                 <h3>{result.outfitName}</h3>
               </div>
-            </article>
+            </Link>
           ))}
           <div className={styles.loadMore} ref={loadMoreRef}>
             {isFetchingNextPage && "저장 목록을 더 불러오고 있어요."}
