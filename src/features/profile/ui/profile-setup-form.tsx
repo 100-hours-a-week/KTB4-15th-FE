@@ -26,6 +26,8 @@ type ProfileSetupFormValues = {
 
 export function ProfileSetupForm() {
   const [isNotificationEnabled, setIsNotificationEnabled] = useState(true);
+  const [isPhotoValidationPending, setIsPhotoValidationPending] =
+    useState(false);
   const [photoValidationId, setPhotoValidationId] = useState<number>();
   const {
     isComplete,
@@ -50,17 +52,13 @@ export function ProfileSetupForm() {
   };
 
   const handleProfileSubmit = (values: ProfileSetupFormValues) => {
-    if (!photoValidationId) {
-      return;
-    }
-
     submitProfileSetup({
-      age: Number(values.age),
+      age: values.age ? Number(values.age) : undefined,
       fullBodyImageValidationId: photoValidationId,
-      height: Number(values.height),
+      height: values.height ? Number(values.height) : undefined,
       name: values.name,
       priceAlertEnabled: isNotificationEnabled,
-      weight: Number(values.weight),
+      weight: values.weight ? Number(values.weight) : undefined,
     });
   };
 
@@ -147,7 +145,6 @@ export function ProfileSetupForm() {
             onInput={restrictDecimalInput}
             onKeyDown={(event) => handleFieldEnter(event, "height")}
             placeholder="29"
-            required
             suffix="세"
             type="text"
           />
@@ -161,7 +158,6 @@ export function ProfileSetupForm() {
             onInput={restrictDecimalInput}
             onKeyDown={(event) => handleFieldEnter(event, "weight")}
             placeholder="178"
-            required
             suffix="cm"
             type="text"
           />
@@ -175,7 +171,6 @@ export function ProfileSetupForm() {
             onInput={restrictDecimalInput}
             onKeyDown={(event) => handleFieldEnter(event)}
             placeholder="72"
-            required
             suffix="kg"
             type="text"
           />
@@ -183,6 +178,7 @@ export function ProfileSetupForm() {
       </section>
 
       <ProfilePhotoSection
+        onPendingChange={setIsPhotoValidationPending}
         onValidationChange={handlePhotoValidationChange}
         validationId={photoValidationId}
       />
@@ -201,7 +197,7 @@ export function ProfileSetupForm() {
 
       <Button
         className={styles.submitButton}
-        disabled={!isValid || !photoValidationId}
+        disabled={!isValid || isPhotoValidationPending}
         fullWidth
         isLoading={isProfileSetupPending}
         size="large"

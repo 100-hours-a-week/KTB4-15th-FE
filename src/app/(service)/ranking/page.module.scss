@@ -1,10 +1,10 @@
 .main {
   display: grid;
   min-height: calc(100dvh - var(--header-height) - var(--navigation-height));
-  gap: var(--space-md);
+  gap: var(--space-xl);
   align-content: start;
   padding-block: var(--space-xl)
     calc(
-      var(--navigation-height) + env(safe-area-inset-bottom) + var(--space-lg)
+      var(--navigation-height) + env(safe-area-inset-bottom) + var(--space-2xl)
     );
 }

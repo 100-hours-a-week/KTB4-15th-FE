@@ -202,7 +202,7 @@ export function AiFittingIcon({ className }: IconProps) {
     <Icon className={className} viewBox="0 0 16 16">
       <path
         d="M8 1.333 9.6 6.4 14.667 8 9.6 9.6 8 14.667 6.4 9.6 1.333 8 6.4 6.4z"
-        fill="#6ee7b7"
+        fill="currentColor"
       />
     </Icon>
   );

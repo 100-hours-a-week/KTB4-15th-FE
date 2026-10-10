@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import Image from "next/image";
 import { overlay } from "overlay-kit";
 import { BottomSheet } from "@/shared/ui/bottom-sheet";
@@ -8,11 +9,13 @@ import { FullBodyImageGuide } from "./full-body-image-guide";
 import styles from "./profile-setup-form.module.scss";
 
 type ProfilePhotoSectionProps = {
+  onPendingChange: (isPending: boolean) => void;
   onValidationChange: (validationId?: number) => void;
   validationId?: number;
 };
 
 export function ProfilePhotoSection({
+  onPendingChange,
   onValidationChange,
   validationId,
 }: ProfilePhotoSectionProps) {
@@ -24,6 +27,10 @@ export function ProfilePhotoSection({
     openPhotoPicker,
     photoUrl,
   } = useFullBodyPhoto({ onValidationChange });
+
+  useEffect(() => {
+    onPendingChange(isPending);
+  }, [isPending, onPendingChange]);
 
   const openFullBodyImageGuide = () => {
     overlay.open(({ close, isOpen, unmount }) => (
@@ -49,10 +56,8 @@ export function ProfilePhotoSection({
 
   return (
     <section className={styles.photoSection}>
-      <h3>
-        전신 사진<span aria-hidden="true">*</span>
-      </h3>
-      <p>정면 전신 사진을 등록해야 회원 가입이 가능합니다.</p>
+      <h3>전신 사진</h3>
+      <p>가상 피팅을 이용하려면 정면 전신 사진이 필요합니다.</p>
       <div className={styles.photoCard}>
         <button
           aria-label="전신 사진 선택"
@@ -79,7 +84,6 @@ export function ProfilePhotoSection({
           className={styles.fileInput}
           onChange={handlePhotoChange}
           ref={fileInputRef}
-          required
           type="file"
         />
         <div className={styles.photoDetails}>
