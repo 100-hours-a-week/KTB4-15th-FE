@@ -1,5 +1,6 @@
 import Image, { type ImageLoaderProps } from "next/image";
 import { useState } from "react";
+import { recordPurchaseLinkClick } from "@/features/product";
 import { ImageViewerDialog } from "@/shared/ui/dialog";
 import { BottomIcon, EyeIcon, HeartIcon, TopIcon } from "@/shared/ui/icon";
 import { formatCompactNumber } from "@/shared/utils/number-format";
@@ -55,6 +56,11 @@ export function RankingRow({ product, rank, rankingType }: RankingRowProps) {
         aria-label={`${product.productName} 구매 페이지로 이동`}
         className={styles.productLink}
         href={product.purchaseUrl}
+        onClick={() => {
+          void recordPurchaseLinkClick(product.productId).catch(
+            () => undefined,
+          );
+        }}
         rel="noopener noreferrer"
         target="_blank"
       >

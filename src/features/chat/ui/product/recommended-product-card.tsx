@@ -7,6 +7,7 @@ import {
   useCreateWishlistMutation,
   useDeleteWishlistMutation,
 } from "@/features/wishlist";
+import { recordPurchaseLinkClick } from "@/features/product";
 import { ApiError, getApiErrorMessage } from "@/shared/api/error";
 import { Button, IconButton } from "@/shared/ui/button";
 import { HeartIcon } from "@/shared/ui/icon";
@@ -150,6 +151,11 @@ export function RecommendedProductCard({
           <a
             className={styles.productLink}
             href={product.purchaseUrl}
+            onClick={() => {
+              void recordPurchaseLinkClick(product.productId).catch(
+                () => undefined,
+              );
+            }}
             rel="noopener noreferrer"
             target="_blank"
           >
