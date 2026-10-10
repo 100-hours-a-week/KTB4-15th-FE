@@ -46,6 +46,7 @@ Server Component과 Route Handler에서는 `src/shared/api/server.ts`의 `server
 - Node.js 서버의 `serverApi` 요청은 `setupServer`로 처리합니다.
 - 두 환경은 `src/mocks/handlers.ts`의 Handler를 공유합니다.
 - Handler가 없는 요청은 경고를 출력하고 실제 API로 전달합니다.
+- 현재 Profile 조회·등록과 전신 사진 검증 Handler는 선택 입력 연동을 위해 인메모리 상태를 사용하며, 개발 서버를 재시작하면 초기화됩니다.
 
 ## 인증 갱신
 
