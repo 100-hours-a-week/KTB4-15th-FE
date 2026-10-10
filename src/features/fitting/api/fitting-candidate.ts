@@ -1,16 +1,15 @@
 import { apiClient } from "@/shared/api/client";
 import { parseResponse } from "@/shared/api/response";
+import type { ProductItemType } from "@/shared/schema/product";
 import {
   fittingCandidateBulkDeleteResponse,
   fittingCandidateCreateResponse,
   fittingCandidateListResponse,
 } from "../schema/fitting-candidate";
 
-export type FittingCandidateItemType = "TOP" | "BOTTOM";
-
 type GetFittingCandidatesParams = {
   cursor?: number;
-  itemType?: FittingCandidateItemType;
+  itemType?: ProductItemType;
   size: number;
 };
 

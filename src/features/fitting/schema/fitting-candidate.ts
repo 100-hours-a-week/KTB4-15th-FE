@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { productItemTypeSchema } from "@/shared/schema/product";
 
 export const fittingCandidateCreateResponse = z.object({
   fittingCandidateId: z.number().int().positive(),
@@ -12,7 +13,7 @@ export const fittingCandidateSchema = z.object({
   productImageUrl: z.string(),
   currentPrice: z.number().int().nonnegative(),
   color: z.string(),
-  itemType: z.enum(["TOP", "BOTTOM"]),
+  itemType: productItemTypeSchema,
 });
 
 export const fittingCandidateListResponse = z.object({

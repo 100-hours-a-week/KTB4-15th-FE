@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { productItemTypeSchema } from "@/shared/schema/product";
 
 export const rankingTypeSchema = z.enum(["WISH", "CLICK"]);
 
@@ -7,7 +8,7 @@ export const rankingProductSchema = z.object({
   productId: z.number().int().positive(),
   productName: z.string(),
   productImageUrl: z.string(),
-  itemType: z.enum(["TOP", "BOTTOM"]),
+  itemType: productItemTypeSchema,
   currentPrice: z.number().int().nonnegative(),
   purchaseUrl: z.string(),
   color: z.string().nullable(),

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { productItemTypeSchema } from "@/shared/schema/product";
 
 export const CHAT_ROOM_TITLE_MAX_LENGTH = 20;
 
@@ -45,7 +46,7 @@ export const recommendedProductResponse = z.object({
   productImageUrl: z.string(),
   currentPrice: z.number().int().nonnegative(),
   color: z.string(),
-  itemType: z.enum(["TOP", "BOTTOM"]),
+  itemType: productItemTypeSchema,
   purchaseUrl: z.string(),
   recommendedReason: z.string().optional(),
   isWishlisted: z.boolean(),

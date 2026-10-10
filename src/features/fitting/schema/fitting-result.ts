@@ -1,8 +1,9 @@
 import { z } from "zod";
+import { productItemTypeSchema } from "@/shared/schema/product";
 
 export const fittingResultProductSchema = z.object({
   productId: z.number().int().positive(),
-  itemType: z.enum(["TOP", "BOTTOM"]),
+  itemType: productItemTypeSchema,
   productName: z.string(),
   productImageUrl: z.string(),
   purchaseUrl: z.string(),

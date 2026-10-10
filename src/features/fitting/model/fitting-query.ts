@@ -8,8 +8,8 @@ import {
   createFittingCandidate,
   deleteFittingCandidates,
   getFittingCandidates,
-  type FittingCandidateItemType,
 } from "../api/fitting-candidate";
+import type { ProductItemType } from "@/shared/schema/product";
 import { getFittingJobStatus } from "../api/fitting-job";
 import {
   createFittingResult,
@@ -21,7 +21,7 @@ import {
 
 export const fittingQueryKeys = {
   candidateListRoot: ["fitting", "candidates"] as const,
-  candidateList: (itemType?: FittingCandidateItemType) =>
+  candidateList: (itemType?: ProductItemType) =>
     [...fittingQueryKeys.candidateListRoot, itemType ?? "all"] as const,
   job: (fittingJobId: number) => ["fitting", "job", fittingJobId] as const,
   resultRoot: ["fitting", "results"] as const,
@@ -30,9 +30,7 @@ export const fittingQueryKeys = {
     ["fitting", "results", "detail", fittingResultId] as const,
 };
 
-export const fittingCandidatesQueryOptions = (
-  itemType?: FittingCandidateItemType,
-) =>
+export const fittingCandidatesQueryOptions = (itemType?: ProductItemType) =>
   infiniteQueryOptions({
     queryKey: fittingQueryKeys.candidateList(itemType),
     queryFn: ({ pageParam }) =>

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { memberProfileQueryOptions } from "@/features/profile";
 import { ApiError } from "@/shared/api/error";
+import type { ProductItemType } from "@/shared/schema/product";
 import { Button } from "@/shared/ui/button";
 import {
   AiFittingIcon,
@@ -23,8 +24,6 @@ import { useRestoreFittingSelection } from "../store/use-restore-fitting-selecti
 import type { FittingCandidate } from "../schema/fitting-candidate";
 import styles from "./fitting-selection-panel.module.scss";
 
-type ItemType = "TOP" | "BOTTOM";
-
 function passthroughImageLoader({ src }: ImageLoaderProps) {
   return src;
 }
@@ -33,7 +32,7 @@ function EmptyProductIcon({
   itemType,
   label,
 }: {
-  itemType: ItemType;
+  itemType: ProductItemType;
   label: string;
 }) {
   const ProductIcon = itemType === "TOP" ? TopIcon : BottomIcon;
@@ -53,7 +52,7 @@ function OutfitItem({
   product,
 }: {
   category: string;
-  itemType: ItemType;
+  itemType: ProductItemType;
   label: string;
   product: FittingCandidate | null;
 }) {
