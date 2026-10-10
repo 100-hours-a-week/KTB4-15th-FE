@@ -4,6 +4,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { memberMeQueryOptions } from "@/features/member";
+import type { MemberMe } from "@/features/member/schema/member";
 import { RefreshUnauthorizedError } from "@/shared/api/client";
 import { Button } from "@/shared/ui/button";
 import { useSessionExpiration } from "../session/use-session-expiration";
@@ -11,12 +12,19 @@ import styles from "./access-guard.module.scss";
 
 const PROFILE_SETUP_PATH = "/profile/setup";
 
-export function ServiceAccessGuard({ children }: { children: ReactNode }) {
+export function ServiceAccessGuard({
+  children,
+  initialMember,
+}: {
+  children: ReactNode;
+  initialMember: MemberMe;
+}) {
   const pathname = usePathname();
   const router = useRouter();
   const { expireSession, isSessionExpired } = useSessionExpiration();
   const memberQuery = useQuery({
     ...memberMeQueryOptions,
+    initialData: initialMember,
     retry: false,
   });
   const isProfileSetupPage = pathname === PROFILE_SETUP_PATH;

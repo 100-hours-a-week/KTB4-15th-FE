@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import "pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css";
 import "sonner/dist/styles.css";
 import { AppToaster } from "@/shared/ui/toast";
 import styles from "./layout.module.scss";

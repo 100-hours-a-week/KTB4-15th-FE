@@ -1,8 +1,4 @@
-"use client";
-
-import { useQuery } from "@tanstack/react-query";
-import { Button } from "@/shared/ui/button";
-import { memberProfileQueryOptions } from "../model/member-profile-query";
+import { getMemberProfileServer } from "../api/member-profile-server";
 import styles from "./member-profile-section.module.scss";
 
 function formatMeasurement(value: number) {
@@ -11,39 +7,18 @@ function formatMeasurement(value: number) {
   }).format(value);
 }
 
-export function MemberProfileSection() {
-  const profileQuery = useQuery(memberProfileQueryOptions);
+export function MemberProfileSkeleton() {
+  return (
+    <div
+      aria-label="프로필을 불러오는 중"
+      className={styles.skeleton}
+      role="status"
+    />
+  );
+}
 
-  if (profileQuery.isError) {
-    return (
-      <div className={styles.errorState} role="alert">
-        <div>
-          <p>프로필 정보를 불러오지 못했어요.</p>
-          <Button
-            className={styles.retryButton}
-            isLoading={profileQuery.isFetching}
-            onClick={() => void profileQuery.refetch()}
-            size="small"
-            variant="secondary"
-          >
-            {profileQuery.isFetching ? "불러오는 중..." : "다시 시도"}
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
-  if (profileQuery.isPending) {
-    return (
-      <div
-        aria-label="프로필을 불러오는 중"
-        className={styles.skeleton}
-        role="status"
-      />
-    );
-  }
-
-  const profile = profileQuery.data;
+export async function MemberProfileSection() {
+  const profile = await getMemberProfileServer();
 
   return (
     <section aria-labelledby="profile-title" className={styles.card}>
