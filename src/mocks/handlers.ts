@@ -49,7 +49,8 @@ const rankingItems = {
       rank: 2,
       productId: 205,
       productName: "모던 테이퍼드 슬랙스",
-      productImageUrl: "https://img.29cm.co.kr/item/202603/11f116cc8996d99aa5409703b564503b.jpeg",
+      productImageUrl:
+        "https://img.29cm.co.kr/item/202603/11f116cc8996d99aa5409703b564503b.jpeg",
       itemType: "BOTTOM",
       currentPrice: 49000,
       color: "차콜",
@@ -62,7 +63,8 @@ const rankingItems = {
       rank: 1,
       productId: 205,
       productName: "모던 테이퍼드 슬랙스",
-      productImageUrl: "https://img.29cm.co.kr/item/202603/11f116cc8996d99aa5409703b564503b.jpeg",
+      productImageUrl:
+        "https://img.29cm.co.kr/item/202603/11f116cc8996d99aa5409703b564503b.jpeg",
       itemType: "BOTTOM",
       currentPrice: 49000,
       color: "차콜",
@@ -73,7 +75,8 @@ const rankingItems = {
       rank: 2,
       productId: 101,
       productName: "에센셜 램스울 크루넥",
-      productImageUrl: "https://img.29cm.co.kr/item/202603/11f116cc8996d99aa5409703b564503b.jpeg",
+      productImageUrl:
+        "https://img.29cm.co.kr/item/202603/11f116cc8996d99aa5409703b564503b.jpeg",
       itemType: "TOP",
       currentPrice: 59000,
       color: "네이비",
