@@ -5,8 +5,8 @@ import type { RankingType } from "../schema/ranking";
 import styles from "./ranking-screen.module.scss";
 
 const RANKING_TABS: { label: string; type: RankingType }[] = [
-  { label: "찜 랭킹", type: "WISH" },
-  { label: "조회수", type: "CLICK" },
+  { label: "찜순", type: "WISH" },
+  { label: "조회순", type: "CLICK" },
 ];
 
 export function RankingScreen() {
@@ -14,7 +14,12 @@ export function RankingScreen() {
 
   return (
     <>
-      <div aria-label="랭킹 기준" className={styles.tabs} role="group">
+      <div
+        aria-label="랭킹 기준"
+        className={styles.tabs}
+        data-selected={rankingType}
+        role="group"
+      >
         {RANKING_TABS.map((tab) => {
           const selected = tab.type === rankingType;
 
