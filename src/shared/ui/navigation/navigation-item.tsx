@@ -10,7 +10,6 @@ type NavigationItemProps = {
   icon: ComponentType<NavigationIconProps>;
   activeIcon: ComponentType<NavigationIconProps>;
   active: boolean;
-  available?: boolean;
   featured?: boolean;
 };
 
@@ -20,7 +19,6 @@ export function NavigationItem({
   icon,
   activeIcon,
   active,
-  available = true,
   featured = false,
 }: NavigationItemProps) {
   const Icon = active ? activeIcon : icon;
@@ -28,37 +26,11 @@ export function NavigationItem({
   const classNames = [
     styles.item,
     active && styles.active,
-    !available && styles.unavailable,
     featured && styles.featured,
     pressed && styles.pressed,
   ]
     .filter(Boolean)
     .join(" ");
-  const content = (
-    <>
-      <span aria-hidden="true" className={styles.iconSlot}>
-        <span className={styles.icon}>
-          <Icon />
-        </span>
-        {!available && <span className={styles.comingSoon}>SOON</span>}
-      </span>
-      <span className={styles.label}>{label}</span>
-    </>
-  );
-
-  if (!available) {
-    return (
-      <button
-        aria-label={`${label}, 곧 오픈 예정`}
-        className={classNames}
-        disabled
-        type="button"
-      >
-        {content}
-      </button>
-    );
-  }
-
   return (
     <Link
       aria-current={active ? "page" : undefined}
@@ -67,7 +39,10 @@ export function NavigationItem({
       onAnimationEnd={() => setPressed(false)}
       onPointerDown={() => setPressed(true)}
     >
-      {content}
+      <span aria-hidden="true" className={styles.icon}>
+        <Icon />
+      </span>
+      <span className={styles.label}>{label}</span>
     </Link>
   );
 }

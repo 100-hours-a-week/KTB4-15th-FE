@@ -1,0 +1,106 @@
+.row {
+  display: grid;
+  grid-template-columns: 24px 72px minmax(0, 1fr) auto;
+  min-height: 96px;
+  align-items: center;
+  gap: var(--space-md);
+  padding-block: var(--space-md);
+  border-bottom: 1px solid var(--color-border-default);
+}
+
+.rank {
+  font-size: 1rem;
+  font-weight: var(--font-weight-semibold);
+  line-height: 1.5rem;
+  text-align: center;
+}
+
+.imageArea {
+  position: relative;
+  overflow: hidden;
+  width: 72px;
+  height: 72px;
+  border-radius: var(--radius-small);
+  background: var(--color-background-subtle);
+}
+
+.image {
+  object-fit: cover;
+}
+
+.imageButton {
+  padding: 0;
+  border: 0;
+  color: inherit;
+  cursor: zoom-in;
+}
+
+.imageFallback {
+  display: grid;
+  height: 100%;
+  place-items: center;
+  color: var(--color-text-secondary);
+
+  svg {
+    width: 32px;
+    height: 32px;
+  }
+}
+
+.productLink {
+  display: grid;
+  min-width: 0;
+  gap: var(--space-xs);
+  color: inherit;
+  text-decoration: none;
+}
+
+.name,
+.color,
+.price,
+.count {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.name {
+  font-size: 0.9375rem;
+  font-weight: var(--font-weight-regular);
+  line-height: 1.375rem;
+}
+
+.color {
+  color: var(--color-text-secondary);
+  font-size: 0.8125rem;
+  line-height: 1.125rem;
+}
+
+.price {
+  font-size: 1rem;
+  font-weight: var(--font-weight-semibold);
+  line-height: 1.5rem;
+}
+
+.count {
+  display: flex;
+  max-width: 76px;
+  align-self: end;
+  align-items: center;
+  gap: var(--space-xs);
+  margin-bottom: 2px;
+  color: var(--color-text-secondary);
+  font-size: 0.8rem;
+  font-weight: var(--font-weight-medium);
+  line-height: 1.125rem;
+
+  svg {
+    width: 16px;
+    height: 16px;
+    flex: 0 0 auto;
+  }
+}
+
+.wishCount {
+  color: var(--color-action-danger-default);
+}

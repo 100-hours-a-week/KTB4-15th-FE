@@ -15,6 +15,7 @@ function hasNavigation(pathname: string) {
     pathname.startsWith("/chat/") ||
     pathname === "/fitting" ||
     pathname === "/wishlists" ||
+    pathname === "/ranking" ||
     pathname === "/mypage"
   );
 }
