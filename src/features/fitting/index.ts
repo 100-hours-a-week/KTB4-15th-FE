@@ -1,6 +1,11 @@
 export {
+  fittingResultDetailQueryOptions,
+  fittingResultListQueryOptions,
   fittingQueryKeys,
   useCreateFittingCandidateMutation,
+  useCreateFittingResultMutation,
+  useDeleteFittingResultMutation,
+  useUpdateFittingResultOutfitNameMutation,
 } from "./model/fitting-query";
 export { FittingEntryGuard } from "./ui/fitting-entry-guard";
 export { FittingJobScreen } from "./ui/fitting-job-screen";

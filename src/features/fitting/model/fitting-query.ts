@@ -11,12 +11,23 @@ import {
   type FittingCandidateItemType,
 } from "../api/fitting-candidate";
 import { getFittingJobStatus } from "../api/fitting-job";
+import {
+  createFittingResult,
+  deleteFittingResult,
+  getFittingResult,
+  getFittingResults,
+  updateFittingResultOutfitName,
+} from "../api/fitting-result";
 
 export const fittingQueryKeys = {
   candidateListRoot: ["fitting", "candidates"] as const,
   candidateList: (itemType?: FittingCandidateItemType) =>
     [...fittingQueryKeys.candidateListRoot, itemType ?? "all"] as const,
   job: (fittingJobId: number) => ["fitting", "job", fittingJobId] as const,
+  resultRoot: ["fitting", "results"] as const,
+  resultList: ["fitting", "results", "list"] as const,
+  resultDetail: (fittingResultId: number) =>
+    ["fitting", "results", "detail", fittingResultId] as const,
 };
 
 export const fittingCandidatesQueryOptions = (
@@ -40,6 +51,21 @@ export const fittingJobQueryOptions = (fittingJobId: number) =>
     refetchOnWindowFocus: true,
   });
 
+export const fittingResultListQueryOptions = infiniteQueryOptions({
+  queryKey: fittingQueryKeys.resultList,
+  queryFn: ({ pageParam }) =>
+    getFittingResults({ cursor: pageParam, size: 20 }),
+  initialPageParam: undefined as number | undefined,
+  getNextPageParam: (lastPage) =>
+    lastPage.hasNext ? (lastPage.nextCursor ?? undefined) : undefined,
+});
+
+export const fittingResultDetailQueryOptions = (fittingResultId: number) =>
+  queryOptions({
+    queryKey: fittingQueryKeys.resultDetail(fittingResultId),
+    queryFn: () => getFittingResult(fittingResultId),
+  });
+
 export function useCreateFittingCandidateMutation() {
   const queryClient = useQueryClient();
 
@@ -61,5 +87,39 @@ export function useDeleteFittingCandidatesMutation() {
       queryClient.invalidateQueries({
         queryKey: fittingQueryKeys.candidateListRoot,
       }),
+  });
+}
+
+function useInvalidateFittingResults() {
+  const queryClient = useQueryClient();
+
+  return () =>
+    queryClient.invalidateQueries({ queryKey: fittingQueryKeys.resultRoot });
+}
+
+export function useCreateFittingResultMutation() {
+  const invalidate = useInvalidateFittingResults();
+
+  return useMutation({
+    mutationFn: createFittingResult,
+    onSuccess: invalidate,
+  });
+}
+
+export function useUpdateFittingResultOutfitNameMutation() {
+  const invalidate = useInvalidateFittingResults();
+
+  return useMutation({
+    mutationFn: updateFittingResultOutfitName,
+    onSuccess: invalidate,
+  });
+}
+
+export function useDeleteFittingResultMutation() {
+  const invalidate = useInvalidateFittingResults();
+
+  return useMutation({
+    mutationFn: deleteFittingResult,
+    onSuccess: invalidate,
   });
 }
