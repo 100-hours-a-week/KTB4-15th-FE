@@ -1,5 +1,6 @@
 import Image, { type ImageLoaderProps } from "next/image";
 import { useState } from "react";
+import { ImageViewerDialog } from "@/shared/ui/dialog";
 import { BottomIcon, EyeIcon, HeartIcon, TopIcon } from "@/shared/ui/icon";
 import { formatCompactNumber } from "@/shared/utils/number-format";
 import { formatPrice } from "@/shared/utils/price-format";
@@ -21,16 +22,24 @@ export function RankingRow({ product, rank, rankingType }: RankingRowProps) {
   const count = formatCompactNumber(product.rankingCount);
   const isWishRanking = rankingType === "WISH";
   const [imageFailed, setImageFailed] = useState(!product.productImageUrl);
+  const [isImageOpen, setIsImageOpen] = useState(false);
 
   return (
     <article className={styles.row}>
       <strong className={styles.rank}>{rank}</strong>
-      <span className={styles.imageArea}>
-        {imageFailed ? (
+      {imageFailed ? (
+        <span className={styles.imageArea}>
           <span aria-label="상품 이미지 없음" className={styles.imageFallback}>
             <ProductFallbackIcon />
           </span>
-        ) : (
+        </span>
+      ) : (
+        <button
+          aria-label={`${product.productName} 이미지 확대`}
+          className={`${styles.imageArea} ${styles.imageButton}`}
+          onClick={() => setIsImageOpen(true)}
+          type="button"
+        >
           <Image
             alt=""
             className={styles.image}
@@ -40,8 +49,8 @@ export function RankingRow({ product, rank, rankingType }: RankingRowProps) {
             sizes="80px"
             src={product.productImageUrl}
           />
-        )}
-      </span>
+        </button>
+      )}
       <a
         aria-label={`${product.productName} 구매 페이지로 이동`}
         className={styles.productLink}
@@ -62,6 +71,15 @@ export function RankingRow({ product, rank, rankingType }: RankingRowProps) {
         {isWishRanking ? <HeartIcon filled /> : <EyeIcon />}
         {count}
       </span>
+      {!imageFailed && (
+        <ImageViewerDialog
+          alt={product.productName}
+          onError={() => setImageFailed(true)}
+          onOpenChange={setIsImageOpen}
+          open={isImageOpen}
+          src={product.productImageUrl}
+        />
+      )}
     </article>
   );
 }

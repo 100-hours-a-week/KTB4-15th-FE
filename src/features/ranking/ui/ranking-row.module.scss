@@ -28,6 +28,13 @@
   object-fit: cover;
 }
 
+.imageButton {
+  padding: 0;
+  border: 0;
+  color: inherit;
+  cursor: zoom-in;
+}
+
 .imageFallback {
   display: grid;
   height: 100%;
