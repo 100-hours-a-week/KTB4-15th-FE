@@ -3,11 +3,12 @@
 import Image, { type StaticImageData } from "next/image";
 import { useQuery } from "@tanstack/react-query";
 import { memberProfileQueryOptions } from "@/features/profile";
+import { wishlistCountQueryOptions } from "@/features/wishlist";
 import aiImage from "@/shared/assets/ai-avatar.png";
 import { ChevronRightIcon } from "@/shared/ui/icon";
 import type { ChatSourceType } from "../../schema/chat";
 import knitImage from "../../icon/knit.png";
-//import likeImage from "../../icon/like.png";
+import likeImage from "../../icon/like.png";
 import shirtImage from "../../icon/shirt.png";
 import suitImage from "../../icon/suit.png";
 import styles from "./chat-intro.module.scss";
@@ -20,15 +21,15 @@ type SuggestedQuestion = {
   sourceType: ChatSourceType;
 };
 
-const SUGGESTED_QUESTIONS: SuggestedQuestion[] = [
-  // V2 /wishlists/count 10개 이상일 때
-  // {
-  //   title: "찜 목록 기반 코디 추천",
-  //   description: "내 취향 아이템으로 완성하는 맞춤 스타일",
-  //   image: likeImage,
-  //   message: "내가 찜한 상품을 기반으로 코디를 추천해줘",
-  //   sourceType: "WISHLIST",
-  // },
+const WISHLIST_QUESTION: SuggestedQuestion = {
+  title: "찜 목록 기반 코디 추천",
+  description: "내 취향 아이템으로 완성하는 맞춤 스타일",
+  image: likeImage,
+  message: "내가 찜한 상품을 기반으로 코디를 추천해줘",
+  sourceType: "WISHLIST",
+};
+
+const GENERAL_QUESTIONS: SuggestedQuestion[] = [
   {
     title: "주말 데이트 5만원대 셔츠",
     description: "깔끔하고 편안한 가성비 옥스포드 셔츠",
@@ -62,7 +63,12 @@ type ChatIntroProps = {
 
 export function ChatIntro({ date, onSelectQuestion }: ChatIntroProps) {
   const memberProfileQuery = useQuery(memberProfileQueryOptions);
+  const wishlistCountQuery = useQuery(wishlistCountQueryOptions);
   const memberName = memberProfileQuery.data?.name;
+  const suggestedQuestions =
+    (wishlistCountQuery.data?.count ?? 0) >= 10
+      ? [WISHLIST_QUESTION, ...GENERAL_QUESTIONS]
+      : GENERAL_QUESTIONS;
 
   return (
     <div className={styles.landing}>
@@ -98,7 +104,7 @@ export function ChatIntro({ date, onSelectQuestion }: ChatIntroProps) {
           <span>탭하여 바로 질문</span>
         </div>
         <div className={styles.questionList}>
-          {SUGGESTED_QUESTIONS.map((question) => (
+          {suggestedQuestions.map((question) => (
             <button
               className={styles.question}
               key={question.title}

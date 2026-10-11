@@ -6,6 +6,10 @@ export const wishlistCreateResponse = z.object({
   productId: z.number().int().positive(),
 });
 
+export const wishlistCountResponse = z.object({
+  count: z.number().int().nonnegative(),
+});
+
 export const wishlistItemSchema = z.object({
   wishlistId: z.number().int().positive(),
   productId: z.number().int().positive(),

@@ -1,6 +1,6 @@
 # 채팅 도메인
 
-마지막 업데이트: 2026-09-28
+마지막 업데이트: 2026-10-11
 
 ## 목적
 
@@ -12,7 +12,7 @@
 - **User Message**: 사용자가 보낸 내용과 AI 생성 상태를 가집니다.
 - **AI Message**: 생성된 답변이며 선택적으로 상품 Recommendation을 포함합니다.
 - **Generation Status**: `GENERATING`, `COMPLETED`, `FAILED` 중 하나입니다.
-- **Source Type**: 일반 질문은 `GENERAL`, 찜 목록 기반 질문은 `WISHLIST`입니다. 현재 화면에서는 `GENERAL`만 사용합니다.
+- **Source Type**: 일반 질문은 `GENERAL`, 찜 목록 기반 질문은 `WISHLIST`입니다.
 
 ## 화면과 경로
 
@@ -30,6 +30,8 @@
 1. 사용자가 직접 입력하거나 추천 질문을 선택합니다.
 2. 첫 메시지와 `sourceType`으로 `POST /chat-rooms`를 요청합니다.
 3. 성공하면 응답받은 `chatRoomId`의 `/chat/[chatId]`로 현재 Route를 교체합니다.
+
+찜한 상품이 10개 이상이면 새 대화 화면에 찜 목록 기반 코디 추천 질문을 표시하며, 선택 시 `WISHLIST`로 대화를 생성합니다. 찜 개수 조회가 완료되지 않았거나 실패하면 해당 질문만 표시하지 않습니다.
 
 ### 기존 대화
 
@@ -101,5 +103,4 @@ AI Message의 Recommendation은 하나 이상의 추천 상품을 포함할 수 
 
 ## 보류 항목
 
-- 찜 목록 기반 질문 활성화 조건과 `WISHLIST` 흐름
 - 대화 내용 검색
