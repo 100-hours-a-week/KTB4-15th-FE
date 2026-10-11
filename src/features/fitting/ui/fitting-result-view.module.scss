@@ -219,15 +219,10 @@
 }
 
 .aiAvatar {
-  display: grid;
   width: 36px;
   height: 36px;
-  place-items: center;
   border-radius: var(--radius-full);
-  background: var(--color-green-700);
-  color: var(--color-white);
-  font-size: 10px;
-  font-weight: var(--font-weight-bold);
+  object-fit: cover;
 }
 
 .comment {

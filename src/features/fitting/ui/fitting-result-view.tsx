@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
 import { recordPurchaseLinkClick } from "@/features/product";
 import { ApiError, getApiErrorMessage } from "@/shared/api/error";
+import aiImage from "@/shared/assets/ai-avatar.png";
 import { Button, IconButton } from "@/shared/ui/button";
 import {
   ConfirmDialog,
@@ -253,7 +254,12 @@ export function FittingResultView({
 
           <section className={styles.commentCard}>
             <div className={styles.commentHeading}>
-              <span className={styles.aiAvatar}>AI</span>
+              <Image
+                alt=""
+                aria-hidden="true"
+                className={styles.aiAvatar}
+                src={aiImage}
+              />
               <div>
                 <h2>LOOKDDAK&apos;S COMMENT</h2>
                 <p>AI 수석 스타일리스트 분석</p>

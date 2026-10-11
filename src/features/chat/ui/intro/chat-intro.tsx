@@ -3,9 +3,9 @@
 import Image, { type StaticImageData } from "next/image";
 import { useQuery } from "@tanstack/react-query";
 import { memberProfileQueryOptions } from "@/features/profile";
+import aiImage from "@/shared/assets/ai-avatar.png";
 import { ChevronRightIcon } from "@/shared/ui/icon";
 import type { ChatSourceType } from "../../schema/chat";
-import aiImage from "../../icon/ai.png";
 import knitImage from "../../icon/knit.png";
 //import likeImage from "../../icon/like.png";
 import shirtImage from "../../icon/shirt.png";
@@ -78,7 +78,6 @@ export function ChatIntro({ date, onSelectQuestion }: ChatIntroProps) {
         <div className={styles.messageArea}>
           <div className={styles.profile}>
             <strong>AI 스타일리스트</strong>
-            <span>스타일리스트</span>
           </div>
           <div className={styles.message}>
             <p>

@@ -1,6 +1,6 @@
 import Image from "next/image";
 import type { AIMessageResponse, UserMessageResponse } from "../../schema/chat";
-import aiImage from "../../icon/ai.png";
+import aiImage from "@/shared/assets/ai-avatar.png";
 import { formatKoreanTime } from "@/shared/utils/date-format";
 import { Button } from "@/shared/ui/button";
 import { InfoIcon, RetryIcon } from "@/shared/ui/icon";
