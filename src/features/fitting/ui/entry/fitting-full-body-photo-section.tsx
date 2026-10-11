@@ -11,13 +11,13 @@ import { getApiErrorMessage } from "@/shared/api/error";
 import { Button } from "@/shared/ui/button";
 import { RefreshIcon } from "@/shared/ui/icon";
 import { showToast } from "@/shared/ui/toast";
-import styles from "./fitting-photo-card.module.scss";
+import styles from "./fitting-full-body-photo-section.module.scss";
 
 function passthroughImageLoader({ src }: ImageLoaderProps) {
   return src;
 }
 
-export function FittingPhotoCard() {
+export function FittingFullBodyPhotoSection() {
   const { data: memberProfile } = useQuery(memberProfileQueryOptions);
   const updatePhotoMutation = useUpdateFullBodyImageMutation();
   const {

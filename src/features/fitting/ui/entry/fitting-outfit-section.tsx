@@ -22,7 +22,7 @@ import { saveFittingJobStartedAt } from "../../store/fitting-job-progress-storag
 import { useFittingSelectionStore } from "../../store/fitting-selection-store";
 import { useRestoreFittingSelection } from "../../store/use-restore-fitting-selection";
 import type { FittingCandidate } from "../../schema/fitting-candidate";
-import styles from "./fitting-selection-panel.module.scss";
+import styles from "./fitting-outfit-section.module.scss";
 
 function passthroughImageLoader({ src }: ImageLoaderProps) {
   return src;
@@ -92,7 +92,7 @@ function OutfitItem({
   );
 }
 
-export function FittingSelectionPanel() {
+export function FittingOutfitSection() {
   useRestoreFittingSelection();
   const router = useRouter();
   const { data: memberProfile } = useQuery(memberProfileQueryOptions);
