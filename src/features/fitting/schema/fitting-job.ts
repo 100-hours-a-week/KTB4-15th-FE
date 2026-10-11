@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { fittingResultProductSchema } from "./fitting-result";
 
 export const fittingJobCreateRequestSchema = z
   .object({
@@ -14,14 +15,6 @@ export const fittingJobCreateRequestSchema = z
 export const fittingJobCreateResponseSchema = z.object({
   fittingJobId: z.number().int().positive(),
   status: z.literal("GENERATING"),
-});
-
-const fittingResultProductSchema = z.object({
-  productId: z.number().int().positive(),
-  itemType: z.enum(["TOP", "BOTTOM"]),
-  productName: z.string(),
-  productImageUrl: z.string(),
-  purchaseUrl: z.string(),
 });
 
 const fittingResultSchema = z.object({

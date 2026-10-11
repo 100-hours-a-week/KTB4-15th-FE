@@ -70,7 +70,7 @@ export function MemberProfileSection() {
 
   return (
     <section aria-labelledby="profile-title" className={styles.card}>
-      <p className={styles.eyebrow}>MY PROFILE</p>
+      <p className={styles.eyebrow}>내 정보</p>
       <h2 className={styles.name} id="profile-title">
         {profile.name}님의 기본 정보
       </h2>

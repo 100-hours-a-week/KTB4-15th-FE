@@ -1,3 +1,4 @@
+export { ConfirmDialog } from "./confirm-dialog";
 export {
   Dialog,
   DialogClose,
@@ -6,3 +7,4 @@ export {
   type DialogProps,
 } from "./dialog";
 export { ImageViewerDialog } from "./image-viewer-dialog";
+export { RenameDialog } from "./rename-dialog";

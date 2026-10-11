@@ -4,6 +4,7 @@ import Image, { type ImageLoaderProps } from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
+import type { ProductItemType } from "@/shared/schema/product";
 import { formatPrice } from "@/shared/utils/price-format";
 import { Button } from "@/shared/ui/button";
 import { Header, HeaderIconLink, HeaderTitle } from "@/shared/ui/header";
@@ -19,13 +20,13 @@ import {
 import {
   fittingCandidatesQueryOptions,
   useDeleteFittingCandidatesMutation,
-} from "../model/fitting-query";
-import { useFittingSelectionStore } from "../store/fitting-selection-store";
-import { useRestoreFittingSelection } from "../store/use-restore-fitting-selection";
-import type { FittingCandidate } from "../schema/fitting-candidate";
+} from "../../model/fitting-query";
+import { useFittingSelectionStore } from "../../store/fitting-selection-store";
+import { useRestoreFittingSelection } from "../../store/use-restore-fitting-selection";
+import type { FittingCandidate } from "../../schema/fitting-candidate";
 import styles from "./fitting-wardrobe.module.scss";
 
-type WardrobeFilter = "TOP" | "BOTTOM" | "ALL";
+type WardrobeFilter = ProductItemType | "ALL";
 
 type FittingWardrobeProps = {
   initialFilter: WardrobeFilter;
@@ -107,7 +108,7 @@ function CandidateCard({
   );
 }
 
-function EmptyCandidateCard({ itemType }: { itemType: "TOP" | "BOTTOM" }) {
+function EmptyCandidateCard({ itemType }: { itemType: ProductItemType }) {
   const selectedProduct = useFittingSelectionStore((state) =>
     itemType === "TOP" ? state.top : state.bottom,
   );

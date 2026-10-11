@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { overlay } from "overlay-kit";
 import { useEffect, useRef } from "react";
 import { Button, IconButton } from "@/shared/ui/button";
+import { ConfirmDialog, RenameDialog } from "@/shared/ui/dialog";
 import { Dropdown, DropdownItem } from "@/shared/ui/dropdown";
 import { showToast } from "@/shared/ui/toast";
 import { getApiErrorMessage } from "@/shared/api/error";
@@ -16,12 +17,9 @@ import {
   MoreIcon,
   PlusIcon,
 } from "@/shared/ui/icon";
-import {
-  DeleteChatDialog,
-  RenameChatDialog,
-} from "@/features/chat/ui/dialog/chat-dialogs";
 import { formatKoreanRelativeDateTime } from "@/shared/utils/date-format";
 import { useInfiniteQuery } from "@tanstack/react-query";
+import { CHAT_ROOM_TITLE_MAX_LENGTH } from "../../schema/chat";
 import {
   chatRoomListQueryOptions,
   useDeleteChatRoomMutation,
@@ -94,8 +92,12 @@ export function ChatSidebar({ open, onOpenChange }: ChatSidebarProps) {
 
   const openRenameDialog = (chatRoomId: number, currentTitle: string) => {
     overlay.open(({ close, isOpen, unmount }) => (
-      <RenameChatDialog
-        initialTitle={currentTitle}
+      <RenameDialog
+        description="나중에 쉽게 찾을 수 있는 이름을 지어주세요."
+        initialValue={currentTitle}
+        isLoading={renameChatRoomMutation.isPending}
+        label="채팅 이름"
+        maxLength={CHAT_ROOM_TITLE_MAX_LENGTH}
         onConfirm={(title) => {
           renameChatRoomMutation.mutate(
             { chatRoomId, title },
@@ -120,13 +122,17 @@ export function ChatSidebar({ open, onOpenChange }: ChatSidebarProps) {
           if (!nextOpen) close();
         }}
         open={isOpen}
+        title="채팅 이름 변경"
       />
     ));
   };
 
   const openDeleteDialog = (chatRoomId: number) => {
     overlay.open(({ close, isOpen, unmount }) => (
-      <DeleteChatDialog
+      <ConfirmDialog
+        confirmLabel="삭제하기"
+        description="삭제된 대화 내역은 복구할 수 없습니다."
+        isLoading={deleteChatRoomMutation.isPending}
         onConfirm={() => {
           deleteChatRoomMutation.mutate(chatRoomId, {
             onSuccess: () => {
@@ -152,6 +158,7 @@ export function ChatSidebar({ open, onOpenChange }: ChatSidebarProps) {
           if (!nextOpen) close();
         }}
         open={isOpen}
+        title="채팅을 삭제하시겠습니까?"
       />
     ));
   };

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { memberProfileQueryOptions } from "@/features/profile";
 import { ApiError } from "@/shared/api/error";
+import type { ProductItemType } from "@/shared/schema/product";
 import { Button } from "@/shared/ui/button";
 import {
   AiFittingIcon,
@@ -15,15 +16,13 @@ import {
 } from "@/shared/ui/icon";
 import { showToast } from "@/shared/ui/toast";
 import { formatPrice } from "@/shared/utils/price-format";
-import { createFittingJob } from "../api/fitting-job";
-import { setActiveFittingJobId } from "../store/active-fitting-job-storage";
-import { saveFittingJobStartedAt } from "../store/fitting-job-progress-storage";
-import { useFittingSelectionStore } from "../store/fitting-selection-store";
-import { useRestoreFittingSelection } from "../store/use-restore-fitting-selection";
-import type { FittingCandidate } from "../schema/fitting-candidate";
-import styles from "./fitting-selection-panel.module.scss";
-
-type ItemType = "TOP" | "BOTTOM";
+import { createFittingJob } from "../../api/fitting-job";
+import { setActiveFittingJobId } from "../../store/active-fitting-job-storage";
+import { saveFittingJobStartedAt } from "../../store/fitting-job-progress-storage";
+import { useFittingSelectionStore } from "../../store/fitting-selection-store";
+import { useRestoreFittingSelection } from "../../store/use-restore-fitting-selection";
+import type { FittingCandidate } from "../../schema/fitting-candidate";
+import styles from "./fitting-outfit-section.module.scss";
 
 function passthroughImageLoader({ src }: ImageLoaderProps) {
   return src;
@@ -33,7 +32,7 @@ function EmptyProductIcon({
   itemType,
   label,
 }: {
-  itemType: ItemType;
+  itemType: ProductItemType;
   label: string;
 }) {
   const ProductIcon = itemType === "TOP" ? TopIcon : BottomIcon;
@@ -53,7 +52,7 @@ function OutfitItem({
   product,
 }: {
   category: string;
-  itemType: ItemType;
+  itemType: ProductItemType;
   label: string;
   product: FittingCandidate | null;
 }) {
@@ -93,7 +92,7 @@ function OutfitItem({
   );
 }
 
-export function FittingSelectionPanel() {
+export function FittingOutfitSection() {
   useRestoreFittingSelection();
   const router = useRouter();
   const { data: memberProfile } = useQuery(memberProfileQueryOptions);

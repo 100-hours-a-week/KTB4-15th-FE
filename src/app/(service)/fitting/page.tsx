@@ -1,19 +1,19 @@
 import {
-  FittingEntryGuard,
-  FittingPhotoCard,
-  FittingSelectionPanel,
+  FittingEntryRedirect,
+  FittingFullBodyPhotoSection,
+  FittingOutfitSection,
 } from "@/features/fitting";
 import { Header, HeaderTitle } from "@/shared/ui/header";
 import styles from "./page.module.scss";
 
 export default function FittingPage() {
   return (
-    <FittingEntryGuard>
+    <FittingEntryRedirect>
       <Header left={<HeaderTitle>피팅</HeaderTitle>} />
       <main className={styles.main}>
-        <FittingPhotoCard />
-        <FittingSelectionPanel />
+        <FittingFullBodyPhotoSection />
+        <FittingOutfitSection />
       </main>
-    </FittingEntryGuard>
+    </FittingEntryRedirect>
   );
 }

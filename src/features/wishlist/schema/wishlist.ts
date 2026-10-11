@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { productItemTypeSchema } from "@/shared/schema/product";
 
 export const wishlistCreateResponse = z.object({
   wishlistId: z.number().int().positive(),
@@ -10,7 +11,7 @@ export const wishlistItemSchema = z.object({
   productId: z.number().int().positive(),
   productName: z.string(),
   productImageUrl: z.string(),
-  itemType: z.enum(["TOP", "BOTTOM"]),
+  itemType: productItemTypeSchema,
   wishedPrice: z.number().int().nonnegative(),
   currentPrice: z.number().int().nonnegative(),
   priceChangeRate: z.number().int(),

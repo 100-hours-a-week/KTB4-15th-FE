@@ -1,5 +1,5 @@
 import Image from "next/image";
-import aiImage from "../../icon/ai.png";
+import aiImage from "@/shared/assets/ai-avatar.png";
 import styles from "./ai-chat-message-loading.module.scss";
 
 export function AIChatMessageLoading() {
