@@ -2,81 +2,86 @@
 
 import { useRef, useState, type FormEvent } from "react";
 import { Button } from "@/shared/ui/button";
-import {
-  Dialog,
-  DialogClose,
-  DialogDescription,
-  DialogTitle,
-} from "@/shared/ui/dialog";
 import { ClearIcon } from "@/shared/ui/icon";
-import { CHAT_ROOM_TITLE_MAX_LENGTH } from "../../schema/chat";
-import styles from "./chat-dialogs.module.scss";
+import { Dialog, DialogClose, DialogDescription, DialogTitle } from "./dialog";
+import styles from "./rename-dialog.module.scss";
 
-type DialogLifecycleProps = {
-  onExit: () => void;
+type RenameDialogProps = {
+  description: string;
+  initialValue: string;
+  isLoading?: boolean;
+  label: string;
+  maxLength: number;
+  onConfirm: (value: string) => void;
+  onExit?: () => void;
   onOpenChange: (open: boolean) => void;
   open: boolean;
+  title: string;
 };
 
-type RenameChatDialogProps = DialogLifecycleProps & {
-  initialTitle: string;
-  onConfirm: (title: string) => void;
-};
-
-export function RenameChatDialog({
-  initialTitle,
+export function RenameDialog({
+  description,
+  initialValue,
+  isLoading = false,
+  label,
+  maxLength,
   onConfirm,
   onExit,
   onOpenChange,
   open,
-}: RenameChatDialogProps) {
-  const [title, setTitle] = useState(initialTitle);
+  title,
+}: RenameDialogProps) {
+  const [value, setValue] = useState(initialValue);
   const inputRef = useRef<HTMLInputElement>(null);
-  const trimmedTitle = title.trim();
+  const trimmedValue = value.trim();
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!trimmedTitle) return;
+    if (!trimmedValue || trimmedValue === initialValue) return;
 
-    onConfirm(trimmedTitle);
+    onConfirm(trimmedValue);
   };
 
   return (
     <Dialog
-      className={`${styles.dialog} ${styles.renameDialog}`}
+      className={styles.dialog}
       onExit={onExit}
       onOpenAutoFocus={(event) => {
         event.preventDefault();
         inputRef.current?.focus();
         inputRef.current?.select();
       }}
-      onOpenChange={onOpenChange}
+      onOpenChange={(nextOpen) => {
+        if (!nextOpen) setValue(initialValue);
+        onOpenChange(nextOpen);
+      }}
       open={open}
     >
       <form onSubmit={handleSubmit}>
-        <DialogTitle className={styles.title}>채팅 이름 변경</DialogTitle>
+        <DialogTitle className={styles.title}>{title}</DialogTitle>
         <DialogDescription className={styles.description}>
-          나중에 쉽게 찾을 수 있는 이름을 지어주세요.
+          {description}
         </DialogDescription>
 
         <div className={styles.inputField}>
           <div className={styles.inputControl}>
-            <label className={styles.visuallyHidden} htmlFor="chat-title">
-              채팅 이름
+            <label className={styles.visuallyHidden} htmlFor="rename-value">
+              {label}
             </label>
             <input
-              id="chat-title"
-              maxLength={CHAT_ROOM_TITLE_MAX_LENGTH}
-              onChange={(event) => setTitle(event.target.value)}
+              disabled={isLoading}
+              id="rename-value"
+              maxLength={maxLength}
+              onChange={(event) => setValue(event.target.value)}
               ref={inputRef}
-              value={title}
+              value={value}
             />
-            {title && (
+            {value && !isLoading && (
               <button
-                aria-label="채팅 이름 지우기"
+                aria-label={`${label} 지우기`}
                 className={styles.clearButton}
                 onClick={() => {
-                  setTitle("");
+                  setValue("");
                   inputRef.current?.focus();
                 }}
                 type="button"
@@ -86,19 +91,25 @@ export function RenameChatDialog({
             )}
           </div>
           <span aria-live="polite" className={styles.characterCount}>
-            {title.length} / {CHAT_ROOM_TITLE_MAX_LENGTH}
+            {value.length} / {maxLength}
           </span>
         </div>
 
         <div className={styles.actions}>
           <DialogClose asChild>
-            <Button fullWidth size="medium" variant="secondary">
+            <Button
+              disabled={isLoading}
+              fullWidth
+              size="medium"
+              variant="secondary"
+            >
               취소
             </Button>
           </DialogClose>
           <Button
-            disabled={!trimmedTitle}
+            disabled={!trimmedValue || trimmedValue === initialValue}
             fullWidth
+            isLoading={isLoading}
             size="medium"
             type="submit"
           >

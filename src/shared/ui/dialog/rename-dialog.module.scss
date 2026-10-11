@@ -4,12 +4,6 @@
   padding: var(--space-xl);
 }
 
-.renameDialog {
-  .description {
-    margin-top: var(--space-sm);
-  }
-}
-
 .title {
   @include type.heading-small;
 
@@ -20,7 +14,7 @@
 .description {
   @include type.body-medium;
 
-  margin: var(--space-md) 0 0;
+  margin: var(--space-sm) 0 0;
   color: var(--color-text-secondary);
 }
 
@@ -57,7 +51,7 @@
   @include type.caption;
 
   display: block;
-  margin: var(--space-xs) var(--space-xs);
+  margin: var(--space-xs);
   color: var(--color-text-secondary);
   text-align: right;
 }

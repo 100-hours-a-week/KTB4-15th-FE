@@ -6,7 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { overlay } from "overlay-kit";
 import { useEffect, useRef } from "react";
 import { Button, IconButton } from "@/shared/ui/button";
-import { ConfirmDialog } from "@/shared/ui/dialog";
+import { ConfirmDialog, RenameDialog } from "@/shared/ui/dialog";
 import { Dropdown, DropdownItem } from "@/shared/ui/dropdown";
 import { showToast } from "@/shared/ui/toast";
 import { getApiErrorMessage } from "@/shared/api/error";
@@ -17,9 +17,9 @@ import {
   MoreIcon,
   PlusIcon,
 } from "@/shared/ui/icon";
-import { RenameChatDialog } from "@/features/chat/ui/dialog/chat-dialogs";
 import { formatKoreanRelativeDateTime } from "@/shared/utils/date-format";
 import { useInfiniteQuery } from "@tanstack/react-query";
+import { CHAT_ROOM_TITLE_MAX_LENGTH } from "../../schema/chat";
 import {
   chatRoomListQueryOptions,
   useDeleteChatRoomMutation,
@@ -92,8 +92,12 @@ export function ChatSidebar({ open, onOpenChange }: ChatSidebarProps) {
 
   const openRenameDialog = (chatRoomId: number, currentTitle: string) => {
     overlay.open(({ close, isOpen, unmount }) => (
-      <RenameChatDialog
-        initialTitle={currentTitle}
+      <RenameDialog
+        description="나중에 쉽게 찾을 수 있는 이름을 지어주세요."
+        initialValue={currentTitle}
+        isLoading={renameChatRoomMutation.isPending}
+        label="채팅 이름"
+        maxLength={CHAT_ROOM_TITLE_MAX_LENGTH}
         onConfirm={(title) => {
           renameChatRoomMutation.mutate(
             { chatRoomId, title },
@@ -118,6 +122,7 @@ export function ChatSidebar({ open, onOpenChange }: ChatSidebarProps) {
           if (!nextOpen) close();
         }}
         open={isOpen}
+        title="채팅 이름 변경"
       />
     ));
   };

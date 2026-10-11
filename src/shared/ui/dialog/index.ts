@@ -7,3 +7,4 @@ export {
   type DialogProps,
 } from "./dialog";
 export { ImageViewerDialog } from "./image-viewer-dialog";
+export { RenameDialog } from "./rename-dialog";
