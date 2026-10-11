@@ -1,14 +1,26 @@
 import {
   infiniteQueryOptions,
+  queryOptions,
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query";
-import { createWishlist, deleteWishlist, getWishlists } from "../api/wishlist";
+import {
+  createWishlist,
+  deleteWishlist,
+  getWishlistCount,
+  getWishlists,
+} from "../api/wishlist";
 
 export const wishlistQueryKeys = {
   root: ["wishlists"] as const,
   list: ["wishlists", "list"] as const,
+  count: ["wishlists", "count"] as const,
 };
+
+export const wishlistCountQueryOptions = queryOptions({
+  queryKey: wishlistQueryKeys.count,
+  queryFn: getWishlistCount,
+});
 
 export const wishlistListQueryOptions = infiniteQueryOptions({
   queryKey: wishlistQueryKeys.list,
@@ -18,26 +30,30 @@ export const wishlistListQueryOptions = infiniteQueryOptions({
     lastPage.hasNext ? (lastPage.nextCursor ?? undefined) : undefined,
 });
 
-function useInvalidateWishlists() {
+function useInvalidateWishlists(invalidateList: boolean) {
   const queryClient = useQueryClient();
   return () =>
-    queryClient.invalidateQueries({ queryKey: wishlistQueryKeys.root });
+    queryClient.invalidateQueries({
+      queryKey: invalidateList
+        ? wishlistQueryKeys.root
+        : wishlistQueryKeys.count,
+    });
 }
 
-export function useCreateWishlistMutation(invalidateOnSuccess = true) {
-  const invalidate = useInvalidateWishlists();
+export function useCreateWishlistMutation(invalidateListOnSuccess = true) {
+  const invalidate = useInvalidateWishlists(invalidateListOnSuccess);
   return useMutation({
     mutationFn: createWishlist,
     networkMode: "always",
-    onSuccess: invalidateOnSuccess ? invalidate : undefined,
+    onSuccess: invalidate,
   });
 }
 
-export function useDeleteWishlistMutation(invalidateOnSuccess = true) {
-  const invalidate = useInvalidateWishlists();
+export function useDeleteWishlistMutation(invalidateListOnSuccess = true) {
+  const invalidate = useInvalidateWishlists(invalidateListOnSuccess);
   return useMutation({
     mutationFn: deleteWishlist,
     networkMode: "always",
-    onSuccess: invalidateOnSuccess ? invalidate : undefined,
+    onSuccess: invalidate,
   });
 }

@@ -1,6 +1,7 @@
 import { apiClient } from "@/shared/api/client";
 import { parseResponse } from "@/shared/api/response";
 import {
+  wishlistCountResponse,
   wishlistCreateResponse,
   wishlistListResponse,
 } from "../schema/wishlist";
@@ -19,6 +20,11 @@ export async function getWishlists({
 
   const response = await apiClient.get("wishlists", { searchParams });
   return parseResponse(response, wishlistListResponse);
+}
+
+export async function getWishlistCount() {
+  const response = await apiClient.get("wishlists/count");
+  return parseResponse(response, wishlistCountResponse);
 }
 
 export async function createWishlist(productId: number) {
