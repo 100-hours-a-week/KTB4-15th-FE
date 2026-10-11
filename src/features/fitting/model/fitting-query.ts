@@ -114,10 +114,11 @@ export function useUpdateFittingResultOutfitNameMutation() {
 }
 
 export function useDeleteFittingResultMutation() {
-  const invalidate = useInvalidateFittingResults();
+  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: deleteFittingResult,
-    onSuccess: invalidate,
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: fittingQueryKeys.resultList }),
   });
 }
