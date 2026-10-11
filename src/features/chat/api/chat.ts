@@ -2,6 +2,7 @@ import { apiClient } from "@/shared/api/client";
 import { parseResponse } from "@/shared/api/response";
 import {
   chatMessageGenerationStatusResponse,
+  chatSearchResponse,
   chatRoomListResponse,
   createChatRoomResponse,
   renameChatRoomRequest,
@@ -66,6 +67,14 @@ export async function getChatRooms(cursor: number | null = null) {
   searchParams.set("size", "20");
   const response = await apiClient.get(`chat-rooms?${searchParams.toString()}`);
   return parseResponse(response, chatRoomListResponse);
+}
+
+export async function searchChatRooms(keyword: string) {
+  const response = await apiClient.get("chat-rooms", {
+    searchParams: { keyword },
+  });
+
+  return parseResponse(response, chatSearchResponse);
 }
 
 export async function renameChatRoom(

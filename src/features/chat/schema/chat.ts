@@ -152,6 +152,19 @@ export const chatRoomListResponse = z.object({
 export type ChatRoomItem = z.infer<typeof chatRoomItem>;
 export type ChatRoomListResponse = z.infer<typeof chatRoomListResponse>;
 
+export const chatSearchResponse = z.object({
+  items: z.array(
+    z.object({
+      chatRoomId: z.number().int().positive(),
+      title: z.string(),
+      messageId: z.number().int().positive(),
+      message: z.string(),
+    }),
+  ),
+});
+
+export type ChatSearchResponse = z.infer<typeof chatSearchResponse>;
+
 export const renameChatRoomRequest = z.object({
   title: z.string().trim().min(1).max(CHAT_ROOM_TITLE_MAX_LENGTH),
 });

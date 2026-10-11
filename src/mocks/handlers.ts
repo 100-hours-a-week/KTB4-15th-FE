@@ -1,4 +1,4 @@
-import { http, HttpResponse, type RequestHandler } from "msw";
+import { http, HttpResponse, passthrough, type RequestHandler } from "msw";
 
 type MockProfile = {
   age: number | null;
@@ -86,7 +86,86 @@ const rankingItems = {
   ],
 } as const;
 
+const chatSearchItems = [
+  {
+    chatRoomId: 25,
+    title: "검정 바지에 어울리는 상의",
+    messageId: 381,
+    message: "반바지로 알아봐줘.",
+  },
+  {
+    chatRoomId: 25,
+    title: "검정 바지에 어울리는 상의",
+    messageId: 382,
+    message: "검정 반바지에 입을 깔끔한 반팔 셔츠 추천해줘.",
+  },
+  {
+    chatRoomId: 25,
+    title: "검정 바지에 어울리는 상의",
+    messageId: 383,
+    message: "시원한 린넨 반바지와 매치하고 싶어요.",
+  },
+  {
+    chatRoomId: 18,
+    title: "출근용 셔츠 추천",
+    messageId: 327,
+    message: "하얀 반바지랑 어울리면 좋겠어요.",
+  },
+  {
+    chatRoomId: 12,
+    title: "가을 니트 코디",
+    messageId: 204,
+    message: "브라운 니트와 데님 조합을 추천해 주세요.",
+  },
+] as const;
+
 export const handlers: RequestHandler[] = [
+  http.get("*/chat-rooms", ({ request }) => {
+    const searchParams = new URL(request.url).searchParams;
+
+    if (!searchParams.has("keyword")) return passthrough();
+
+    const keyword = searchParams.get("keyword")?.trim();
+
+    if (!keyword) {
+      return HttpResponse.json(
+        {
+          code: "INVALID_SEARCH_KEYWORD",
+          data: null,
+          message: "검색어를 입력해주세요.",
+        },
+        { status: 400 },
+      );
+    }
+
+    if (keyword.length > 100) {
+      return HttpResponse.json(
+        {
+          code: "SEARCH_KEYWORD_LENGTH_EXCEEDED",
+          data: null,
+          message: "검색어는 최대 100자까지 입력할 수 있어요.",
+        },
+        { status: 400 },
+      );
+    }
+
+    const normalizedKeyword = keyword.toLocaleLowerCase("ko-KR");
+    const items = chatSearchItems.filter(
+      ({ message, title }) =>
+        title.toLocaleLowerCase("ko-KR").includes(normalizedKeyword) ||
+        message.toLocaleLowerCase("ko-KR").includes(normalizedKeyword),
+    );
+
+    return HttpResponse.json({
+      code: "CHAT_ROOM_SEARCH_SUCCESS",
+      data: { items },
+      message:
+        items.length > 0
+          ? "대화 검색 결과를 조회했습니다."
+          : "일치하는 대화가 없습니다.",
+    });
+  }),
+
   http.get("*/products/rankings", ({ request }) => {
     const type = new URL(request.url).searchParams.get("type");
 
