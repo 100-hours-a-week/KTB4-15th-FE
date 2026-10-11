@@ -3,7 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/shared/ui/button";
 import { LoadingMessage } from "@/shared/ui/loading-message";
-import { fittingResultDetailQueryOptions } from "../model/fitting-query";
+import { fittingResultDetailQueryOptions } from "../../model/fitting-query";
 import { FittingResultView } from "./fitting-result-view";
 import styles from "./fitting-result-detail-screen.module.scss";
 

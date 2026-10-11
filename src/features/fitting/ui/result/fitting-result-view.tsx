@@ -25,13 +25,13 @@ import {
   useCreateFittingResultMutation,
   useDeleteFittingResultMutation,
   useUpdateFittingResultOutfitNameMutation,
-} from "../model/fitting-query";
-import type { FittingJobStatusResponse } from "../schema/fitting-job";
+} from "../../model/fitting-query";
+import type { FittingJobStatusResponse } from "../../schema/fitting-job";
 import {
   FITTING_OUTFIT_NAME_MAX_LENGTH,
   fittingOutfitNameSchema,
   type FittingResultDetail,
-} from "../schema/fitting-result";
+} from "../../schema/fitting-result";
 import styles from "./fitting-result-view.module.scss";
 
 type FittingJobResult = NonNullable<FittingJobStatusResponse["result"]>;

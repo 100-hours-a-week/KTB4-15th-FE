@@ -7,7 +7,7 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { Button } from "@/shared/ui/button";
 import { LoadingMessage } from "@/shared/ui/loading-message";
 import { formatKoreanNumericDateTime } from "@/shared/utils/date-format";
-import { fittingResultListQueryOptions } from "../model/fitting-query";
+import { fittingResultListQueryOptions } from "../../model/fitting-query";
 import styles from "./fitting-result-list-screen.module.scss";
 
 function passthroughImageLoader({ src }: ImageLoaderProps) {

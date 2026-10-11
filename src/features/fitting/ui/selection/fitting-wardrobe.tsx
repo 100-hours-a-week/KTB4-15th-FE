@@ -20,10 +20,10 @@ import {
 import {
   fittingCandidatesQueryOptions,
   useDeleteFittingCandidatesMutation,
-} from "../model/fitting-query";
-import { useFittingSelectionStore } from "../store/fitting-selection-store";
-import { useRestoreFittingSelection } from "../store/use-restore-fitting-selection";
-import type { FittingCandidate } from "../schema/fitting-candidate";
+} from "../../model/fitting-query";
+import { useFittingSelectionStore } from "../../store/fitting-selection-store";
+import { useRestoreFittingSelection } from "../../store/use-restore-fitting-selection";
+import type { FittingCandidate } from "../../schema/fitting-candidate";
 import styles from "./fitting-wardrobe.module.scss";
 
 type WardrobeFilter = ProductItemType | "ALL";

@@ -6,11 +6,11 @@ import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/shared/ui/button";
 import { Header, HeaderIconLink, HeaderTitle } from "@/shared/ui/header";
 import { BackIcon } from "@/shared/ui/icon";
-import { fittingJobQueryOptions } from "../model/fitting-query";
-import { clearActiveFittingJobId } from "../store/active-fitting-job-storage";
-import { clearFittingJobProgress } from "../store/fitting-job-progress-storage";
+import { fittingJobQueryOptions } from "../../model/fitting-query";
+import { clearActiveFittingJobId } from "../../store/active-fitting-job-storage";
+import { clearFittingJobProgress } from "../../store/fitting-job-progress-storage";
 import { FittingProgressView } from "./fitting-progress-view";
-import { FittingResultView } from "./fitting-result-view";
+import { FittingResultView } from "../result/fitting-result-view";
 import styles from "./fitting-job-screen.module.scss";
 
 type FittingJobScreenProps = {

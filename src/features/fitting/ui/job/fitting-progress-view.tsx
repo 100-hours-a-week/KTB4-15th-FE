@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { memberProfileQueryOptions } from "@/features/profile";
 import { Header, HeaderTitle } from "@/shared/ui/header";
-import { getFittingJobStartedAt } from "../store/fitting-job-progress-storage";
+import { getFittingJobStartedAt } from "../../store/fitting-job-progress-storage";
 import styles from "./fitting-progress-view.module.scss";
 
 const MAX_SIMULATED_PROGRESS = 92;
