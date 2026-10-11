@@ -1,5 +1,5 @@
 import {
-  FittingEntryGuard,
+  FittingEntryRedirect,
   FittingPhotoCard,
   FittingSelectionPanel,
 } from "@/features/fitting";
@@ -8,12 +8,12 @@ import styles from "./page.module.scss";
 
 export default function FittingPage() {
   return (
-    <FittingEntryGuard>
+    <FittingEntryRedirect>
       <Header left={<HeaderTitle>피팅</HeaderTitle>} />
       <main className={styles.main}>
         <FittingPhotoCard />
         <FittingSelectionPanel />
       </main>
-    </FittingEntryGuard>
+    </FittingEntryRedirect>
   );
 }

@@ -7,7 +7,7 @@ import { getActiveFittingJobId } from "../store/active-fitting-job-storage";
 const subscribe = () => () => {};
 const getServerSnapshot = () => undefined;
 
-export function FittingEntryGuard({ children }: { children: ReactNode }) {
+export function FittingEntryRedirect({ children }: { children: ReactNode }) {
   const router = useRouter();
   const fittingJobId = useSyncExternalStore(
     subscribe,

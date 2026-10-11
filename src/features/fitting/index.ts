@@ -7,7 +7,7 @@ export {
   useDeleteFittingResultMutation,
   useUpdateFittingResultOutfitNameMutation,
 } from "./model/fitting-query";
-export { FittingEntryGuard } from "./ui/fitting-entry-guard";
+export { FittingEntryRedirect } from "./guard/fitting-entry-redirect";
 export { FittingJobScreen } from "./ui/fitting-job-screen";
 export { FittingPhotoCard } from "./ui/fitting-photo-card";
 export { FittingResultDetailScreen } from "./ui/fitting-result-detail-screen";
