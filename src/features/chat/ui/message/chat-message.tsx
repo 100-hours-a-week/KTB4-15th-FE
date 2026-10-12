@@ -60,7 +60,6 @@ export function AIChatMessage({ message }: AIChatMessageProps) {
       <div className={styles.aiContent}>
         <div className={styles.aiMeta}>
           <strong className={styles.aiName}>AI 스타일리스트</strong>
-          <span className={styles.aiBadge}>스타일리스트</span>
           <time
             className={`${styles.time} ${styles.aiTime}`}
             dateTime={message.createdAt}
