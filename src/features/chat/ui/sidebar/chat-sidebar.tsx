@@ -175,7 +175,6 @@ export function ChatSidebar({ open, onOpenChange }: ChatSidebarProps) {
             <header className={styles.sidebarHeader}>
               <div className={styles.heading}>
                 <Dialog.Title className={styles.title}>채팅</Dialog.Title>
-                <span className={styles.badge}>AI 룩딱</span>
               </div>
               <Dialog.Close asChild>
                 <IconButton aria-label="채팅 목록 닫기" size="small">
@@ -200,7 +199,6 @@ export function ChatSidebar({ open, onOpenChange }: ChatSidebarProps) {
 
             <Button
               className={styles.newChatButton}
-              fullWidth
               leadingIcon={<PlusIcon />}
               onClick={startNewChat}
               size="small"
