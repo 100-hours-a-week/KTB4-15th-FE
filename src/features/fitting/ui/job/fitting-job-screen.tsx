@@ -5,7 +5,7 @@ import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/shared/ui/button";
 import { Header, HeaderTitle } from "@/shared/ui/header";
-import { fittingJobQueryOptions } from "../../model/fitting-query";
+import { currentFittingJobQueryOptions } from "../../model/fitting-query";
 import { clearActiveFittingJobId } from "../../store/active-fitting-job-storage";
 import { clearFittingJobProgress } from "../../store/fitting-job-progress-storage";
 import { FittingProgressView } from "./fitting-progress-view";
@@ -23,9 +23,7 @@ const RESULT_REVEAL_DELAY = 900;
 
 export function FittingJobScreen({ fittingJobId }: FittingJobScreenProps) {
   const router = useRouter();
-  const { data, isError, isPending } = useQuery(
-    fittingJobQueryOptions(fittingJobId),
-  );
+  const { data, isError, isPending } = useQuery(currentFittingJobQueryOptions);
 
   const handleReturnToFitting = () => {
     clearActiveFittingJobId(fittingJobId);
@@ -58,7 +56,7 @@ export function FittingJobScreen({ fittingJobId }: FittingJobScreenProps) {
     );
   }
 
-  if (isError) {
+  if (isError || !data || data.fittingJobId !== fittingJobId) {
     return (
       <>
         <ProgressHeader />

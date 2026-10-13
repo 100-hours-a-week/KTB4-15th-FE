@@ -342,27 +342,4 @@ export const handlers: RequestHandler[] = [
       message: "저장된 가상피팅 결과 목록을 조회했습니다.",
     });
   }),
-
-  http.get("*/fitting-jobs/:fittingJobId", ({ params }) => {
-    if (params.fittingJobId !== "123") {
-      return HttpResponse.json(
-        {
-          code: "FITTING_JOB_NOT_FOUND",
-          data: null,
-          message: "가상피팅 요청 정보를 찾을 수 없습니다.",
-        },
-        { status: 404 },
-      );
-    }
-
-    return HttpResponse.json({
-      code: "FITTING_JOB_GET_SUCCESS",
-      data: {
-        fittingJobId: 123,
-        status: "COMPLETED",
-        result: null,
-      },
-      message: "가상피팅 작업을 조회했습니다.",
-    });
-  }),
 ];

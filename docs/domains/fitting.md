@@ -50,7 +50,7 @@
 1. 선택한 상의와 하의의 `productId`로 `POST /fitting-jobs`를 요청합니다.
 2. 성공하면 활성 Job id와 시작 시간을 `localStorage`에 저장합니다.
 3. `/fitting/jobs/[fittingJobId]`로 이동합니다.
-4. Job 상태가 `GENERATING`이면 3초마다 상태를 조회합니다.
+4. Job 상태를 조회하고 `GENERATING`이면 생성 진행 화면을 표시합니다.
 5. `COMPLETED`이면 진행률을 100%로 표시한 뒤 900ms 후 `/fitting/jobs/[fittingJobId]/result`로 이동합니다.
 6. `FAILED` 또는 `COMPLETED`이면 활성 Job과 진행 시간 정보를 제거합니다.
 
@@ -76,7 +76,6 @@
 | `DELETE` | `/fitting-candidates`                 | 후보 일괄 삭제          |
 | `POST`   | `/fitting-jobs`                       | 피팅 작업 생성          |
 | `GET`    | `/fitting-jobs/current`               | 최근 미확인 작업 조회   |
-| `GET`    | `/fitting-jobs/{fittingJobId}`        | 작업 상태 조회          |
 | `GET`    | `/fitting-jobs/{fittingJobId}/result` | 임시 결과 조회          |
 
 ## 오류와 예외 처리
@@ -99,3 +98,4 @@
 ## 보류 항목
 
 - 진행률을 서버에서 제공할지 여부
+- Job 상태 변경을 전달할 전역 SSE 연동
