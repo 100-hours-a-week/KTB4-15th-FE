@@ -174,4 +174,30 @@ export const handlers: RequestHandler[] = [
 
     return success(null);
   }),
+
+  http.get("*/fitting-jobs/current", () =>
+    HttpResponse.json({
+      code: "FITTING_CURRENT_JOB_FOUND",
+      data: {
+        fittingJobId: 123,
+        status: "GENERATING",
+        resultViewed: false,
+        products: [
+          {
+            productId: 101,
+            itemType: "TOP",
+            productName: "에센셜 램스울 크루넥",
+            productImageUrl: "/images/onboarding/virtual-fitting.png",
+          },
+          {
+            productId: 205,
+            itemType: "BOTTOM",
+            productName: "모던 테이퍼드 슬랙스",
+            productImageUrl: "/images/onboarding/virtual-fitting.png",
+          },
+        ],
+      },
+      message: "최근 가상피팅 작업을 조회했습니다.",
+    }),
+  ),
 ];

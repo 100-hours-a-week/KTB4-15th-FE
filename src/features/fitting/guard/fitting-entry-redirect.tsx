@@ -1,25 +1,21 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { type ReactNode, useEffect, useSyncExternalStore } from "react";
-import { getActiveFittingJobId } from "../store/active-fitting-job-storage";
-
-const subscribe = () => () => {};
-const getServerSnapshot = () => undefined;
+import { type ReactNode, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { currentFittingJobQueryOptions } from "../model/fitting-query";
 
 export function FittingEntryRedirect({ children }: { children: ReactNode }) {
   const router = useRouter();
-  const fittingJobId = useSyncExternalStore(
-    subscribe,
-    getActiveFittingJobId,
-    getServerSnapshot,
+  const { data: fittingJob, isPending } = useQuery(
+    currentFittingJobQueryOptions,
   );
 
   useEffect(() => {
-    if (fittingJobId) {
-      router.replace(`/fitting/jobs/${fittingJobId}`);
+    if (fittingJob) {
+      router.replace(`/fitting/jobs/${fittingJob.fittingJobId}`);
     }
-  }, [fittingJobId, router]);
+  }, [fittingJob, router]);
 
-  return fittingJobId === null ? children : null;
+  return isPending || fittingJob ? null : children;
 }

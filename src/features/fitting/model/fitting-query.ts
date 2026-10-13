@@ -10,7 +10,7 @@ import {
   getFittingCandidates,
 } from "../api/fitting-candidate";
 import type { ProductItemType } from "@/shared/schema/product";
-import { getFittingJobStatus } from "../api/fitting-job";
+import { getCurrentFittingJob, getFittingJobStatus } from "../api/fitting-job";
 import {
   createFittingResult,
   deleteFittingResult,
@@ -24,11 +24,17 @@ export const fittingQueryKeys = {
   candidateList: (itemType?: ProductItemType) =>
     [...fittingQueryKeys.candidateListRoot, itemType ?? "all"] as const,
   job: (fittingJobId: number) => ["fitting", "job", fittingJobId] as const,
+  currentJob: ["fitting", "job", "current"] as const,
   resultRoot: ["fitting", "results"] as const,
   resultList: ["fitting", "results", "list"] as const,
   resultDetail: (fittingResultId: number) =>
     ["fitting", "results", "detail", fittingResultId] as const,
 };
+
+export const currentFittingJobQueryOptions = queryOptions({
+  queryKey: fittingQueryKeys.currentJob,
+  queryFn: getCurrentFittingJob,
+});
 
 export const fittingCandidatesQueryOptions = (itemType?: ProductItemType) =>
   infiniteQueryOptions({

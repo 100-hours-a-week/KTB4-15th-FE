@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { productItemTypeSchema } from "@/shared/schema/product";
 import { fittingResultProductSchema } from "./fitting-result";
 
 export const fittingJobCreateRequestSchema = z
@@ -29,6 +30,22 @@ export const fittingJobStatusResponseSchema = z.object({
   status: z.enum(["GENERATING", "COMPLETED", "FAILED"]),
   result: fittingResultSchema.nullable(),
 });
+
+export const currentFittingJobResponseSchema = z
+  .object({
+    fittingJobId: z.number().int().positive(),
+    status: z.enum(["GENERATING", "COMPLETED", "FAILED"]),
+    resultViewed: z.boolean(),
+    products: z.array(
+      z.object({
+        productId: z.number().int().positive(),
+        itemType: productItemTypeSchema,
+        productName: z.string(),
+        productImageUrl: z.string(),
+      }),
+    ),
+  })
+  .nullable();
 
 export type FittingJobCreateRequest = z.infer<
   typeof fittingJobCreateRequestSchema
