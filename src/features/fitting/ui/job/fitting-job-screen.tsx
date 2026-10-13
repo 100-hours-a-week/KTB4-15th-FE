@@ -1,16 +1,14 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/shared/ui/button";
-import { Header, HeaderIconLink, HeaderTitle } from "@/shared/ui/header";
-import { BackIcon } from "@/shared/ui/icon";
+import { Header, HeaderTitle } from "@/shared/ui/header";
 import { fittingJobQueryOptions } from "../../model/fitting-query";
 import { clearActiveFittingJobId } from "../../store/active-fitting-job-storage";
 import { clearFittingJobProgress } from "../../store/fitting-job-progress-storage";
 import { FittingProgressView } from "./fitting-progress-view";
-import { FittingResultView } from "../result/fitting-result-view";
 import styles from "./fitting-job-screen.module.scss";
 
 type FittingJobScreenProps = {
@@ -28,7 +26,6 @@ export function FittingJobScreen({ fittingJobId }: FittingJobScreenProps) {
   const { data, isError, isPending } = useQuery(
     fittingJobQueryOptions(fittingJobId),
   );
-  const [isResultReady, setIsResultReady] = useState(false);
 
   const handleReturnToFitting = () => {
     clearActiveFittingJobId(fittingJobId);
@@ -48,12 +45,12 @@ export function FittingJobScreen({ fittingJobId }: FittingJobScreenProps) {
 
     clearActiveFittingJobId(fittingJobId);
     const timer = window.setTimeout(() => {
-      setIsResultReady(true);
       clearFittingJobProgress(fittingJobId);
+      router.replace(`/fitting/jobs/${fittingJobId}/result`);
     }, RESULT_REVEAL_DELAY);
 
     return () => window.clearTimeout(timer);
-  }, [data?.status, fittingJobId]);
+  }, [data?.status, fittingJobId, router]);
 
   if (isPending) {
     return (
@@ -93,22 +90,6 @@ export function FittingJobScreen({ fittingJobId }: FittingJobScreenProps) {
             피팅 홈으로 이동
           </Button>
         </main>
-      </>
-    );
-  }
-
-  if (data.status === "COMPLETED" && data.result && isResultReady) {
-    return (
-      <>
-        <Header
-          center={<HeaderTitle>가상 피팅 결과</HeaderTitle>}
-          left={
-            <HeaderIconLink aria-label="피팅으로 돌아가기" href="/fitting">
-              <BackIcon />
-            </HeaderIconLink>
-          }
-        />
-        <FittingResultView fittingJobId={fittingJobId} result={data.result} />
       </>
     );
   }

@@ -10,7 +10,11 @@ import {
   getFittingCandidates,
 } from "../api/fitting-candidate";
 import type { ProductItemType } from "@/shared/schema/product";
-import { getCurrentFittingJob, getFittingJobStatus } from "../api/fitting-job";
+import {
+  getCurrentFittingJob,
+  getFittingJobStatus,
+  getFittingTempResult,
+} from "../api/fitting-job";
 import {
   createFittingResult,
   deleteFittingResult,
@@ -25,6 +29,8 @@ export const fittingQueryKeys = {
     [...fittingQueryKeys.candidateListRoot, itemType ?? "all"] as const,
   job: (fittingJobId: number) => ["fitting", "job", fittingJobId] as const,
   currentJob: ["fitting", "job", "current"] as const,
+  tempResult: (fittingJobId: number) =>
+    ["fitting", "job", fittingJobId, "result"] as const,
   resultRoot: ["fitting", "results"] as const,
   resultList: ["fitting", "results", "list"] as const,
   resultDetail: (fittingResultId: number) =>
@@ -53,6 +59,12 @@ export const fittingJobQueryOptions = (fittingJobId: number) =>
     refetchInterval: (query) =>
       query.state.data?.status === "GENERATING" ? 3_000 : false,
     refetchOnWindowFocus: true,
+  });
+
+export const fittingTempResultQueryOptions = (fittingJobId: number) =>
+  queryOptions({
+    queryKey: fittingQueryKeys.tempResult(fittingJobId),
+    queryFn: () => getFittingTempResult(fittingJobId),
   });
 
 export const fittingResultListQueryOptions = infiniteQueryOptions({

@@ -7,7 +7,7 @@ type FittingProduct = {
   itemType: ProductItemType;
   productName: string;
   productImageUrl: string;
-  purchaseUrl?: string;
+  purchaseUrl?: string | null;
 };
 
 type FittingProductCombinationProps = {

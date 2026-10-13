@@ -47,9 +47,23 @@ export const currentFittingJobResponseSchema = z
   })
   .nullable();
 
+export const fittingTempResultResponseSchema = z.object({
+  fittingJobId: z.number().int().positive(),
+  resultViewed: z.boolean(),
+  saved: z.boolean(),
+  fittingResultId: z.number().int().positive().nullable(),
+  resultImageUrl: z.string(),
+  outfitName: z.string(),
+  comment: z.string().nullable(),
+  products: z.array(
+    fittingResultProductSchema.extend({ purchaseUrl: z.string().nullable() }),
+  ),
+});
+
 export type FittingJobCreateRequest = z.infer<
   typeof fittingJobCreateRequestSchema
 >;
 export type FittingJobStatusResponse = z.infer<
   typeof fittingJobStatusResponseSchema
 >;
+export type FittingTempResult = z.infer<typeof fittingTempResultResponseSchema>;

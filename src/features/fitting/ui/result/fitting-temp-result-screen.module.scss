@@ -1,0 +1,68 @@
+@use "@/styles/typography" as type;
+
+.state {
+  @include type.body-medium;
+
+  display: grid;
+  min-height: calc(100dvh - var(--header-height));
+  place-items: center;
+  color: var(--color-text-secondary);
+  text-align: center;
+
+  p {
+    margin: 0 0 var(--space-lg);
+  }
+}
+
+.outfitName {
+  @include type.body-medium;
+
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-medium);
+  padding: var(--space-lg);
+  background: var(--color-background-surface);
+  color: var(--color-text-primary);
+  cursor: text;
+  font-weight: var(--font-weight-medium);
+  outline: none;
+
+  &:focus {
+    border-color: var(--color-border-brand);
+    box-shadow: 0 0 0 3px var(--color-focus-ring);
+  }
+
+  &:disabled {
+    color: var(--color-text-disabled);
+    cursor: not-allowed;
+  }
+
+  &:read-only:not(:disabled) {
+    cursor: default;
+  }
+}
+
+.nameLength {
+  @include type.caption;
+
+  margin-right: var(--space-md);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.retryLink {
+  @include type.label;
+
+  display: flex;
+  min-height: var(--control-height-large);
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  border-radius: var(--radius-medium);
+  background: var(--color-gray-200);
+  font-weight: var(--font-weight-semibold);
+
+  svg {
+    width: 20px;
+    height: 20px;
+  }
+}

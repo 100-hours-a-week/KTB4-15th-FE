@@ -47,89 +47,12 @@
 .commentCard {
   border-radius: var(--radius-medium);
   padding: var(--space-lg);
-  background: var(--color-background-surface);
+  background: var(--color-gray-100);
 }
 
 .resultForm {
   display: grid;
   gap: var(--space-xl);
-}
-
-.outfitName {
-  @include type.body-medium;
-
-  border: 1px solid var(--color-border-default);
-  border-radius: var(--radius-medium);
-  padding: var(--space-lg);
-  background: var(--color-background-surface);
-  color: var(--color-text-primary);
-  cursor: text;
-  font-weight: var(--font-weight-medium);
-  outline: none;
-
-  &:focus {
-    border-color: var(--color-border-brand);
-    box-shadow: 0 0 0 3px var(--color-focus-ring);
-  }
-
-  &:disabled {
-    color: var(--color-text-disabled);
-    cursor: not-allowed;
-  }
-
-  &:read-only:not(:disabled) {
-    cursor: default;
-  }
-}
-
-.nameLength {
-  @include type.caption;
-
-  margin-right: var(--space-md);
-  color: var(--color-text-secondary);
-  white-space: nowrap;
-}
-
-.outfitNameField {
-  display: grid;
-  gap: var(--space-xs);
-}
-
-.outfitNameLabel {
-  @include type.caption;
-
-  color: var(--color-text-secondary);
-}
-
-.outfitNameDisplay {
-  @include type.body-medium;
-
-  display: flex;
-  min-height: var(--control-height-large);
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-md);
-  border-radius: var(--radius-medium);
-  padding: var(--space-sm) var(--space-md) var(--space-sm) var(--space-lg);
-  background: var(--color-background-surface);
-  color: var(--color-text-primary);
-  font-weight: var(--font-weight-medium);
-
-  > span {
-    min-width: 0;
-    overflow-wrap: anywhere;
-  }
-
-  button {
-    --icon-size: 20px;
-
-    flex: 0 0 auto;
-    color: var(--color-text-secondary);
-  }
-}
-
-.commentCard {
-  background: var(--color-gray-100);
 }
 
 .commentHeading {
@@ -170,60 +93,4 @@
 .resultActions {
   display: grid;
   gap: var(--space-lg);
-}
-
-.retryLink {
-  @include type.label;
-
-  display: flex;
-  min-height: var(--control-height-large);
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-sm);
-  border-radius: var(--radius-medium);
-  background: var(--color-gray-200);
-  font-weight: var(--font-weight-semibold);
-
-  svg {
-    width: 20px;
-    height: 20px;
-  }
-}
-
-.primaryLink {
-  @include type.body-large;
-
-  display: flex;
-  min-height: var(--control-height-large);
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-sm);
-  border-radius: var(--radius-medium);
-  background: var(--color-action-primary-default);
-  color: var(--color-action-primary-text);
-  font-weight: var(--font-weight-semibold);
-
-  svg {
-    width: 20px;
-    height: 20px;
-  }
-}
-
-.deleteButton {
-  @include type.label;
-
-  display: flex;
-  min-height: var(--control-height);
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-xs);
-  border: 0;
-  background: transparent;
-  color: var(--color-text-secondary);
-  cursor: pointer;
-
-  svg {
-    width: 18px;
-    height: 18px;
-  }
 }
