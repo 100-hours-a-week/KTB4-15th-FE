@@ -32,6 +32,7 @@ import {
   fittingOutfitNameSchema,
   type FittingResultDetail,
 } from "../../schema/fitting-result";
+import { FittingProductCombination } from "../fitting-product-combination";
 import styles from "./fitting-result-view.module.scss";
 
 type FittingJobResult = NonNullable<FittingJobStatusResponse["result"]>;
@@ -152,41 +153,12 @@ export function FittingResultView({
   return (
     <>
       <main className={styles.resultMain}>
-        <section className={styles.productsSection}>
-          <h2>선택한 상품 조합</h2>
-          <div className={styles.products}>
-            {result.products.map((product) => (
-              <a
-                aria-label={`${product.productName} 구매 페이지로 이동`}
-                className={styles.productCard}
-                href={product.purchaseUrl}
-                key={product.productId}
-                onClick={() => {
-                  void recordPurchaseLinkClick(product.productId).catch(
-                    () => undefined,
-                  );
-                }}
-                rel="noopener noreferrer"
-                target="_blank"
-              >
-                <span className={styles.productImageArea}>
-                  <Image
-                    alt=""
-                    className={styles.productImage}
-                    fill
-                    sizes="48px"
-                    src={product.productImageUrl}
-                    unoptimized
-                  />
-                </span>
-                <span>
-                  <small>{product.itemType === "TOP" ? "상의" : "하의"}</small>
-                  <strong>{product.productName}</strong>
-                </span>
-              </a>
-            ))}
-          </div>
-        </section>
+        <FittingProductCombination
+          onProductClick={(productId) => {
+            void recordPurchaseLinkClick(productId).catch(() => undefined);
+          }}
+          products={result.products}
+        />
 
         <section
           aria-label="가상 피팅 결과 이미지"
