@@ -16,9 +16,10 @@ type MockProfileUpdate = Partial<
   fullBodyImageValidationId?: number;
 };
 
-let profileCompleted = false;
+let profileCompleted = true;
 let validatedFullBodyImageUrl: string | null = null;
 let fittingResultSaved = false;
+let fittingResultViewed = false;
 let fittingResultOutfitName = "가을 출근 니트 룩";
 let profile: MockProfile = {
   age: null,
@@ -177,13 +178,22 @@ export const handlers: RequestHandler[] = [
     return success(null);
   }),
 
-  http.get("*/fitting-jobs/current", () =>
-    HttpResponse.json({
+  http.get("*/fitting-jobs/current", () => {
+    const mockStatus =
+      typeof window === "undefined"
+        ? "GENERATING"
+        : new URLSearchParams(window.location.search).get("mockStatus");
+    const status =
+      mockStatus === "FAILED" || mockStatus === "COMPLETED"
+        ? mockStatus
+        : "GENERATING";
+
+    return HttpResponse.json({
       code: "FITTING_CURRENT_JOB_FOUND",
       data: {
         fittingJobId: 123,
-        status: "GENERATING",
-        resultViewed: false,
+        status,
+        resultViewed: fittingResultViewed,
         products: [
           {
             productId: 101,
@@ -200,8 +210,8 @@ export const handlers: RequestHandler[] = [
         ],
       },
       message: "최근 가상피팅 작업을 조회했습니다.",
-    }),
-  ),
+    });
+  }),
 
   http.get("*/fitting-jobs/:fittingJobId/result", ({ params }) => {
     if (params.fittingJobId !== "123") {
@@ -219,7 +229,7 @@ export const handlers: RequestHandler[] = [
       code: "FITTING_TEMP_RESULT_GET_SUCCESS",
       data: {
         fittingJobId: 123,
-        resultViewed: false,
+        resultViewed: fittingResultViewed,
         saved: fittingResultSaved,
         fittingResultId: fittingResultSaved ? 456 : null,
         resultImageUrl: "/images/profile/full-body-example.png",
@@ -245,6 +255,27 @@ export const handlers: RequestHandler[] = [
         expiresAt: "2026-10-14T16:30:00",
       },
       message: "가상피팅 결과를 조회했습니다.",
+    });
+  }),
+
+  http.patch("*/fitting-jobs/:fittingJobId/result/viewed", ({ params }) => {
+    if (params.fittingJobId !== "123") {
+      return HttpResponse.json(
+        {
+          code: "FITTING_JOB_NOT_FOUND",
+          data: null,
+          message: "가상피팅 요청 정보를 찾을 수 없습니다.",
+        },
+        { status: 404 },
+      );
+    }
+
+    fittingResultViewed = true;
+
+    return HttpResponse.json({
+      code: "OK",
+      data: { fittingJobId: 123 },
+      message: "가상피팅 결과를 확인 처리했습니다.",
     });
   }),
 

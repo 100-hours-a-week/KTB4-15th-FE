@@ -4,6 +4,7 @@ import {
   type FittingJobCreateRequest,
   currentFittingJobResponseSchema,
   fittingJobCreateResponseSchema,
+  fittingResultViewedResponseSchema,
   fittingTempResultResponseSchema,
 } from "../schema/fitting-job";
 
@@ -25,4 +26,12 @@ export async function getFittingTempResult(fittingJobId: number) {
   const response = await apiClient.get(`fitting-jobs/${fittingJobId}/result`);
 
   return parseResponse(response, fittingTempResultResponseSchema);
+}
+
+export async function markFittingResultViewed(fittingJobId: number) {
+  const response = await apiClient.patch(
+    `fitting-jobs/${fittingJobId}/result/viewed`,
+  );
+
+  return parseResponse(response, fittingResultViewedResponseSchema);
 }

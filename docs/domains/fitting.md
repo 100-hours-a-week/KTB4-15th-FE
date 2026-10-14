@@ -69,14 +69,15 @@
 
 ## API
 
-| Method   | Path                                  | 역할                    |
-| -------- | ------------------------------------- | ----------------------- |
-| `GET`    | `/fitting-candidates`                 | 후보 목록 조회          |
-| `POST`   | `/fitting-candidates`                 | 상품을 피팅 후보에 추가 |
-| `DELETE` | `/fitting-candidates`                 | 후보 일괄 삭제          |
-| `POST`   | `/fitting-jobs`                       | 피팅 작업 생성          |
-| `GET`    | `/fitting-jobs/current`               | 최근 미확인 작업 조회   |
-| `GET`    | `/fitting-jobs/{fittingJobId}/result` | 임시 결과 조회          |
+| Method   | Path                                         | 역할                    |
+| -------- | -------------------------------------------- | ----------------------- |
+| `GET`    | `/fitting-candidates`                        | 후보 목록 조회          |
+| `POST`   | `/fitting-candidates`                        | 상품을 피팅 후보에 추가 |
+| `DELETE` | `/fitting-candidates`                        | 후보 일괄 삭제          |
+| `POST`   | `/fitting-jobs`                              | 피팅 작업 생성          |
+| `GET`    | `/fitting-jobs/current`                      | 최근 미확인 작업 조회   |
+| `GET`    | `/fitting-jobs/{fittingJobId}/result`        | 임시 결과 조회          |
+| `PATCH`  | `/fitting-jobs/{fittingJobId}/result/viewed` | 결과 확인 처리          |
 
 ## 오류와 예외 처리
 

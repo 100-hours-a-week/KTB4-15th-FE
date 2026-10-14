@@ -10,7 +10,11 @@ import {
   getFittingCandidates,
 } from "../api/fitting-candidate";
 import type { ProductItemType } from "@/shared/schema/product";
-import { getCurrentFittingJob, getFittingTempResult } from "../api/fitting-job";
+import {
+  getCurrentFittingJob,
+  getFittingTempResult,
+  markFittingResultViewed,
+} from "../api/fitting-job";
 import {
   createFittingResult,
   deleteFittingResult,
@@ -105,6 +109,27 @@ export function useCreateFittingResultMutation() {
   return useMutation({
     mutationFn: createFittingResult,
     onSuccess: invalidate,
+  });
+}
+
+export function useMarkFittingResultViewedMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: markFittingResultViewed,
+    onSuccess: (_, fittingJobId) => {
+      queryClient.setQueryData(
+        currentFittingJobQueryOptions.queryKey,
+        (currentJob) =>
+          currentJob?.fittingJobId === fittingJobId
+            ? { ...currentJob, resultViewed: true }
+            : currentJob,
+      );
+      queryClient.setQueryData(
+        fittingTempResultQueryOptions(fittingJobId).queryKey,
+        (result) => result && { ...result, resultViewed: true },
+      );
+    },
   });
 }
 

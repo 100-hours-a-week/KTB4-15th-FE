@@ -1,11 +1,14 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/shared/ui/button";
 import { Header, HeaderTitle } from "@/shared/ui/header";
-import { currentFittingJobQueryOptions } from "../../model/fitting-query";
+import {
+  currentFittingJobQueryOptions,
+  useMarkFittingResultViewedMutation,
+} from "../../model/fitting-query";
 import { clearActiveFittingJobId } from "../../store/active-fitting-job-storage";
 import { clearFittingJobProgress } from "../../store/fitting-job-progress-storage";
 import { FittingProgressView } from "./fitting-progress-view";
@@ -23,7 +26,9 @@ const RESULT_REVEAL_DELAY = 900;
 
 export function FittingJobScreen({ fittingJobId }: FittingJobScreenProps) {
   const router = useRouter();
+  const viewedRequestedJobIdRef = useRef<number | null>(null);
   const { data, isError, isPending } = useQuery(currentFittingJobQueryOptions);
+  const markViewedMutation = useMarkFittingResultViewedMutation();
 
   const handleReturnToFitting = () => {
     clearActiveFittingJobId(fittingJobId);
@@ -37,6 +42,20 @@ export function FittingJobScreen({ fittingJobId }: FittingJobScreenProps) {
       clearFittingJobProgress(fittingJobId);
     }
   }, [data?.status, fittingJobId]);
+
+  useEffect(() => {
+    if (
+      data?.fittingJobId !== fittingJobId ||
+      data.status !== "FAILED" ||
+      data.resultViewed ||
+      viewedRequestedJobIdRef.current === fittingJobId
+    ) {
+      return;
+    }
+
+    viewedRequestedJobIdRef.current = fittingJobId;
+    markViewedMutation.mutate(fittingJobId);
+  }, [data, fittingJobId, markViewedMutation]);
 
   useEffect(() => {
     if (data?.status !== "COMPLETED") return;

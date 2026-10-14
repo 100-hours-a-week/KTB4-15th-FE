@@ -18,6 +18,10 @@ export const fittingJobCreateResponseSchema = z.object({
   status: z.literal("GENERATING"),
 });
 
+export const fittingResultViewedResponseSchema = z.object({
+  fittingJobId: z.number().int().positive(),
+});
+
 export const currentFittingJobResponseSchema = z
   .object({
     fittingJobId: z.number().int().positive(),

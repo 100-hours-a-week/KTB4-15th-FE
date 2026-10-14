@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ApiError, getApiErrorMessage } from "@/shared/api/error";
 import { Button } from "@/shared/ui/button";
@@ -13,6 +13,7 @@ import { showToast } from "@/shared/ui/toast";
 import {
   fittingTempResultQueryOptions,
   useCreateFittingResultMutation,
+  useMarkFittingResultViewedMutation,
 } from "../../model/fitting-query";
 import type { FittingTempResult } from "../../schema/fitting-job";
 import {
@@ -143,7 +144,22 @@ export function FittingTempResultScreen({
 }: {
   fittingJobId: number;
 }) {
+  const viewedRequestedJobIdRef = useRef<number | null>(null);
   const query = useQuery(fittingTempResultQueryOptions(fittingJobId));
+  const markViewedMutation = useMarkFittingResultViewedMutation();
+
+  useEffect(() => {
+    if (
+      !query.data ||
+      query.data.resultViewed ||
+      viewedRequestedJobIdRef.current === fittingJobId
+    ) {
+      return;
+    }
+
+    viewedRequestedJobIdRef.current = fittingJobId;
+    markViewedMutation.mutate(fittingJobId);
+  }, [fittingJobId, markViewedMutation, query.data]);
 
   if (query.isPending || query.isError) {
     return (
