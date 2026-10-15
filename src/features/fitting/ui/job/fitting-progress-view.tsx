@@ -86,10 +86,10 @@ export function FittingProgressView({
         <section className={styles.progressCopy}>
           <h2>
             {memberProfile?.name
-              ? `${memberProfile.name} 님의 체형에 맞춰`
-              : "체형에 맞춰"}
+              ? `${memberProfile.name}님을 위한`
+              : "나를 위한"}
             <br />
-            자연스러운 핏을 짓고 있어요
+            가상 피팅을 준비하고 있어요
           </h2>
         </section>
 

@@ -63,7 +63,9 @@
 }
 
 .progressStatus {
-  margin-top: 24px;
+  width: min(100%, 560px);
+  align-self: center;
+  margin-top: 22px;
 }
 
 .progressMeta {
@@ -72,29 +74,19 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  color: var(--color-text-secondary);
-
-  > span::before {
-    display: inline-block;
-    width: 6px;
-    height: 6px;
-    margin-right: 6px;
-    border-radius: var(--radius-full);
-    background: var(--color-green-700);
-    content: "";
-    vertical-align: 1px;
-  }
+  color: var(--color-text-primary);
 
   strong {
     color: var(--color-text-brand);
     font-weight: var(--font-weight-bold);
+    font-variant-numeric: tabular-nums;
   }
 }
 
 .progressTrack {
   overflow: hidden;
-  height: 7px;
-  margin-top: 8px;
+  height: 6px;
+  margin-top: 10px;
   border-radius: var(--radius-full);
   background: var(--color-gray-200);
 
