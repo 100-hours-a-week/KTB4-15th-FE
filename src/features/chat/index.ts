@@ -1,4 +1,5 @@
-export { ChatScreen } from "./chat-screen";
+export { ChatRoomScreen } from "./chat-room-screen";
+export { NewChatScreen } from "./new-chat-screen";
 export { ChatHeader } from "./ui/header/chat-header";
 export { ChatComposer } from "./ui/composer/chat-composer";
 export type { ChatComposerProps } from "./ui/composer/chat-composer";

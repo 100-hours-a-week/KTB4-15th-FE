@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { ChatHeader, ChatScreen } from "@/features/chat";
+import { ChatHeader, ChatRoomScreen } from "@/features/chat";
 import styles from "../page.module.scss";
 
 export default async function ChatRoomPage({
@@ -16,7 +16,7 @@ export default async function ChatRoomPage({
     <>
       <ChatHeader />
       <main className={styles.main}>
-        <ChatScreen chatRoomId={chatRoomId} />
+        <ChatRoomScreen chatRoomId={chatRoomId} />
       </main>
     </>
   );

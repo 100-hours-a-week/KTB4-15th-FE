@@ -96,7 +96,8 @@ AI Message의 Recommendation은 하나 이상의 추천 상품을 포함할 수 
 
 - `src/features/chat/api`: 채팅 API
 - `src/features/chat/schema`: 메시지, 추천 상품과 대화 Schema
-- `src/features/chat/chat-screen.tsx`: 메시지 조회·전송·Polling 흐름
+- `src/features/chat/new-chat-screen.tsx`: 신규 채팅 생성 흐름
+- `src/features/chat/chat-room-screen.tsx`: 채팅방 조회·전송·Polling 흐름
 - `src/features/chat/ui/sidebar`: 대화 목록과 관리
 - `src/features/chat/ui/product`: 추천 상품과 피팅 연동
 - `src/app/(service)/chat`: 채팅 Route
