@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { productItemTypeSchema } from "@/shared/schema/product";
 import { fittingResultProductSchema } from "./fitting-result";
 
 export const fittingJobCreateRequestSchema = z
@@ -17,22 +18,40 @@ export const fittingJobCreateResponseSchema = z.object({
   status: z.literal("GENERATING"),
 });
 
-const fittingResultSchema = z.object({
-  resultImageUrl: z.string(),
-  outfitName: z.string(),
-  comment: z.string(),
-  products: z.array(fittingResultProductSchema),
+export const fittingResultViewedResponseSchema = z.object({
+  fittingJobId: z.number().int().positive(),
 });
 
-export const fittingJobStatusResponseSchema = z.object({
+export const currentFittingJobResponseSchema = z
+  .object({
+    fittingJobId: z.number().int().positive(),
+    status: z.enum(["GENERATING", "COMPLETED", "FAILED"]),
+    resultViewed: z.boolean(),
+    products: z.array(
+      z.object({
+        productId: z.number().int().positive(),
+        itemType: productItemTypeSchema,
+        productName: z.string(),
+        productImageUrl: z.string(),
+      }),
+    ),
+  })
+  .nullable();
+
+export const fittingTempResultResponseSchema = z.object({
   fittingJobId: z.number().int().positive(),
-  status: z.enum(["GENERATING", "COMPLETED", "FAILED"]),
-  result: fittingResultSchema.nullable(),
+  resultViewed: z.boolean(),
+  saved: z.boolean(),
+  fittingResultId: z.number().int().positive().nullable(),
+  resultImageUrl: z.string(),
+  outfitName: z.string(),
+  comment: z.string().nullable(),
+  products: z.array(
+    fittingResultProductSchema.extend({ purchaseUrl: z.string().nullable() }),
+  ),
 });
 
 export type FittingJobCreateRequest = z.infer<
   typeof fittingJobCreateRequestSchema
 >;
-export type FittingJobStatusResponse = z.infer<
-  typeof fittingJobStatusResponseSchema
->;
+export type FittingTempResult = z.infer<typeof fittingTempResultResponseSchema>;

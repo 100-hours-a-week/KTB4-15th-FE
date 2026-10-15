@@ -1,16 +1,17 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/shared/ui/button";
-import { Header, HeaderIconLink, HeaderTitle } from "@/shared/ui/header";
-import { BackIcon } from "@/shared/ui/icon";
-import { fittingJobQueryOptions } from "../../model/fitting-query";
+import { Header, HeaderTitle } from "@/shared/ui/header";
+import {
+  currentFittingJobQueryOptions,
+  useMarkFittingResultViewedMutation,
+} from "../../model/fitting-query";
 import { clearActiveFittingJobId } from "../../store/active-fitting-job-storage";
 import { clearFittingJobProgress } from "../../store/fitting-job-progress-storage";
 import { FittingProgressView } from "./fitting-progress-view";
-import { FittingResultView } from "../result/fitting-result-view";
 import styles from "./fitting-job-screen.module.scss";
 
 type FittingJobScreenProps = {
@@ -25,10 +26,9 @@ const RESULT_REVEAL_DELAY = 900;
 
 export function FittingJobScreen({ fittingJobId }: FittingJobScreenProps) {
   const router = useRouter();
-  const { data, isError, isPending } = useQuery(
-    fittingJobQueryOptions(fittingJobId),
-  );
-  const [isResultReady, setIsResultReady] = useState(false);
+  const viewedRequestedJobIdRef = useRef<number | null>(null);
+  const { data, isError, isPending } = useQuery(currentFittingJobQueryOptions);
+  const markViewedMutation = useMarkFittingResultViewedMutation();
 
   const handleReturnToFitting = () => {
     clearActiveFittingJobId(fittingJobId);
@@ -44,16 +44,30 @@ export function FittingJobScreen({ fittingJobId }: FittingJobScreenProps) {
   }, [data?.status, fittingJobId]);
 
   useEffect(() => {
+    if (
+      data?.fittingJobId !== fittingJobId ||
+      data.status !== "FAILED" ||
+      data.resultViewed ||
+      viewedRequestedJobIdRef.current === fittingJobId
+    ) {
+      return;
+    }
+
+    viewedRequestedJobIdRef.current = fittingJobId;
+    markViewedMutation.mutate(fittingJobId);
+  }, [data, fittingJobId, markViewedMutation]);
+
+  useEffect(() => {
     if (data?.status !== "COMPLETED") return;
 
     clearActiveFittingJobId(fittingJobId);
     const timer = window.setTimeout(() => {
-      setIsResultReady(true);
       clearFittingJobProgress(fittingJobId);
+      router.replace(`/fitting/jobs/${fittingJobId}/result`);
     }, RESULT_REVEAL_DELAY);
 
     return () => window.clearTimeout(timer);
-  }, [data?.status, fittingJobId]);
+  }, [data?.status, fittingJobId, router]);
 
   if (isPending) {
     return (
@@ -61,7 +75,7 @@ export function FittingJobScreen({ fittingJobId }: FittingJobScreenProps) {
     );
   }
 
-  if (isError) {
+  if (isError || !data || data.fittingJobId !== fittingJobId) {
     return (
       <>
         <ProgressHeader />
@@ -93,22 +107,6 @@ export function FittingJobScreen({ fittingJobId }: FittingJobScreenProps) {
             피팅 홈으로 이동
           </Button>
         </main>
-      </>
-    );
-  }
-
-  if (data.status === "COMPLETED" && data.result && isResultReady) {
-    return (
-      <>
-        <Header
-          center={<HeaderTitle>가상 피팅 결과</HeaderTitle>}
-          left={
-            <HeaderIconLink aria-label="피팅으로 돌아가기" href="/fitting">
-              <BackIcon />
-            </HeaderIconLink>
-          }
-        />
-        <FittingResultView fittingJobId={fittingJobId} result={data.result} />
       </>
     );
   }

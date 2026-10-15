@@ -16,8 +16,11 @@ type MockProfileUpdate = Partial<
   fullBodyImageValidationId?: number;
 };
 
-let profileCompleted = false;
+let profileCompleted = true;
 let validatedFullBodyImageUrl: string | null = null;
+let fittingResultSaved = false;
+let fittingResultViewed = false;
+let fittingResultOutfitName = "가을 출근 니트 룩";
 let profile: MockProfile = {
   age: null,
   email: "mock@lookddak.com",
@@ -173,5 +176,201 @@ export const handlers: RequestHandler[] = [
     };
 
     return success(null);
+  }),
+
+  http.get("*/fitting-jobs/current", () => {
+    const mockStatus =
+      typeof window === "undefined"
+        ? "GENERATING"
+        : new URLSearchParams(window.location.search).get("mockStatus");
+    const status =
+      mockStatus === "FAILED" || mockStatus === "COMPLETED"
+        ? mockStatus
+        : "GENERATING";
+
+    return HttpResponse.json({
+      code: "FITTING_CURRENT_JOB_FOUND",
+      data: {
+        fittingJobId: 123,
+        status,
+        resultViewed: fittingResultViewed,
+        products: [
+          {
+            productId: 101,
+            itemType: "TOP",
+            productName: "에센셜 램스울 크루넥",
+            productImageUrl: "/images/onboarding/virtual-fitting.png",
+          },
+          {
+            productId: 205,
+            itemType: "BOTTOM",
+            productName: "모던 테이퍼드 슬랙스",
+            productImageUrl: "/images/onboarding/virtual-fitting.png",
+          },
+        ],
+      },
+      message: "최근 가상피팅 작업을 조회했습니다.",
+    });
+  }),
+
+  http.get("*/fitting-jobs/:fittingJobId/result", ({ params }) => {
+    if (params.fittingJobId !== "123") {
+      return HttpResponse.json(
+        {
+          code: "FITTING_JOB_NOT_FOUND",
+          data: null,
+          message: "가상피팅 요청 정보를 찾을 수 없습니다.",
+        },
+        { status: 404 },
+      );
+    }
+
+    return HttpResponse.json({
+      code: "FITTING_TEMP_RESULT_GET_SUCCESS",
+      data: {
+        fittingJobId: 123,
+        resultViewed: fittingResultViewed,
+        saved: fittingResultSaved,
+        fittingResultId: fittingResultSaved ? 456 : null,
+        resultImageUrl: "/images/profile/full-body-example.png",
+        outfitName: fittingResultOutfitName,
+        comment:
+          "선택한 상·하의 조합이 자연스럽게 어우러져 데일리와 출근용으로 활용하기 좋아요.",
+        products: [
+          {
+            productId: 101,
+            itemType: "TOP",
+            productName: "에센셜 램스울 크루넥",
+            productImageUrl: "/images/onboarding/virtual-fitting.png",
+            purchaseUrl: "https://shop.example.com/products/101",
+          },
+          {
+            productId: 205,
+            itemType: "BOTTOM",
+            productName: "모던 테이퍼드 슬랙스",
+            productImageUrl: "/images/onboarding/virtual-fitting.png",
+            purchaseUrl: "https://shop.example.com/products/205",
+          },
+        ],
+        expiresAt: "2026-10-14T16:30:00",
+      },
+      message: "가상피팅 결과를 조회했습니다.",
+    });
+  }),
+
+  http.patch("*/fitting-jobs/:fittingJobId/result/viewed", ({ params }) => {
+    if (params.fittingJobId !== "123") {
+      return HttpResponse.json(
+        {
+          code: "FITTING_JOB_NOT_FOUND",
+          data: null,
+          message: "가상피팅 요청 정보를 찾을 수 없습니다.",
+        },
+        { status: 404 },
+      );
+    }
+
+    fittingResultViewed = true;
+
+    return HttpResponse.json({
+      code: "OK",
+      data: { fittingJobId: 123 },
+      message: "가상피팅 결과를 확인 처리했습니다.",
+    });
+  }),
+
+  http.post("*/fitting-results", async ({ request }) => {
+    const body = (await request.json()) as {
+      fittingJobId?: number;
+      outfitName?: string;
+    };
+
+    if (body.fittingJobId !== 123 || !body.outfitName?.trim()) {
+      return HttpResponse.json(
+        {
+          code: "INVALID_FITTING_RESULT_REQUEST",
+          data: null,
+          message: "저장할 가상피팅 결과 정보가 올바르지 않습니다.",
+        },
+        { status: 400 },
+      );
+    }
+
+    fittingResultSaved = true;
+    fittingResultOutfitName = body.outfitName.trim();
+
+    return HttpResponse.json({
+      code: "FITTING_RESULT_CREATE_SUCCESS",
+      data: {
+        fittingResultId: 456,
+        outfitName: fittingResultOutfitName,
+      },
+      message: "가상피팅 결과를 저장했습니다.",
+    });
+  }),
+
+  http.get("*/fitting-results/:fittingResultId", ({ params }) => {
+    if (!fittingResultSaved || params.fittingResultId !== "456") {
+      return HttpResponse.json(
+        {
+          code: "FITTING_RESULT_NOT_FOUND",
+          data: null,
+          message: "저장된 가상피팅 결과를 찾을 수 없습니다.",
+        },
+        { status: 404 },
+      );
+    }
+
+    return HttpResponse.json({
+      code: "FITTING_RESULT_GET_SUCCESS",
+      data: {
+        fittingResultId: 456,
+        resultImageUrl: "/images/profile/full-body-example.png",
+        outfitName: fittingResultOutfitName,
+        comment:
+          "선택한 상·하의 조합이 자연스럽게 어우러져 데일리와 출근용으로 활용하기 좋아요.",
+        products: [
+          {
+            productId: 101,
+            itemType: "TOP",
+            productName: "에센셜 램스울 크루넥",
+            productImageUrl: "/images/onboarding/virtual-fitting.png",
+            purchaseUrl: "https://shop.example.com/products/101",
+          },
+          {
+            productId: 205,
+            itemType: "BOTTOM",
+            productName: "모던 테이퍼드 슬랙스",
+            productImageUrl: "/images/onboarding/virtual-fitting.png",
+            purchaseUrl: "https://shop.example.com/products/205",
+          },
+        ],
+      },
+      message: "저장된 가상피팅 결과를 조회했습니다.",
+    });
+  }),
+
+  http.get("*/fitting-results", () => {
+    const items = fittingResultSaved
+      ? [
+          {
+            fittingResultId: 456,
+            resultImageUrl: "/images/profile/full-body-example.png",
+            outfitName: fittingResultOutfitName,
+            savedAt: "2026-10-14T10:00:00",
+          },
+        ]
+      : [];
+
+    return HttpResponse.json({
+      code: "FITTING_RESULT_LIST_GET_SUCCESS",
+      data: {
+        items,
+        totalCount: items.length,
+        nextCursor: null,
+        hasNext: false,
+      },
+      message: "저장된 가상피팅 결과 목록을 조회했습니다.",
+    });
   }),
 ];
