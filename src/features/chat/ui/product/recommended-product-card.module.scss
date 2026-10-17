@@ -111,7 +111,10 @@
 .productLink,
 .fittingButton,
 .fittingLink {
+  height: var(--control-height-large);
   padding: 0 var(--space-md);
+  text-align: center;
+  white-space: nowrap;
 }
 
 .productLink,
