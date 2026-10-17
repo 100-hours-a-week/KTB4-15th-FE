@@ -90,6 +90,47 @@ const rankingItems = {
 } as const;
 
 export const handlers: RequestHandler[] = [
+  http.get("*/notifications", () => {
+    const empty =
+      typeof window !== "undefined" &&
+      new URLSearchParams(window.location.search).get("mockNotifications") ===
+        "empty";
+
+    return HttpResponse.json({
+      code: "NOTIFICATION_LIST_GET_SUCCESS",
+      data: {
+        items: empty
+          ? []
+          : [
+              {
+                notificationId: 52,
+                type: "FITTING_SUCCESS",
+                isRead: false,
+                targetType: "FITTING_JOB",
+                targetId: 123,
+                payload: { outfitName: "가을 출근 니트 룩" },
+                createdAt: "2026-10-16T17:20:00",
+              },
+              {
+                notificationId: 51,
+                type: "FITTING_FAIL",
+                isRead: true,
+                targetType: "FITTING_JOB",
+                targetId: 122,
+                payload: {},
+                createdAt: "2026-10-16T16:10:00",
+              },
+            ],
+        unreadCount: empty ? 0 : 1,
+        nextCursor: null,
+        hasNext: false,
+      },
+      message: empty
+        ? "알림 목록이 비어 있습니다."
+        : "알림 목록을 조회했습니다.",
+    });
+  }),
+
   http.get("*/products/rankings", ({ request }) => {
     const type = new URL(request.url).searchParams.get("type");
 
