@@ -16,11 +16,16 @@ export function AIChatMessageLoading() {
         className={styles.avatar}
         src={aiImage}
       />
-      <span aria-hidden="true" className={styles.bubble}>
-        <span className={styles.dot} />
-        <span className={styles.dot} />
-        <span className={styles.dot} />
-      </span>
+      <div className={styles.content}>
+        <div className={styles.meta}>
+          <strong className={styles.name}>AI 스타일리스트</strong>
+        </div>
+        <span aria-hidden="true" className={styles.bubble}>
+          <span className={styles.dot} />
+          <span className={styles.dot} />
+          <span className={styles.dot} />
+        </span>
+      </div>
     </div>
   );
 }

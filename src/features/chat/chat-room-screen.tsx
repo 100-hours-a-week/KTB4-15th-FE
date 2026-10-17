@@ -1,10 +1,10 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import {
-  useChatMessageGenerationStatusQuery,
+  useChatMessageStream,
   useSendChatMessageMutation,
 } from "./model/chat-message-query";
 import { chatRoomQueryOptions } from "./model/chat-room-query";
@@ -38,22 +38,30 @@ export function ChatRoomScreen({ chatRoomId }: { chatRoomId: number }) {
     messages.findLast(
       (message) =>
         message.senderType === "USER" &&
-        message.generationStatus === "GENERATING",
+        (message.generationStatus === "PENDING" ||
+          message.generationStatus === "GENERATING"),
     )?.messageId ?? null;
 
-  const chatMessageGenerationStatusQuery = useChatMessageGenerationStatusQuery(
+  const chatMessageStream = useChatMessageStream(
     chatRoomId,
     generatingMessageId,
   );
+
+  useEffect(() => {
+    if (chatMessageStream.error == null) {
+      return;
+    }
+
+    showToast.error(chatMessageStream.error.message, {
+      id: "chat-message-stream",
+    });
+  }, [chatMessageStream.error]);
 
   const handleLoadPreviousMessages = async () => {
     await chatRoomQuery.fetchNextPage();
   };
 
-  const isGenerating =
-    generatingMessageId != null &&
-    chatMessageGenerationStatusQuery.data?.generationStatus !== "COMPLETED" &&
-    chatMessageGenerationStatusQuery.data?.generationStatus !== "FAILED";
+  const isGenerating = generatingMessageId != null;
 
   const handleSubmit = async (content: string) => {
     if (submissionLockRef.current || isGenerating) {
@@ -137,6 +145,7 @@ export function ChatRoomScreen({ chatRoomId }: { chatRoomId: number }) {
         messages={messages}
         onLoadPreviousMessages={handleLoadPreviousMessages}
         onRetryMessage={handleRetry}
+        streamingContent={chatMessageStream.content}
       />
       <div
         className={`${styles.composerDock} ${
