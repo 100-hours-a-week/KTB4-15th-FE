@@ -1,6 +1,7 @@
 "use client";
 
 import Image, { type ImageLoaderProps } from "next/image";
+import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useFullBodyPhoto } from "@/features/profile/hooks/use-full-body-photo";
 import {
@@ -9,7 +10,9 @@ import {
 } from "@/features/profile/model/member-profile-query";
 import { getApiErrorMessage } from "@/shared/api/error";
 import { Button } from "@/shared/ui/button";
+import { Dialog, DialogDescription, DialogTitle } from "@/shared/ui/dialog";
 import { RefreshIcon } from "@/shared/ui/icon";
+import { LoadingDots } from "@/shared/ui/loading-message";
 import { showToast } from "@/shared/ui/toast";
 import styles from "./fitting-full-body-photo-section.module.scss";
 
@@ -54,6 +57,18 @@ export function FittingFullBodyPhotoSection() {
   const fullBodyImageUrl = memberProfile?.fullBodyImageUrl;
   const isPhotoPending = isValidationPending || updatePhotoMutation.isPending;
 
+  useEffect(() => {
+    if (!isPhotoPending) return;
+
+    const preventPageExit = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = true;
+    };
+
+    window.addEventListener("beforeunload", preventPageExit);
+    return () => window.removeEventListener("beforeunload", preventPageExit);
+  }, [isPhotoPending]);
+
   return (
     <section aria-label="내 전신 사진" className={styles.photoSection}>
       <div className={styles.card}>
@@ -65,7 +80,7 @@ export function FittingFullBodyPhotoSection() {
               className={styles.imageBackdrop}
               fill
               loader={passthroughImageLoader}
-              sizes="(max-width: 480px) calc(100vw - 40px), 380px"
+              sizes="(max-width: 480px) calc(100vw - 40px), 320px"
               src={fullBodyImageUrl}
             />
             <Image
@@ -74,7 +89,7 @@ export function FittingFullBodyPhotoSection() {
               fill
               loader={passthroughImageLoader}
               loading="eager"
-              sizes="(max-width: 480px) calc(100vw - 40px), 380px"
+              sizes="(max-width: 480px) calc(100vw - 40px), 320px"
               src={fullBodyImageUrl}
             />
           </>
@@ -109,6 +124,22 @@ export function FittingFullBodyPhotoSection() {
       >
         {displayedErrorMessage}
       </p>
+      <Dialog
+        aria-busy="true"
+        className={styles.processingDialog}
+        onEscapeKeyDown={(event) => event.preventDefault()}
+        onOpenChange={() => undefined}
+        onPointerDownOutside={(event) => event.preventDefault()}
+        open={isPhotoPending}
+      >
+        <DialogTitle className={styles.processingTitle}>
+          사진을 확인하고 있어요
+          <LoadingDots />
+        </DialogTitle>
+        <DialogDescription className={styles.processingDescription}>
+          처리가 끝날 때까지 이 화면에서 잠시만 기다려 주세요.
+        </DialogDescription>
+      </Dialog>
     </section>
   );
 }

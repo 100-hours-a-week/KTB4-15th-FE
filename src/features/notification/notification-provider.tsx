@@ -51,6 +51,9 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
           void queryClient.invalidateQueries({
             queryKey: fittingQueryKeys.currentJob,
           });
+          void queryClient.invalidateQueries({
+            queryKey: fittingQueryKeys.job(event.fittingJobId),
+          });
           const fittingJobPath = `/fitting/jobs/${event.fittingJobId}`;
           const isCurrentFittingJobPage =
             pathnameRef.current === fittingJobPath ||

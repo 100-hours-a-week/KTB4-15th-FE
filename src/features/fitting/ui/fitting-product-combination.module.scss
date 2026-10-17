@@ -16,6 +16,17 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--space-xs);
+
+  &:has(.productCard:only-child) {
+    grid-template-columns: minmax(0, 1fr);
+
+    strong {
+      overflow: visible;
+      overflow-wrap: anywhere;
+      text-overflow: clip;
+      white-space: normal;
+    }
+  }
 }
 
 .productCard {
@@ -54,8 +65,8 @@
 .productImageArea {
   position: relative;
   overflow: hidden;
-  width: 48px;
-  height: 48px;
+  width: 40px;
+  height: 40px;
   border-radius: var(--radius-small);
   background: var(--color-gray-100);
 }

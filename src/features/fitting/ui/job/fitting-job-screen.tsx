@@ -1,12 +1,14 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { getApiErrorMessage } from "@/shared/api/error";
 import { Button } from "@/shared/ui/button";
 import { Header, HeaderTitle } from "@/shared/ui/header";
+import { showToast } from "@/shared/ui/toast";
 import {
-  currentFittingJobQueryOptions,
+  fittingJobQueryOptions,
   useMarkFittingResultViewedMutation,
 } from "../../model/fitting-query";
 import { clearActiveFittingJobId } from "../../store/active-fitting-job-storage";
@@ -26,36 +28,28 @@ const RESULT_REVEAL_DELAY = 900;
 
 export function FittingJobScreen({ fittingJobId }: FittingJobScreenProps) {
   const router = useRouter();
-  const viewedRequestedJobIdRef = useRef<number | null>(null);
-  const { data, isError, isPending } = useQuery(currentFittingJobQueryOptions);
+  const { data, isError, isPending } = useQuery(
+    fittingJobQueryOptions(fittingJobId),
+  );
   const markViewedMutation = useMarkFittingResultViewedMutation();
 
-  const handleReturnToFitting = () => {
+  const handleReturnToFitting = async () => {
+    if (data?.fittingJobId === fittingJobId && data.status === "FAILED") {
+      try {
+        await markViewedMutation.mutateAsync(fittingJobId);
+      } catch (error) {
+        showToast.error(
+          getApiErrorMessage(error, "실패한 피팅 작업을 정리하지 못했어요."),
+          { id: "mark-failed-fitting-viewed" },
+        );
+        return;
+      }
+    }
+
     clearActiveFittingJobId(fittingJobId);
     clearFittingJobProgress(fittingJobId);
     router.replace("/fitting");
   };
-
-  useEffect(() => {
-    if (data?.fittingJobId === fittingJobId && data.status === "FAILED") {
-      clearActiveFittingJobId(fittingJobId);
-      clearFittingJobProgress(fittingJobId);
-    }
-  }, [data?.fittingJobId, data?.status, fittingJobId]);
-
-  useEffect(() => {
-    if (
-      data?.fittingJobId !== fittingJobId ||
-      data.status !== "FAILED" ||
-      data.resultViewed ||
-      viewedRequestedJobIdRef.current === fittingJobId
-    ) {
-      return;
-    }
-
-    viewedRequestedJobIdRef.current = fittingJobId;
-    markViewedMutation.mutate(fittingJobId);
-  }, [data, fittingJobId, markViewedMutation]);
 
   useEffect(() => {
     if (data?.fittingJobId !== fittingJobId || data.status !== "COMPLETED") {
@@ -86,7 +80,7 @@ export function FittingJobScreen({ fittingJobId }: FittingJobScreenProps) {
           <p>잠시 후 다시 시도해 주세요.</p>
           <Button
             className={styles.recoveryButton}
-            onClick={handleReturnToFitting}
+            onClick={() => void handleReturnToFitting()}
           >
             피팅 홈으로 이동
           </Button>
@@ -104,7 +98,8 @@ export function FittingJobScreen({ fittingJobId }: FittingJobScreenProps) {
           <p>피팅 홈에서 다시 시도해 주세요.</p>
           <Button
             className={styles.recoveryButton}
-            onClick={handleReturnToFitting}
+            isLoading={markViewedMutation.isPending}
+            onClick={() => void handleReturnToFitting()}
           >
             피팅 홈으로 이동
           </Button>

@@ -3,8 +3,11 @@
 import Image, { type ImageLoaderProps } from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { memberProfileQueryOptions } from "@/features/profile";
+import { useIsMutating, useMutation, useQuery } from "@tanstack/react-query";
+import {
+  fullBodyImageMutationKey,
+  memberProfileQueryOptions,
+} from "@/features/profile";
 import { ApiError } from "@/shared/api/error";
 import type { ProductItemType } from "@/shared/schema/product";
 import { Button } from "@/shared/ui/button";
@@ -103,7 +106,10 @@ export function FittingOutfitSection() {
   );
   const selectedCount = Number(Boolean(top)) + Number(Boolean(bottom));
   const hasFullBodyImage = Boolean(memberProfile?.fullBodyImageUrl);
-  const canStart = selectedCount > 0 && hasFullBodyImage;
+  const isFullBodyImagePending =
+    useIsMutating({ mutationKey: fullBodyImageMutationKey }) > 0;
+  const canStart =
+    selectedCount > 0 && hasFullBodyImage && !isFullBodyImagePending;
 
   const createFittingJobMutation = useMutation({
     mutationFn: createFittingJob,
@@ -117,7 +123,7 @@ export function FittingOutfitSection() {
       const message =
         error instanceof ApiError &&
         error.code === "FITTING_REQUEST_LIMIT_EXCEEDED"
-          ? "가상 피팅 요청 횟수(최대 10회)를 모두 사용했어요."
+          ? "오늘 가능한 가상 피팅 요청 횟수(최대 25회)를 모두 사용했어요."
           : "피팅 요청을 시작하지 못했어요. 잠시 후 다시 시도해 주세요.";
 
       showToast.error(message, { id: "create-fitting-job" });
@@ -125,7 +131,8 @@ export function FittingOutfitSection() {
   });
 
   const handleStartFitting = () => {
-    if ((!top && !bottom) || !hasFullBodyImage) return;
+    if ((!top && !bottom) || !hasFullBodyImage || isFullBodyImagePending)
+      return;
 
     createFittingJobMutation.mutate({
       ...(top && { topProductId: top.productId }),

@@ -81,7 +81,7 @@ export function FittingResultListScreen() {
                   className={styles.image}
                   fill
                   loader={passthroughImageLoader}
-                  sizes="(max-width: 520px) calc(100vw - 40px), 480px"
+                  sizes="(max-width: 520px) calc(50vw - 28px), 232px"
                   src={result.resultImageUrl}
                 />
               </div>
