@@ -12,10 +12,12 @@ export function FittingEntryRedirect({ children }: { children: ReactNode }) {
   );
 
   useEffect(() => {
-    if (fittingJob) {
+    if (fittingJob && !fittingJob.resultViewed) {
       router.replace(`/fitting/jobs/${fittingJob.fittingJobId}`);
     }
   }, [fittingJob, router]);
 
-  return isPending || fittingJob ? null : children;
+  return isPending || (fittingJob && !fittingJob.resultViewed)
+    ? null
+    : children;
 }
