@@ -20,11 +20,15 @@ export function ChatRoomListButton({ onClick }: ChatRoomListButtonProps) {
   );
 }
 
-export function NotificationLink() {
+export function NotificationLink({
+  hasUnread = false,
+}: {
+  hasUnread?: boolean;
+}) {
   return (
     <HeaderIconLink
-      aria-label="알림으로 이동, 새 알림 있음"
-      className={styles.notification}
+      aria-label={hasUnread ? "알림으로 이동, 새 알림 있음" : "알림으로 이동"}
+      className={hasUnread ? styles.notification : undefined}
       href="/notifications"
     >
       <NotificationIcon />
