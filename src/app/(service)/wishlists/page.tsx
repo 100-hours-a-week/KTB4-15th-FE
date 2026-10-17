@@ -1,11 +1,13 @@
 import { WishlistScreen } from "@/features/wishlist";
-import { Header } from "@/shared/ui/header/header";
-import { HeaderTitle } from "@/shared/ui/header/header-title";
+import { Header, HeaderTitle, NotificationLink } from "@/shared/ui/header";
 
 export default function WishlistsPage() {
   return (
     <>
-      <Header left={<HeaderTitle>찜</HeaderTitle>} />
+      <Header
+        left={<HeaderTitle>찜</HeaderTitle>}
+        right={<NotificationLink />}
+      />
       <WishlistScreen />
     </>
   );

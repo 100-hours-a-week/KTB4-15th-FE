@@ -16,7 +16,8 @@ function hasNavigation(pathname: string) {
     pathname === "/fitting" ||
     pathname === "/wishlists" ||
     pathname === "/ranking" ||
-    pathname === "/mypage"
+    pathname === "/mypage" ||
+    pathname === "/notifications"
   );
 }
 

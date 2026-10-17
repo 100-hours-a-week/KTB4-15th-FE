@@ -1,0 +1,131 @@
+@use "@/styles/typography" as type;
+
+.screen {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100dvh - var(--header-height) - var(--navigation-height));
+  padding-block: var(--space-xl)
+    calc(
+      var(--navigation-height) + env(safe-area-inset-bottom) + var(--space-xl)
+    );
+}
+
+.toolbar {
+  @include type.body-medium;
+
+  display: flex;
+  min-height: var(--control-height);
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-md);
+  color: var(--color-text-secondary);
+
+  button {
+    margin-right: calc(var(--space-md) * -1);
+  }
+}
+
+.retentionNotice {
+  @include type.caption;
+
+  margin: auto 0 0;
+  padding-top: var(--space-2xl);
+  color: var(--color-text-placeholder);
+  text-align: center;
+}
+
+.list {
+  display: grid;
+  gap: var(--space-lg);
+}
+
+.card {
+  display: block;
+  padding: var(--space-xl);
+  color: inherit;
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-large);
+  background: var(--color-background-surface);
+  text-decoration: none;
+}
+
+.cardHeader,
+.cardFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+}
+
+.successBadge,
+.failureBadge {
+  @include type.caption;
+
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-xs) var(--space-md);
+  border: 1px solid;
+  border-radius: var(--radius-full);
+  font-weight: var(--font-weight-semibold);
+}
+
+.successBadge {
+  color: var(--color-green-700);
+  border-color: var(--color-green-200);
+  background: var(--color-green-50);
+}
+
+.failureBadge {
+  color: var(--color-red-700);
+  border-color: color-mix(
+    in srgb,
+    var(--color-red-300) 60%,
+    var(--color-white)
+  );
+  background: color-mix(in srgb, var(--color-red-600) 7%, var(--color-white));
+}
+
+.readState,
+.cardFooter time {
+  @include type.caption;
+
+  flex: none;
+  color: var(--color-text-secondary);
+}
+
+.message {
+  @include type.label;
+
+  margin: var(--space-lg) 0;
+  font-weight: var(--font-weight-semibold);
+}
+
+.cardFooter {
+  min-height: 33px;
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--color-border-default);
+}
+
+.action {
+  @include type.label;
+
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-semibold);
+}
+
+.state {
+  @include type.body-medium;
+
+  display: grid;
+  min-height: 240px;
+  place-content: center;
+  justify-items: center;
+  gap: var(--space-md);
+  margin: 0;
+  color: var(--color-text-secondary);
+  text-align: center;
+
+  p {
+    margin: 0;
+  }
+}
