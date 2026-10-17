@@ -94,11 +94,12 @@ jobs:
         with:
           context: .
           push: true
-          # NEXT_PUBLIC_API_BASE_URL은 develop Environment의 dev 주소로 빌드된다.
+          # 동일한 dev 이미지를 V1과 V2에서 함께 사용할 수 있도록
+          # 브라우저 API 주소는 현재 접속한 호스트를 따르는 상대 경로로 빌드한다.
           # Clarity·Sentry 값은 넘기지 않는다 (dev 트래픽이 운영 분석·에러 집계에 섞이지 않게).
           # SENTRY_AUTH_TOKEN이 없으므로 Dockerfile이 소스맵 업로드를 건너뛴다.
           build-args: |
-            NEXT_PUBLIC_API_BASE_URL=${{ vars.NEXT_PUBLIC_API_BASE_URL }}
+            NEXT_PUBLIC_API_BASE_URL=/api/v1/
           tags: ${{ steps.ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ steps.vars.outputs.tag }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
