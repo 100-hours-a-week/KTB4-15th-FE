@@ -2,7 +2,7 @@
 
 import Image, { type ImageLoaderProps } from "next/image";
 import Link from "next/link";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, ViewTransition } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Button } from "@/shared/ui/button";
 import { LoadingMessage } from "@/shared/ui/loading-message";
@@ -75,16 +75,22 @@ export function FittingResultListScreen() {
               href={`/fitting-results/${result.fittingResultId}`}
               key={result.fittingResultId}
             >
-              <div className={styles.imageArea}>
-                <Image
-                  alt={`${result.outfitName} 가상 피팅 결과`}
-                  className={styles.image}
-                  fill
-                  loader={passthroughImageLoader}
-                  sizes="(max-width: 520px) calc(100vw - 40px), 480px"
-                  src={result.resultImageUrl}
-                />
-              </div>
+              <ViewTransition
+                default="none"
+                name={`fitting-result-${result.fittingResultId}`}
+                share="fitting-result"
+              >
+                <div className={styles.imageArea}>
+                  <Image
+                    alt={`${result.outfitName} 가상 피팅 결과`}
+                    className={styles.image}
+                    fill
+                    loader={passthroughImageLoader}
+                    sizes="(max-width: 520px) calc(50vw - 28px), 232px"
+                    src={result.resultImageUrl}
+                  />
+                </div>
+              </ViewTransition>
               <div className={styles.cardBody}>
                 <time dateTime={result.savedAt}>
                   {formatKoreanNumericDateTime(result.savedAt)}

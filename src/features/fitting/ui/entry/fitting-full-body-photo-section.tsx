@@ -65,7 +65,7 @@ export function FittingFullBodyPhotoSection() {
               className={styles.imageBackdrop}
               fill
               loader={passthroughImageLoader}
-              sizes="(max-width: 480px) calc(100vw - 40px), 380px"
+              sizes="(max-width: 480px) calc(100vw - 40px), 320px"
               src={fullBodyImageUrl}
             />
             <Image
@@ -74,7 +74,7 @@ export function FittingFullBodyPhotoSection() {
               fill
               loader={passthroughImageLoader}
               loading="eager"
-              sizes="(max-width: 480px) calc(100vw - 40px), 380px"
+              sizes="(max-width: 480px) calc(100vw - 40px), 320px"
               src={fullBodyImageUrl}
             />
           </>
