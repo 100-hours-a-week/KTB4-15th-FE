@@ -25,10 +25,7 @@ function showSendChatMessageError(error: Error) {
           "메시지를 보내지 못했어요. 다시 시도해 주세요.",
         );
 
-  showToast.error(
-    message,
-    { id: "send-chat-message" },
-  );
+  showToast.error(message, { id: "send-chat-message" });
 }
 
 export function ChatRoomScreen({ chatRoomId }: { chatRoomId: number }) {
