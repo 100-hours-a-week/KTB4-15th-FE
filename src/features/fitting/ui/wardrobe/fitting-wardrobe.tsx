@@ -176,6 +176,16 @@ export function FittingWardrobe({ initialFilter }: FittingWardrobeProps) {
     visibleCandidateIds.length > 0 &&
     visibleCandidateIds.every((id) => selectedForDelete.has(id));
 
+  const changeFilter = (nextFilter: WardrobeFilter) => {
+    setFilter(nextFilter);
+    router.replace(
+      nextFilter === "ALL"
+        ? "/fitting/wardrobe"
+        : `/fitting/wardrobe?itemType=${nextFilter}`,
+      { scroll: false },
+    );
+  };
+
   const exitEditMode = () => {
     setIsEditing(false);
     setSelectedForDelete(new Set());
@@ -284,7 +294,7 @@ export function FittingWardrobe({ initialFilter }: FittingWardrobeProps) {
                 filter === item.value ? styles.activeFilter : undefined
               }
               key={item.value}
-              onClick={() => setFilter(item.value)}
+              onClick={() => changeFilter(item.value)}
               role="tab"
               type="button"
             >
@@ -311,9 +321,14 @@ export function FittingWardrobe({ initialFilter }: FittingWardrobeProps) {
         )}
 
         <div className={styles.list}>
-          {!isEditing && filter !== "ALL" && (
-            <EmptyCandidateCard itemType={filter} />
-          )}
+          {!isEditing &&
+            !isPending &&
+            !isInitialError &&
+            (filter === "ALL" ? (["TOP", "BOTTOM"] as const) : [filter]).map(
+              (itemType) => (
+                <EmptyCandidateCard itemType={itemType} key={itemType} />
+              ),
+            )}
           {isPending && (
             <LoadingMessage className={styles.stateMessage}>
               옷장을 불러오고 있어요
