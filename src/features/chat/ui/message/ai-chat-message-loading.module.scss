@@ -1,6 +1,8 @@
+@use "@/styles/typography" as type;
+
 .loadingMessage {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: var(--space-md);
 }
 
@@ -12,8 +14,36 @@
   object-fit: cover;
 }
 
-.bubble {
+.content {
+  min-width: 0;
+  flex: 1;
+}
+
+.meta {
   display: flex;
+  min-height: 28px;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-sm);
+}
+
+.name {
+  @include type.label;
+
+  color: var(--color-text-primary);
+}
+
+.badge {
+  @include type.caption;
+
+  border-radius: var(--radius-full);
+  padding: 4px 10px;
+  background: var(--color-gray-100);
+  color: var(--color-text-secondary);
+}
+
+.bubble {
+  display: inline-flex;
   min-width: 88px;
   min-height: 56px;
   align-items: center;

@@ -1,30 +1,20 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import {
-  useChatMessageGenerationStatusQuery,
+  useChatMessageStream,
   useSendChatMessageMutation,
 } from "./model/chat-message-query";
-import {
-  chatRoomQueryOptions,
-  useCreateChatRoomMutation,
-} from "./model/chat-room-query";
-import { Button } from "@/shared/ui/button";
-import { showToast } from "@/shared/ui/toast";
-import { ApiError, getApiErrorMessage } from "@/shared/api/error";
-import type { ChatSourceType } from "./schema/chat";
-import styles from "./chat-screen.module.scss";
+import { chatRoomQueryOptions } from "./model/chat-room-query";
+import styles from "./chat-room-screen.module.scss";
 import { ChatComposer } from "./ui/composer/chat-composer";
-import { ChatIntro } from "./ui/intro/chat-intro";
 import { ChatMessageList } from "./ui/message/chat-message-list";
+import { ApiError, getApiErrorMessage } from "@/shared/api/error";
+import { Button } from "@/shared/ui/button";
 import { useNavigationVisibility } from "@/shared/ui/navigation";
-
-type ChatScreenProps = {
-  chatRoomId?: number;
-  date?: string;
-};
+import { showToast } from "@/shared/ui/toast";
 
 function showSendChatMessageError(error: Error) {
   showToast.error(
@@ -33,15 +23,11 @@ function showSendChatMessageError(error: Error) {
   );
 }
 
-export function ChatScreen({ chatRoomId, date }: ChatScreenProps) {
+export function ChatRoomScreen({ chatRoomId }: { chatRoomId: number }) {
   const router = useRouter();
   const { isNavigationVisible } = useNavigationVisibility();
   const submissionLockRef = useRef(false);
-
-  const createChatRoomMutation = useCreateChatRoomMutation();
-
   const sendChatMessageMutation = useSendChatMessageMutation();
-
   const chatRoomQuery = useInfiniteQuery(chatRoomQueryOptions(chatRoomId));
 
   const messages =
@@ -52,27 +38,32 @@ export function ChatScreen({ chatRoomId, date }: ChatScreenProps) {
     messages.findLast(
       (message) =>
         message.senderType === "USER" &&
-        message.generationStatus === "GENERATING",
+        (message.generationStatus === "PENDING" ||
+          message.generationStatus === "GENERATING"),
     )?.messageId ?? null;
 
-  const chatMessageGenerationStatusQuery = useChatMessageGenerationStatusQuery(
+  const chatMessageStream = useChatMessageStream(
     chatRoomId,
     generatingMessageId,
   );
+
+  useEffect(() => {
+    if (chatMessageStream.error == null) {
+      return;
+    }
+
+    showToast.error(chatMessageStream.error.message, {
+      id: "chat-message-stream",
+    });
+  }, [chatMessageStream.error]);
 
   const handleLoadPreviousMessages = async () => {
     await chatRoomQuery.fetchNextPage();
   };
 
-  const isGenerating =
-    generatingMessageId != null &&
-    chatMessageGenerationStatusQuery.data?.generationStatus !== "COMPLETED" &&
-    chatMessageGenerationStatusQuery.data?.generationStatus !== "FAILED";
+  const isGenerating = generatingMessageId != null;
 
-  const handleSubmit = async (
-    content: string,
-    sourceType: ChatSourceType = "GENERAL",
-  ) => {
+  const handleSubmit = async (content: string) => {
     if (submissionLockRef.current || isGenerating) {
       return;
     }
@@ -80,19 +71,6 @@ export function ChatScreen({ chatRoomId, date }: ChatScreenProps) {
     submissionLockRef.current = true;
 
     try {
-      if (chatRoomId == null) {
-        await createChatRoomMutation.mutateAsync(
-          { content, sourceType },
-          {
-            onSuccess: (data) => {
-              router.replace(`/chat/${data.chatRoomId}`);
-            },
-            onError: showSendChatMessageError,
-          },
-        );
-        return;
-      }
-
       await sendChatMessageMutation.mutateAsync(
         { chatRoomId, content },
         { onError: showSendChatMessageError },
@@ -103,11 +81,7 @@ export function ChatScreen({ chatRoomId, date }: ChatScreenProps) {
   };
 
   const handleRetry = (content: string) => {
-    if (
-      chatRoomId == null ||
-      submissionLockRef.current ||
-      sendChatMessageMutation.isPending
-    ) {
+    if (submissionLockRef.current || sendChatMessageMutation.isPending) {
       return;
     }
 
@@ -124,14 +98,10 @@ export function ChatScreen({ chatRoomId, date }: ChatScreenProps) {
       });
   };
 
-  const isSubmitting =
-    createChatRoomMutation.isPending ||
-    sendChatMessageMutation.isPending ||
-    isGenerating;
-  const isInitialChatRoomPending =
-    chatRoomId != null && chatRoomQuery.isPending;
+  const isSubmitting = sendChatMessageMutation.isPending || isGenerating;
+  const isInitialChatRoomPending = chatRoomQuery.isPending;
   const isInitialChatRoomError =
-    chatRoomId != null && chatRoomQuery.isError && chatRoomQuery.data == null;
+    chatRoomQuery.isError && chatRoomQuery.data == null;
   const isChatRoomMissingOrForbidden =
     chatRoomQuery.error instanceof ApiError &&
     (chatRoomQuery.error.code === "CHAT_ROOM_NOT_FOUND" ||
@@ -166,20 +136,17 @@ export function ChatScreen({ chatRoomId, date }: ChatScreenProps) {
 
   return (
     <>
-      {messages.length === 0 && date != null ? (
-        <ChatIntro date={date} onSelectQuestion={handleSubmit} />
-      ) : (
-        <ChatMessageList
-          key={chatRoomId}
-          hasPreviousMessages={chatRoomQuery.hasNextPage}
-          isGenerating={isGenerating}
-          isLoadingPreviousMessages={chatRoomQuery.isFetchingNextPage}
-          isRetryPending={sendChatMessageMutation.isPending}
-          messages={messages}
-          onLoadPreviousMessages={handleLoadPreviousMessages}
-          onRetryMessage={handleRetry}
-        />
-      )}
+      <ChatMessageList
+        key={chatRoomId}
+        hasPreviousMessages={chatRoomQuery.hasNextPage}
+        isGenerating={isGenerating}
+        isLoadingPreviousMessages={chatRoomQuery.isFetchingNextPage}
+        isRetryPending={sendChatMessageMutation.isPending}
+        messages={messages}
+        onLoadPreviousMessages={handleLoadPreviousMessages}
+        onRetryMessage={handleRetry}
+        streamingContent={chatMessageStream.content}
+      />
       <div
         className={`${styles.composerDock} ${
           isNavigationVisible ? "" : styles.navigationHidden

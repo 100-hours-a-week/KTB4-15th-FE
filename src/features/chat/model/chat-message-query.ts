@@ -1,58 +1,125 @@
-import { useEffect } from "react";
-import {
-  queryOptions,
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from "@tanstack/react-query";
-import { getChatMessageGenerationStatus, sendChatMessage } from "../api/chat";
+import { useEffect, useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { connectChatStream, sendChatMessage } from "../api/chat";
 import { chatRoomQueryKeys } from "./chat-room-query";
+import { takeChatStreamChunk } from "./chat-stream-buffer";
 
-export const chatMessageQueryKeys = {
-  generationStatus: (chatRoomId?: number, messageId?: number | null) =>
-    ["chat", "message", "generation", "status", chatRoomId, messageId] as const,
-};
+const STREAM_RENDER_INTERVAL_MS = 36;
 
-export const chatMessageGenerationStatusQueryOptions = (
-  chatRoomId?: number,
-  messageId?: number | null,
-) =>
-  queryOptions({
-    queryKey: chatMessageQueryKeys.generationStatus(chatRoomId, messageId),
-    queryFn: () => {
-      if (chatRoomId == null || messageId == null) {
-        throw new Error("폴링에 필요한 ID가 없습니다.");
-      }
-
-      return getChatMessageGenerationStatus(chatRoomId, messageId);
-    },
-    enabled: chatRoomId != null && messageId != null,
-    refetchInterval: (query) =>
-      query.state.data?.generationStatus === "GENERATING" ? 2_000 : false,
-  });
-
-export function useChatMessageGenerationStatusQuery(
-  chatRoomId?: number,
+export function useChatMessageStream(
+  chatRoomId: number,
   messageId?: number | null,
 ) {
   const queryClient = useQueryClient();
-  const query = useQuery(
-    chatMessageGenerationStatusQueryOptions(chatRoomId, messageId),
-  );
+  const [state, setState] = useState<{
+    messageId: number;
+    content: string;
+    error: Error | null;
+  } | null>(null);
 
   useEffect(() => {
-    const generationStatus = query.data?.generationStatus;
-
-    if (generationStatus !== "COMPLETED" && generationStatus !== "FAILED") {
+    if (messageId == null) {
       return;
     }
 
-    void queryClient.invalidateQueries({
-      queryKey: chatRoomQueryKeys.detail(chatRoomId),
-    });
-  }, [chatRoomId, query.data?.generationStatus, queryClient]);
+    const controller = new AbortController();
+    let displayedContent = "";
+    let pendingContent = "";
+    let isDone = false;
+    let didFinish = false;
 
-  return query;
+    const invalidateChatRoom = () =>
+      queryClient.invalidateQueries({
+        queryKey: chatRoomQueryKeys.detail(chatRoomId),
+      });
+
+    const displayTimerId = window.setInterval(() => {
+      const [nextChunk, remainingContent] = takeChatStreamChunk(pendingContent);
+
+      if (nextChunk) {
+        displayedContent += nextChunk;
+        pendingContent = remainingContent;
+        setState({ messageId, content: displayedContent, error: null });
+        return;
+      }
+
+      if (isDone && !didFinish) {
+        didFinish = true;
+        window.clearInterval(displayTimerId);
+        void invalidateChatRoom();
+      }
+    }, STREAM_RENDER_INTERVAL_MS);
+
+    const consume = async () => {
+      try {
+        for await (const event of connectChatStream(
+          chatRoomId,
+          messageId,
+          controller.signal,
+        )) {
+          if (event.userMessageId !== messageId) {
+            throw new Error("요청한 메시지와 스트림 응답이 일치하지 않습니다.");
+          }
+
+          if (event.type === "snapshot") {
+            displayedContent = event.content;
+            pendingContent = "";
+            setState({ messageId, content: event.content, error: null });
+          } else if (event.type === "token") {
+            pendingContent += event.content;
+          } else if (event.type === "done") {
+            const receivedContent = displayedContent + pendingContent;
+
+            if (event.content.startsWith(receivedContent)) {
+              pendingContent += event.content.slice(receivedContent.length);
+            }
+
+            isDone = true;
+            return;
+          } else if (event.type === "error") {
+            window.clearInterval(displayTimerId);
+            setState((current) => ({
+              messageId,
+              content: current?.messageId === messageId ? current.content : "",
+              error: new Error(event.message),
+            }));
+            await invalidateChatRoom();
+            return;
+          }
+        }
+
+        if (!controller.signal.aborted) {
+          throw new Error("AI 응답 연결이 완료 이벤트 없이 종료되었습니다.");
+        }
+      } catch (caught) {
+        if (controller.signal.aborted) {
+          return;
+        }
+
+        window.clearInterval(displayTimerId);
+        setState((current) => ({
+          messageId,
+          content: current?.messageId === messageId ? current.content : "",
+          error:
+            caught instanceof Error
+              ? caught
+              : new Error("AI 응답을 불러오지 못했습니다."),
+        }));
+        await invalidateChatRoom();
+      }
+    };
+
+    void consume();
+
+    return () => {
+      window.clearInterval(displayTimerId);
+      controller.abort();
+    };
+  }, [chatRoomId, messageId, queryClient]);
+
+  return state != null && state.messageId === messageId
+    ? state
+    : { messageId, content: "", error: null };
 }
 
 export function useSendChatMessageMutation() {

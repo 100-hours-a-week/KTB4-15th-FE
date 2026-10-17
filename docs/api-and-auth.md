@@ -26,6 +26,8 @@
 
 TanStack Query mutation은 오프라인 상태에서 대기하지 않고 즉시 실패하도록 `networkMode: "always"`를 사용합니다.
 
+채팅 SSE는 브라우저의 `EventSource` 대신 Ky 응답 Stream을 읽습니다. 기존 401 Token 갱신과 화면 이동 시 연결 취소 흐름을 재사용하기 위해서입니다. 장기 연결에는 공통 10초 Timeout과 자동 Retry를 적용하지 않습니다.
+
 ## 서버 요청
 
 Server Component과 Route Handler에서는 `src/shared/api/server.ts`의 `serverApi`를 사용합니다.

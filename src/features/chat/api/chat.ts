@@ -1,8 +1,9 @@
 import { apiClient } from "@/shared/api/client";
 import { parseResponse } from "@/shared/api/response";
+import { extractSseEvents } from "@/shared/api/sse";
 import {
-  chatMessageGenerationStatusResponse,
   chatRoomListResponse,
+  chatStreamEvent,
   createChatRoomResponse,
   renameChatRoomRequest,
   renameChatRoomResponse,
@@ -32,15 +33,62 @@ export async function sendChatMessage(
   return parseResponse(response, sendChatMessageResponse);
 }
 
-export async function getChatMessageGenerationStatus(
+export async function* connectChatStream(
   chatRoomId: number,
   messageId: number,
+  signal: AbortSignal,
 ) {
+  // EventSource 대신 기존 인증 갱신과 연결 취소 흐름을 재사용한다.
   const response = await apiClient.get(
-    `chat-rooms/${chatRoomId}/messages/${messageId}/status`,
+    `chat-rooms/${chatRoomId}/messages/${messageId}/stream`,
+    {
+      headers: { Accept: "text/event-stream" },
+      retry: 0,
+      signal,
+      timeout: false,
+    },
   );
+  const reader = response.body?.getReader();
 
-  return parseResponse(response, chatMessageGenerationStatusResponse);
+  if (reader == null) {
+    throw new Error("스트리밍 응답을 읽을 수 없습니다.");
+  }
+
+  const decoder = new TextDecoder();
+  let buffer = "";
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+
+      if (done) {
+        return;
+      }
+
+      buffer += decoder.decode(value, { stream: true });
+      const parsed = extractSseEvents(buffer);
+      buffer = parsed.rest;
+
+      for (const event of parsed.events) {
+        if (
+          event.event !== "connected" &&
+          event.event !== "snapshot" &&
+          event.event !== "token" &&
+          event.event !== "done" &&
+          event.event !== "error"
+        ) {
+          continue;
+        }
+
+        yield chatStreamEvent.parse({
+          type: event.event,
+          ...JSON.parse(event.data),
+        });
+      }
+    }
+  } finally {
+    await reader.cancel().catch(() => undefined);
+  }
 }
 
 export async function getChatRoom(
