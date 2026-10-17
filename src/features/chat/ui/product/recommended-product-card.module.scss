@@ -62,8 +62,13 @@
   h3 {
     @include type.body-large;
 
+    display: -webkit-box;
+    overflow: hidden;
+    height: 4.5rem;
     margin: var(--space-sm) 0 0;
     color: var(--color-text-primary);
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
   }
 
   p {
@@ -71,6 +76,7 @@
 
     display: -webkit-box;
     overflow: hidden;
+    height: 2.5rem;
     margin: var(--space-sm) 0 0;
     color: var(--color-text-secondary);
     -webkit-box-orient: vertical;
