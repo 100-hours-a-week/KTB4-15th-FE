@@ -64,11 +64,11 @@
 
     display: -webkit-box;
     overflow: hidden;
-    height: 4.5rem;
+    height: 3rem;
     margin: var(--space-sm) 0 0;
     color: var(--color-text-primary);
     -webkit-box-orient: vertical;
-    -webkit-line-clamp: 3;
+    -webkit-line-clamp: 2;
   }
 
   p {
