@@ -108,7 +108,6 @@ function FittingResultDetailContent({
           </div>
         }
         result={result}
-        viewTransitionName={`fitting-result-${fittingResultId}`}
       />
 
       <RenameDialog

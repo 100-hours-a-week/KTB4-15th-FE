@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { type ReactNode, useState, ViewTransition } from "react";
+import { type ReactNode, useState } from "react";
 import { recordPurchaseLinkClick } from "@/features/product";
 import aiImage from "@/shared/assets/ai-avatar.png";
 import { ImageViewerDialog } from "@/shared/ui/dialog";
@@ -15,14 +15,12 @@ type FittingResultViewProps = {
   actions: ReactNode;
   outfitName: ReactNode;
   result: FittingTempResult | FittingResultDetail;
-  viewTransitionName?: string;
 };
 
 export function FittingResultView({
   actions,
   outfitName,
   result,
-  viewTransitionName,
 }: FittingResultViewProps) {
   const [isImageOpen, setIsImageOpen] = useState(false);
 
@@ -36,34 +34,28 @@ export function FittingResultView({
           products={result.products}
         />
 
-        <ViewTransition
-          default={viewTransitionName ? "none" : undefined}
-          name={viewTransitionName}
-          share={viewTransitionName ? "fitting-result" : undefined}
+        <section
+          aria-label="가상 피팅 결과 이미지"
+          className={styles.resultImageCard}
         >
-          <section
-            aria-label="가상 피팅 결과 이미지"
-            className={styles.resultImageCard}
+          <Image
+            alt="선택한 상품을 착용한 가상 피팅 결과"
+            className={styles.resultImage}
+            fill
+            loading="eager"
+            sizes="(max-width: 480px) calc(100vw - 40px), 320px"
+            src={result.resultImageUrl}
+            unoptimized
+          />
+          <button
+            aria-label="결과 이미지 확대"
+            className={styles.zoomButton}
+            onClick={() => setIsImageOpen(true)}
+            type="button"
           >
-            <Image
-              alt="선택한 상품을 착용한 가상 피팅 결과"
-              className={styles.resultImage}
-              fill
-              loading="eager"
-              sizes="(max-width: 480px) calc(100vw - 40px), 320px"
-              src={result.resultImageUrl}
-              unoptimized
-            />
-            <button
-              aria-label="결과 이미지 확대"
-              className={styles.zoomButton}
-              onClick={() => setIsImageOpen(true)}
-              type="button"
-            >
-              <SearchIcon />
-            </button>
-          </section>
-        </ViewTransition>
+            <SearchIcon />
+          </button>
+        </section>
 
         <div className={styles.resultForm}>
           {outfitName}
