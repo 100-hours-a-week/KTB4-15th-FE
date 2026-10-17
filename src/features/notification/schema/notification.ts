@@ -26,7 +26,17 @@ export const notificationList = z.object({
   unreadCount: z.number().int().nonnegative(),
 });
 
+export const notificationRead = z.object({
+  unreadCount: z.number().int().nonnegative(),
+});
+
+export const notificationUnreadStatus = z.object({
+  hasUnread: z.boolean(),
+});
+
 export type NotificationItem = z.infer<typeof notificationItem>;
+export type NotificationList = z.infer<typeof notificationList>;
+export type NotificationUnreadStatus = z.infer<typeof notificationUnreadStatus>;
 
 const connectedData = z.object({
   unreadCount: z.number().int().nonnegative(),

@@ -1,9 +1,20 @@
+"use client";
+
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import type { MouseEvent } from "react";
 import { formatKoreanNumericDateTime } from "@/shared/utils/date-format";
 import type { NotificationItem } from "../schema/notification";
 import styles from "./notification-screen.module.scss";
 
-export function NotificationCard({ item }: { item: NotificationItem }) {
+export function NotificationCard({
+  item,
+  onRead,
+}: {
+  item: NotificationItem;
+  onRead: () => Promise<boolean>;
+}) {
+  const router = useRouter();
   const isSuccess = item.type === "FITTING_SUCCESS";
   const content = (
     <>
@@ -21,9 +32,26 @@ export function NotificationCard({ item }: { item: NotificationItem }) {
           : "가상 피팅 생성에 실패했습니다."}
       </p>
       <div className={styles.cardFooter}>
-        {isSuccess && (
-          <span className={styles.action}>피팅 결과 확인하기 ›</span>
-        )}
+        <Link
+          className={styles.action}
+          href={
+            isSuccess
+              ? `/fitting/jobs/${item.targetId}/result?from=notifications`
+              : "/fitting"
+          }
+          onClick={async (event: MouseEvent<HTMLAnchorElement>) => {
+            if (item.isRead) return;
+            if (isSuccess) {
+              void onRead();
+              return;
+            }
+
+            event.preventDefault();
+            if (await onRead()) router.push("/fitting");
+          }}
+        >
+          {isSuccess ? "피팅 결과 확인하기" : "다시 피팅하기"} ›
+        </Link>
         <time dateTime={item.createdAt}>
           {formatKoreanNumericDateTime(item.createdAt)}
         </time>
@@ -31,14 +59,5 @@ export function NotificationCard({ item }: { item: NotificationItem }) {
     </>
   );
 
-  return isSuccess ? (
-    <Link
-      className={styles.card}
-      href={`/fitting/jobs/${item.targetId}/result`}
-    >
-      {content}
-    </Link>
-  ) : (
-    <article className={styles.card}>{content}</article>
-  );
+  return <article className={styles.card}>{content}</article>;
 }
