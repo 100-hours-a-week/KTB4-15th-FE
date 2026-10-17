@@ -17,10 +17,15 @@ import { useNavigationVisibility } from "@/shared/ui/navigation";
 import { showToast } from "@/shared/ui/toast";
 
 function showSendChatMessageError(error: Error) {
-  showToast.error(
-    getApiErrorMessage(error, "메시지를 보내지 못했어요. 다시 시도해 주세요."),
-    { id: "send-chat-message" },
-  );
+  const message =
+    error instanceof ApiError && error.code === "CHAT_ROOM_LIMIT_EXCEEDED"
+      ? "채팅방은 최대 100개까지 생성할 수 있습니다."
+      : getApiErrorMessage(
+          error,
+          "메시지를 보내지 못했어요. 다시 시도해 주세요.",
+        );
+
+  showToast.error(message, { id: "send-chat-message" });
 }
 
 export function ChatRoomScreen({ chatRoomId }: { chatRoomId: number }) {

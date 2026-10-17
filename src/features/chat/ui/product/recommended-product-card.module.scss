@@ -62,8 +62,13 @@
   h3 {
     @include type.body-large;
 
+    display: -webkit-box;
+    overflow: hidden;
+    height: 3rem;
     margin: var(--space-sm) 0 0;
     color: var(--color-text-primary);
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
   }
 
   p {
@@ -71,6 +76,7 @@
 
     display: -webkit-box;
     overflow: hidden;
+    height: 2.5rem;
     margin: var(--space-sm) 0 0;
     color: var(--color-text-secondary);
     -webkit-box-orient: vertical;
@@ -111,7 +117,10 @@
 .productLink,
 .fittingButton,
 .fittingLink {
+  height: var(--control-height-large);
   padding: 0 var(--space-md);
+  text-align: center;
+  white-space: nowrap;
 }
 
 .productLink,
@@ -136,6 +145,7 @@
 .fittingLink {
   background: var(--color-action-primary-default);
   color: var(--color-action-primary-text);
+  word-break: keep-all;
 }
 
 .fittingLink {
