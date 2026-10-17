@@ -13,6 +13,7 @@ export type {
   ChatMessageGenerationErrorResponse,
   ChatMessageGenerationStatus,
   ChatMessageGenerationStatusResponse,
+  ChatSearchResponse,
   ChatSourceType,
   CreateChatRoomRequest,
   CreateChatRoomResponse,

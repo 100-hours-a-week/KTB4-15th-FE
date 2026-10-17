@@ -16,6 +16,7 @@ import {
   EditIcon,
   MoreIcon,
   PlusIcon,
+  SearchIcon,
 } from "@/shared/ui/icon";
 import { formatKoreanRelativeDateTime } from "@/shared/utils/date-format";
 import { useInfiniteQuery } from "@tanstack/react-query";
@@ -88,6 +89,11 @@ export function ChatSidebar({ open, onOpenChange }: ChatSidebarProps) {
   const startNewChat = () => {
     onOpenChange(false);
     router.push("/chat");
+  };
+
+  const openSearch = () => {
+    onOpenChange(false);
+    router.push("/chat/search");
   };
 
   const openRenameDialog = (chatRoomId: number, currentTitle: string) => {
@@ -177,26 +183,21 @@ export function ChatSidebar({ open, onOpenChange }: ChatSidebarProps) {
                 <Dialog.Title className={styles.title}>채팅</Dialog.Title>
                 <span className={styles.badge}>AI 룩딱</span>
               </div>
-              <Dialog.Close asChild>
-                <IconButton aria-label="채팅 목록 닫기" size="small">
-                  <CloseIcon />
+              <div className={styles.headerActions}>
+                <IconButton
+                  aria-label="대화 검색"
+                  onClick={openSearch}
+                  size="small"
+                >
+                  <SearchIcon />
                 </IconButton>
-              </Dialog.Close>
+                <Dialog.Close asChild>
+                  <IconButton aria-label="채팅 목록 닫기" size="small">
+                    <CloseIcon />
+                  </IconButton>
+                </Dialog.Close>
+              </div>
             </header>
-
-            {/* <div className={styles.searchField}>
-            <SearchIcon />
-            <label className={styles.visuallyHidden} htmlFor="chat-search">
-              대화 내용 검색
-            </label>
-            <input
-              id="chat-search"
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="대화 내용 검색"
-              type="search"
-              value={query}
-            />
-          </div> */}
 
             <Button
               className={styles.newChatButton}
