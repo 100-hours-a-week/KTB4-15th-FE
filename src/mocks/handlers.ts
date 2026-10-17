@@ -311,6 +311,34 @@ export const handlers: RequestHandler[] = [
     });
   }),
 
+  http.get("*/fitting-jobs/:fittingJobId", ({ params }) => {
+    if (params.fittingJobId !== "123") {
+      return HttpResponse.json(
+        {
+          code: "FITTING_JOB_NOT_FOUND",
+          data: null,
+          message: "가상피팅 요청 정보를 찾을 수 없습니다.",
+        },
+        { status: 404 },
+      );
+    }
+
+    const mockStatus =
+      typeof window === "undefined"
+        ? "GENERATING"
+        : new URLSearchParams(window.location.search).get("mockStatus");
+    const status =
+      mockStatus === "FAILED" || mockStatus === "COMPLETED"
+        ? mockStatus
+        : "GENERATING";
+
+    return HttpResponse.json({
+      code: "OK",
+      data: { fittingJobId: 123, status, result: null },
+      message: "요청이 성공적으로 처리되었습니다.",
+    });
+  }),
+
   http.get("*/fitting-jobs/:fittingJobId/result", ({ params }) => {
     if (params.fittingJobId !== "123") {
       return HttpResponse.json(
