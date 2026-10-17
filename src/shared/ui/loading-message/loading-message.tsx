@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { LoadingDots } from "./loading-dots";
 import styles from "./loading-message.module.scss";
 
 interface LoadingMessageProps {
@@ -15,11 +16,7 @@ export function LoadingMessage({ children, className }: LoadingMessageProps) {
     >
       <span>
         {children}
-        <span aria-hidden="true" className={styles.dots}>
-          <span />
-          <span />
-          <span />
-        </span>
+        <LoadingDots />
       </span>
     </p>
   );
