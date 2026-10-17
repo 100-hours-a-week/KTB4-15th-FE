@@ -90,6 +90,34 @@ const rankingItems = {
 } as const;
 
 export const handlers: RequestHandler[] = [
+  http.get("*/notifications/stream", () => {
+    const encoder = new TextEncoder();
+    let notificationTimer: ReturnType<typeof setTimeout>;
+    const stream = new ReadableStream({
+      start(controller) {
+        controller.enqueue(
+          encoder.encode(
+            'event: connected\ndata: {"code":"NOTIFICATION_STREAM_CONNECTED","data":{"unreadCount":0,"hasUnread":false},"message":"실시간 알림 연결이 완료되었습니다."}\n\n',
+          ),
+        );
+        notificationTimer = setTimeout(() => {
+          controller.enqueue(
+            encoder.encode(
+              'event: notification\ndata: {"code":"NOTIFICATION_RECEIVED","data":{"notificationId":52,"fittingJobId":123,"type":"FITTING_SUCCESS"},"message":"새 알림이 도착했습니다."}\n\n',
+            ),
+          );
+        }, 2000);
+      },
+      cancel() {
+        clearTimeout(notificationTimer);
+      },
+    });
+
+    return new HttpResponse(stream, {
+      headers: { "Content-Type": "text/event-stream" },
+    });
+  }),
+
   http.get("*/notifications", () => {
     const empty =
       typeof window !== "undefined" &&
