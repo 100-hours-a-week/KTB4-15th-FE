@@ -2,7 +2,11 @@
 
 import { useEffect, useLayoutEffect, useRef } from "react";
 import { AIChatMessageLoading } from "./ai-chat-message-loading";
-import { AIChatMessage, UserChatMessage } from "./chat-message";
+import {
+  AIChatMessage,
+  StreamingAIChatMessage,
+  UserChatMessage,
+} from "./chat-message";
 import styles from "./chat-message-list.module.scss";
 import type { ChatMessageResponse } from "../../schema/chat";
 import { formatKoreanDate } from "@/shared/utils/date-format";
@@ -15,6 +19,7 @@ type ChatMessageListProps = {
   messages: ChatMessageResponse[];
   onLoadPreviousMessages?: () => Promise<unknown>;
   onRetryMessage?: (content: string) => void;
+  streamingContent?: string;
 };
 
 export function ChatMessageList({
@@ -25,6 +30,7 @@ export function ChatMessageList({
   messages,
   onLoadPreviousMessages,
   onRetryMessage,
+  streamingContent = "",
 }: ChatMessageListProps) {
   const loadMoreRef = useRef<HTMLDivElement>(null);
   const didInitialScrollRef = useRef(false);
@@ -195,7 +201,11 @@ export function ChatMessageList({
           )}
         </section>
       ))}
-      {isGenerating && <AIChatMessageLoading />}
+      {streamingContent ? (
+        <StreamingAIChatMessage content={streamingContent} />
+      ) : (
+        isGenerating && <AIChatMessageLoading />
+      )}
     </div>
   );
 }

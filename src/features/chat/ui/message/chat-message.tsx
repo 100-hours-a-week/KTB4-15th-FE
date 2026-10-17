@@ -18,6 +18,23 @@ type AIChatMessageProps = {
   message: AIMessageResponse;
 };
 
+export function StreamingAIChatMessage({ content }: { content: string }) {
+  return (
+    <article className={styles.aiMessage}>
+      <Image alt="AI 스타일리스트" className={styles.avatar} src={aiImage} />
+      <div className={styles.aiContent}>
+        <div className={styles.aiMeta}>
+          <strong className={styles.aiName}>AI 스타일리스트</strong>
+        </div>
+        <p className={styles.aiBubble}>{content}</p>
+        <span className={styles.visuallyHidden} role="status">
+          AI 스타일리스트가 답변을 작성하고 있어요
+        </span>
+      </div>
+    </article>
+  );
+}
+
 export function UserChatMessage({
   canRetry = false,
   isRetryPending = false,

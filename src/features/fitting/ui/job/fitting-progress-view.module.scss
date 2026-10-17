@@ -4,17 +4,18 @@
   display: flex;
   min-height: calc(100dvh - var(--header-height) - var(--navigation-height));
   flex-direction: column;
+  justify-content: center;
   padding-block: 0 calc(var(--navigation-height) + var(--space-xl));
 }
 
 .floatingVisual {
   position: relative;
   display: grid;
-  width: 184px;
-  height: 184px;
+  width: 148px;
+  height: 148px;
   place-items: center;
-  margin: 56px auto 0;
-  border-radius: 24px;
+  margin: 0 auto;
+  border-radius: var(--radius-large);
   background:
     radial-gradient(circle at 50% 40%, rgb(232 242 238 / 72%), transparent 65%),
     var(--color-background-surface);
@@ -37,14 +38,14 @@
 .floatingImage {
   position: relative;
   z-index: 1;
-  width: 176px;
-  height: 176px;
+  width: 140px;
+  height: 140px;
   object-fit: contain;
   animation: floating-object 3.2s ease-in-out infinite;
 }
 
 .progressCopy {
-  margin-top: 42px;
+  margin-top: 24px;
   text-align: center;
 
   h2 {
@@ -62,7 +63,9 @@
 }
 
 .progressStatus {
-  margin-top: 36px;
+  width: min(100%, 560px);
+  align-self: center;
+  margin-top: 22px;
 }
 
 .progressMeta {
@@ -71,29 +74,19 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  color: var(--color-text-secondary);
-
-  > span::before {
-    display: inline-block;
-    width: 6px;
-    height: 6px;
-    margin-right: 6px;
-    border-radius: var(--radius-full);
-    background: var(--color-green-700);
-    content: "";
-    vertical-align: 1px;
-  }
+  color: var(--color-text-primary);
 
   strong {
     color: var(--color-text-brand);
     font-weight: var(--font-weight-bold);
+    font-variant-numeric: tabular-nums;
   }
 }
 
 .progressTrack {
   overflow: hidden;
-  height: 7px;
-  margin-top: 8px;
+  height: 6px;
+  margin-top: 10px;
   border-radius: var(--radius-full);
   background: var(--color-gray-200);
 
@@ -106,29 +99,24 @@
   }
 }
 
+.productsArea {
+  margin-top: 28px;
+}
+
 .tipCard {
   display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  margin-top: 40px;
-  border-radius: var(--radius-sheet);
-  padding: 18px 16px;
-  background: var(--color-background-surface);
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+  border-radius: var(--radius-medium);
+  padding: 12px 14px;
+  background: var(--color-green-50);
 
   p {
-    @include type.label;
+    @include type.caption;
 
-    margin: 0 0 4px;
+    margin: 0 0 2px;
     font-weight: var(--font-weight-semibold);
-  }
-
-  small {
-    margin-left: 4px;
-    border-radius: 5px;
-    padding: 2px 5px;
-    background: var(--color-green-100);
-    color: var(--color-text-brand);
-    font-weight: var(--font-weight-medium);
   }
 
   div > span {
@@ -140,13 +128,13 @@
 
 .tipIcon {
   display: grid;
-  width: 34px;
-  height: 34px;
+  width: 30px;
+  height: 30px;
   flex: 0 0 auto;
   place-items: center;
   border-radius: var(--radius-full);
   background: var(--color-green-200);
-  font-size: 16px;
+  font-size: 14px;
 }
 
 .backgroundAction {
@@ -158,7 +146,7 @@
   align-self: center;
   justify-content: center;
   gap: 4px;
-  margin-top: 22px;
+  margin-top: 16px;
   border-radius: var(--radius-small);
   padding-inline: 12px;
   color: var(--color-text-secondary);
