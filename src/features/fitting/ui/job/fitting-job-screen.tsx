@@ -8,7 +8,7 @@ import { Button } from "@/shared/ui/button";
 import { Header, HeaderTitle } from "@/shared/ui/header";
 import { showToast } from "@/shared/ui/toast";
 import {
-  currentFittingJobQueryOptions,
+  fittingJobQueryOptions,
   useMarkFittingResultViewedMutation,
 } from "../../model/fitting-query";
 import { clearActiveFittingJobId } from "../../store/active-fitting-job-storage";
@@ -28,15 +28,13 @@ const RESULT_REVEAL_DELAY = 900;
 
 export function FittingJobScreen({ fittingJobId }: FittingJobScreenProps) {
   const router = useRouter();
-  const { data, isError, isPending } = useQuery(currentFittingJobQueryOptions);
+  const { data, isError, isPending } = useQuery(
+    fittingJobQueryOptions(fittingJobId),
+  );
   const markViewedMutation = useMarkFittingResultViewedMutation();
 
   const handleReturnToFitting = async () => {
-    if (
-      data?.fittingJobId === fittingJobId &&
-      data.status === "FAILED" &&
-      !data.resultViewed
-    ) {
+    if (data?.fittingJobId === fittingJobId && data.status === "FAILED") {
       try {
         await markViewedMutation.mutateAsync(fittingJobId);
       } catch (error) {

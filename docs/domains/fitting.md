@@ -53,6 +53,7 @@
 2. 성공하면 활성 Job id와 시작 시간을 `localStorage`에 저장합니다.
 3. `/fitting/jobs/[fittingJobId]`로 이동합니다.
 4. Job 상태를 조회하고 `GENERATING`이면 생성 진행 화면을 표시합니다.
+   SSE 알림이 유실되어도 완료 상태를 확인할 수 있도록 5초마다 현재 Job을 다시 조회합니다.
 5. `COMPLETED`이면 진행률을 100%로 표시한 뒤 900ms 후 `/fitting/jobs/[fittingJobId]/result`로 이동합니다.
 6. `FAILED` 작업은 피팅 홈 이동 시 확인 처리 API가 성공하면 활성 Job과 진행 시간 정보를 제거합니다.
 7. `COMPLETED`이면 활성 Job과 진행 시간 정보를 제거합니다.
@@ -79,6 +80,7 @@
 | `POST`   | `/fitting-candidates`                        | 상품을 피팅 후보에 추가 |
 | `DELETE` | `/fitting-candidates`                        | 후보 일괄 삭제          |
 | `POST`   | `/fitting-jobs`                              | 피팅 작업 생성          |
+| `GET`    | `/fitting-jobs/{fittingJobId}`               | 피팅 작업 상태 조회     |
 | `GET`    | `/fitting-jobs/current`                      | 최근 미확인 작업 조회   |
 | `GET`    | `/fitting-jobs/{fittingJobId}/result`        | 임시 결과 조회          |
 | `PATCH`  | `/fitting-jobs/{fittingJobId}/result/viewed` | 결과 확인 처리          |
