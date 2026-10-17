@@ -14,7 +14,7 @@ import styles from "./fitting-progress-view.module.scss";
 const MAX_SIMULATED_PROGRESS = 92;
 const FITTING_TIPS = [
   "피팅 요청은 한 번에 하나만 진행할 수 있어요.",
-  "저장한 가상 피팅은 코디명을 변경할 수 있어요.",
+  "가상 피팅은 코디명을 변경할 수 있어요.",
   "피팅이 진행되는 동안 다른 코디를 둘러볼 수 있어요.",
 ];
 
