@@ -1,6 +1,6 @@
 # 채팅 도메인
 
-마지막 업데이트: 2026-10-11
+마지막 업데이트: 2026-10-16
 
 ## 목적
 
@@ -11,7 +11,7 @@
 - **Chat Room**: 여러 User·AI Message를 묶는 대화 단위입니다.
 - **User Message**: 사용자가 보낸 내용과 AI 생성 상태를 가집니다.
 - **AI Message**: 생성된 답변이며 선택적으로 상품 Recommendation을 포함합니다.
-- **Generation Status**: `GENERATING`, `COMPLETED`, `FAILED` 중 하나입니다.
+- **Generation Status**: 생성 대기 `PENDING`, 생성 중 `GENERATING`, 완료 `COMPLETED`, 실패 `FAILED` 중 하나입니다.
 - **Source Type**: 일반 질문은 `GENERAL`, 찜 목록 기반 질문은 `WISHLIST`입니다.
 
 ## 화면과 경로
@@ -38,8 +38,9 @@
 1. `GET /chat-rooms/{chatRoomId}`로 최근 메시지를 가져옵니다.
 2. 사용자가 메시지를 보내면 `POST /chat-rooms/{chatRoomId}/messages`를 요청합니다.
 3. 대화 Query를 무효화하여 새 User Message와 생성 상태를 반영합니다.
-4. `GENERATING`인 User Message가 있으면 2초마다 생성 상태를 확인합니다.
-5. 상태가 `COMPLETED` 또는 `FAILED`가 되면 대화를 다시 조회합니다.
+4. `PENDING` 또는 `GENERATING`인 User Message가 있으면 해당 Message의 SSE에 연결합니다. 최초 연결은 `PENDING`을 `GENERATING`으로 전환하며 AI 생성을 시작합니다.
+5. `token`은 버퍼에 쌓아 임시 AI Message에 짧은 덩어리로 표시하고, 버퍼가 많이 쌓이면 출력량을 늘립니다. `done` 이후 남은 글자를 모두 표시한 다음 대화를 다시 조회하며, `error`는 즉시 반영합니다.
+6. 종료 이벤트 없이 연결이 끊기면 오류를 안내하고 대화를 다시 조회합니다.
 
 AI 답변 생성 중에는 추가 전송을 막습니다. 빠른 중복 입력도 별도의 Submission Lock으로 방지합니다.
 
@@ -88,7 +89,7 @@ AI Message의 Recommendation은 하나 이상의 추천 상품을 포함할 수 
 | `GET`    | `/chat-rooms`                                          | 대화 목록 조회        |
 | `GET`    | `/chat-rooms/{chatRoomId}`                             | 대화와 메시지 조회    |
 | `POST`   | `/chat-rooms/{chatRoomId}/messages`                    | 후속 메시지 전송      |
-| `GET`    | `/chat-rooms/{chatRoomId}/messages/{messageId}/status` | AI 생성 상태 조회     |
+| `GET`    | `/chat-rooms/{chatRoomId}/messages/{messageId}/stream` | AI 답변 SSE 스트리밍  |
 | `PATCH`  | `/chat-rooms/{chatRoomId}`                             | 대화 이름 수정        |
 | `DELETE` | `/chat-rooms/{chatRoomId}`                             | 대화 삭제             |
 
@@ -97,7 +98,7 @@ AI Message의 Recommendation은 하나 이상의 추천 상품을 포함할 수 
 - `src/features/chat/api`: 채팅 API
 - `src/features/chat/schema`: 메시지, 추천 상품과 대화 Schema
 - `src/features/chat/new-chat-screen.tsx`: 신규 채팅 생성 흐름
-- `src/features/chat/chat-room-screen.tsx`: 채팅방 조회·전송·Polling 흐름
+- `src/features/chat/chat-room-screen.tsx`: 채팅방 조회·전송·SSE 흐름
 - `src/features/chat/ui/sidebar`: 대화 목록과 관리
 - `src/features/chat/ui/product`: 추천 상품과 피팅 연동
 - `src/app/(service)/chat`: 채팅 Route
