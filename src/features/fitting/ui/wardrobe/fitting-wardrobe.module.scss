@@ -247,7 +247,7 @@
   bottom: 0;
   padding-top: var(--space-sm);
   padding-bottom: calc(var(--space-lg) + env(safe-area-inset-bottom));
-  background: transparent;
+  background: var(--color-background-page);
 }
 
 .deleteNotice {
