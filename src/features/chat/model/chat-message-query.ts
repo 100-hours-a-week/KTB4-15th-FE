@@ -5,6 +5,7 @@ import { chatRoomQueryKeys } from "./chat-room-query";
 import { takeChatStreamChunk } from "./chat-stream-buffer";
 
 const STREAM_RENDER_INTERVAL_MS = 36;
+const RECOMMENDATION_REVEAL_DELAY_MS = 200;
 
 export function useChatMessageStream(
   chatRoomId: number,
@@ -27,6 +28,8 @@ export function useChatMessageStream(
     let pendingContent = "";
     let isDone = false;
     let didFinish = false;
+    let hasProducts = false;
+    let completionTimerId: number | undefined;
 
     const invalidateChatRoom = () =>
       queryClient.invalidateQueries({
@@ -46,7 +49,10 @@ export function useChatMessageStream(
       if (isDone && !didFinish) {
         didFinish = true;
         window.clearInterval(displayTimerId);
-        void invalidateChatRoom();
+        completionTimerId = window.setTimeout(
+          () => void invalidateChatRoom(),
+          hasProducts ? RECOMMENDATION_REVEAL_DELAY_MS : 0,
+        );
       }
     }, STREAM_RENDER_INTERVAL_MS);
 
@@ -74,6 +80,7 @@ export function useChatMessageStream(
               pendingContent += event.content.slice(receivedContent.length);
             }
 
+            hasProducts = event.products.length > 0;
             isDone = true;
             return;
           } else if (event.type === "error") {
@@ -113,6 +120,7 @@ export function useChatMessageStream(
 
     return () => {
       window.clearInterval(displayTimerId);
+      window.clearTimeout(completionTimerId);
       controller.abort();
     };
   }, [chatRoomId, messageId, queryClient]);
