@@ -3,8 +3,11 @@
 import Image, { type ImageLoaderProps } from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { memberProfileQueryOptions } from "@/features/profile";
+import { useIsMutating, useMutation, useQuery } from "@tanstack/react-query";
+import {
+  fullBodyImageMutationKey,
+  memberProfileQueryOptions,
+} from "@/features/profile";
 import { ApiError } from "@/shared/api/error";
 import type { ProductItemType } from "@/shared/schema/product";
 import { Button } from "@/shared/ui/button";
@@ -103,7 +106,10 @@ export function FittingOutfitSection() {
   );
   const selectedCount = Number(Boolean(top)) + Number(Boolean(bottom));
   const hasFullBodyImage = Boolean(memberProfile?.fullBodyImageUrl);
-  const canStart = selectedCount > 0 && hasFullBodyImage;
+  const isFullBodyImagePending =
+    useIsMutating({ mutationKey: fullBodyImageMutationKey }) > 0;
+  const canStart =
+    selectedCount > 0 && hasFullBodyImage && !isFullBodyImagePending;
 
   const createFittingJobMutation = useMutation({
     mutationFn: createFittingJob,
@@ -125,7 +131,8 @@ export function FittingOutfitSection() {
   });
 
   const handleStartFitting = () => {
-    if ((!top && !bottom) || !hasFullBodyImage) return;
+    if ((!top && !bottom) || !hasFullBodyImage || isFullBodyImagePending)
+      return;
 
     createFittingJobMutation.mutate({
       ...(top && { topProductId: top.productId }),

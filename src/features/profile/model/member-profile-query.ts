@@ -8,6 +8,7 @@ import {
   getMemberProfile,
   updateFullBodyImage,
 } from "../api/member-profile";
+import { fullBodyImageMutationKey } from "./full-body-image-query";
 
 export const memberProfileQueryOptions = queryOptions({
   queryKey: ["member", "profile"],
@@ -32,6 +33,7 @@ export function useUpdateFullBodyImageMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
+    mutationKey: [...fullBodyImageMutationKey, "save"],
     mutationFn: updateFullBodyImage,
     onSuccess: () =>
       queryClient.invalidateQueries({
