@@ -7,6 +7,7 @@ import styles from "./header-action.module.scss";
 import { ChatRoomListIcon, NotificationIcon } from "./header-icons";
 import { HeaderIconButton } from "./header-icon-button";
 import { HeaderIconLink } from "./header-icon-link";
+import { useNotificationUnread } from "./notification-context";
 
 type ChatRoomListButtonProps = {
   onClick: MouseEventHandler<HTMLButtonElement>;
@@ -20,11 +21,9 @@ export function ChatRoomListButton({ onClick }: ChatRoomListButtonProps) {
   );
 }
 
-export function NotificationLink({
-  hasUnread = false,
-}: {
-  hasUnread?: boolean;
-}) {
+export function NotificationLink() {
+  const hasUnread = useNotificationUnread();
+
   return (
     <HeaderIconLink
       aria-label={hasUnread ? "알림으로 이동, 새 알림 있음" : "알림으로 이동"}

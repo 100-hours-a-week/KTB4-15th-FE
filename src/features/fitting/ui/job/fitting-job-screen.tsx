@@ -37,11 +37,11 @@ export function FittingJobScreen({ fittingJobId }: FittingJobScreenProps) {
   };
 
   useEffect(() => {
-    if (data?.status === "FAILED") {
+    if (data?.fittingJobId === fittingJobId && data.status === "FAILED") {
       clearActiveFittingJobId(fittingJobId);
       clearFittingJobProgress(fittingJobId);
     }
-  }, [data?.status, fittingJobId]);
+  }, [data?.fittingJobId, data?.status, fittingJobId]);
 
   useEffect(() => {
     if (
@@ -58,7 +58,9 @@ export function FittingJobScreen({ fittingJobId }: FittingJobScreenProps) {
   }, [data, fittingJobId, markViewedMutation]);
 
   useEffect(() => {
-    if (data?.status !== "COMPLETED") return;
+    if (data?.fittingJobId !== fittingJobId || data.status !== "COMPLETED") {
+      return;
+    }
 
     clearActiveFittingJobId(fittingJobId);
     const timer = window.setTimeout(() => {
@@ -67,7 +69,7 @@ export function FittingJobScreen({ fittingJobId }: FittingJobScreenProps) {
     }, RESULT_REVEAL_DELAY);
 
     return () => window.clearTimeout(timer);
-  }, [data?.status, fittingJobId, router]);
+  }, [data, fittingJobId, router]);
 
   if (isPending) {
     return (

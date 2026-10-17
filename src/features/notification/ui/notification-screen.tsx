@@ -5,9 +5,9 @@ import { Button } from "@/shared/ui/button";
 import { LoadingMessage } from "@/shared/ui/loading-message";
 import { notificationListQueryOptions } from "../model/notification-query";
 import { NotificationCard } from "./notification-card";
-import styles from "./notification-list-screen.module.scss";
+import styles from "./notification-screen.module.scss";
 
-export function NotificationListScreen() {
+export function NotificationScreen() {
   const { data, isError, isFetching, isPending, refetch } = useQuery(
     notificationListQueryOptions,
   );
