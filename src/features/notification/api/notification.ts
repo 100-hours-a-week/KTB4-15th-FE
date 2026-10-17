@@ -4,7 +4,9 @@ import { extractSseEvents } from "@/shared/api/sse";
 import {
   notificationConnectedEvent,
   notificationList,
+  notificationRead,
   notificationReceivedEvent,
+  notificationUnreadStatus,
   type NotificationStreamEvent,
 } from "../schema/notification";
 
@@ -12,6 +14,31 @@ export async function getNotifications() {
   const response = await apiClient.get("notifications");
 
   return parseResponse(response, notificationList);
+}
+
+export async function getNotificationUnreadStatus() {
+  const response = await apiClient.get("notifications/unread");
+
+  return parseResponse(response, notificationUnreadStatus);
+}
+
+export async function markNotificationAsRead(notificationId: number) {
+  const response = await apiClient.patch(
+    `notifications/${notificationId}/read`,
+    {
+      json: { isRead: true },
+    },
+  );
+
+  return parseResponse(response, notificationRead);
+}
+
+export async function markAllNotificationsAsRead() {
+  const response = await apiClient.patch("notifications", {
+    json: { isRead: true },
+  });
+
+  return parseResponse(response, notificationRead);
 }
 
 export async function* connectNotificationStream(

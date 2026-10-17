@@ -123,6 +123,30 @@ export const handlers: RequestHandler[] = [
     });
   }),
 
+  http.get("*/notifications/unread", () =>
+    HttpResponse.json({
+      code: "OK",
+      data: { hasUnread: true },
+      message: "요청이 성공적으로 처리되었습니다.",
+    }),
+  ),
+
+  http.patch("*/notifications/:notificationId/read", () =>
+    HttpResponse.json({
+      code: "OK",
+      data: { unreadCount: 0 },
+      message: "요청이 성공적으로 처리되었습니다.",
+    }),
+  ),
+
+  http.patch("*/notifications", () =>
+    HttpResponse.json({
+      code: "OK",
+      data: { unreadCount: 0 },
+      message: "요청이 성공적으로 처리되었습니다.",
+    }),
+  ),
+
   http.get("*/notifications", () => {
     const empty =
       typeof window !== "undefined" &&

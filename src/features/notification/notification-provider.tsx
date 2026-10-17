@@ -1,19 +1,24 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState, type ReactNode } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useEffect, useRef, type ReactNode } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { fittingQueryKeys } from "@/features/fitting";
 import { NotificationUnreadContext } from "@/shared/ui/header/notification-context";
 import { showToast } from "@/shared/ui/toast";
 import { connectNotificationStream } from "./api/notification";
+import {
+  notificationQueryKeys,
+  notificationUnreadQueryOptions,
+} from "./model/notification-query";
+import type { NotificationUnreadStatus } from "./schema/notification";
 
 const RECONNECT_DELAY = 3000;
 export function NotificationProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const pathnameRef = useRef(pathname);
-  const [hasUnread, setHasUnread] = useState(false);
   const queryClient = useQueryClient();
+  const { data: unreadStatus } = useQuery(notificationUnreadQueryOptions);
 
   useEffect(() => {
     pathnameRef.current = pathname;
@@ -32,11 +37,17 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
           controller.signal,
         )) {
           if (event.event === "connected") {
-            setHasUnread(event.hasUnread);
+            queryClient.setQueryData<NotificationUnreadStatus>(
+              notificationQueryKeys.unread,
+              { hasUnread: event.hasUnread },
+            );
             continue;
           }
 
-          setHasUnread(true);
+          queryClient.setQueryData<NotificationUnreadStatus>(
+            notificationQueryKeys.unread,
+            { hasUnread: true },
+          );
           void queryClient.invalidateQueries({
             queryKey: fittingQueryKeys.currentJob,
           });
@@ -75,7 +86,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
   }, [queryClient]);
 
   return (
-    <NotificationUnreadContext value={hasUnread}>
+    <NotificationUnreadContext value={unreadStatus?.hasUnread ?? false}>
       {children}
     </NotificationUnreadContext>
   );
