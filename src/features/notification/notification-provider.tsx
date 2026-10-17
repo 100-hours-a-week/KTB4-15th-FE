@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState, type ReactNode } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { fittingQueryKeys } from "@/features/fitting";
 import { NotificationUnreadContext } from "@/shared/ui/header/notification-context";
 import { showToast } from "@/shared/ui/toast";
 import { connectNotificationStream } from "./api/notification";
@@ -8,6 +10,7 @@ import { connectNotificationStream } from "./api/notification";
 const RECONNECT_DELAY = 3000;
 export function NotificationProvider({ children }: { children: ReactNode }) {
   const [hasUnread, setHasUnread] = useState(false);
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     let stopped = false;
@@ -27,6 +30,9 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
           }
 
           setHasUnread(true);
+          void queryClient.invalidateQueries({
+            queryKey: fittingQueryKeys.currentJob,
+          });
           const message =
             event.type === "FITTING_SUCCESS"
               ? "가상 피팅이 완성되었어요."
@@ -52,7 +58,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
       controller?.abort();
       if (reconnectTimer) clearTimeout(reconnectTimer);
     };
-  }, []);
+  }, [queryClient]);
 
   return (
     <NotificationUnreadContext value={hasUnread}>
