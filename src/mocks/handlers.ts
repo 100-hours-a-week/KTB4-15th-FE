@@ -91,6 +91,10 @@ const rankingItems = {
 
 export const handlers: RequestHandler[] = [
   http.get("*/notifications/stream", () => {
+    const failed =
+      typeof window !== "undefined" &&
+      new URLSearchParams(window.location.search).get("mockNotification") ===
+        "fail";
     const encoder = new TextEncoder();
     let notificationTimer: ReturnType<typeof setTimeout>;
     const stream = new ReadableStream({
@@ -101,9 +105,10 @@ export const handlers: RequestHandler[] = [
           ),
         );
         notificationTimer = setTimeout(() => {
+          const type = failed ? "FITTING_FAIL" : "FITTING_SUCCESS";
           controller.enqueue(
             encoder.encode(
-              'event: notification\ndata: {"code":"NOTIFICATION_RECEIVED","data":{"notificationId":52,"fittingJobId":123,"type":"FITTING_SUCCESS"},"message":"새 알림이 도착했습니다."}\n\n',
+              `event: notification\ndata: {"code":"NOTIFICATION_RECEIVED","data":{"notificationId":52,"fittingJobId":123,"type":"${type}"},"message":"새 알림이 도착했습니다."}\n\n`,
             ),
           );
         }, 2000);
