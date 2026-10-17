@@ -1,2 +1,2 @@
 export { NotificationProvider } from "./notification-provider";
-export { NotificationListScreen } from "./ui/notification-list-screen";
+export { NotificationScreen } from "./ui/notification-screen";

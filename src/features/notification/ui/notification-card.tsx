@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { formatKoreanNumericDateTime } from "@/shared/utils/date-format";
 import type { NotificationItem } from "../schema/notification";
-import styles from "./notification-list-screen.module.scss";
+import styles from "./notification-screen.module.scss";
 
 export function NotificationCard({ item }: { item: NotificationItem }) {
   const isSuccess = item.type === "FITTING_SUCCESS";
