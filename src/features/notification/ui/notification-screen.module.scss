@@ -41,12 +41,14 @@
 
 .card {
   display: block;
+  width: 100%;
   padding: var(--space-xl);
   color: inherit;
   border: 1px solid var(--color-border-default);
   border-radius: var(--radius-large);
   background: var(--color-background-surface);
   text-decoration: none;
+  text-align: left;
 }
 
 .cardHeader,
@@ -93,6 +95,10 @@
   color: var(--color-text-secondary);
 }
 
+.cardFooter time {
+  margin-left: auto;
+}
+
 .message {
   @include type.label;
 
@@ -101,16 +107,19 @@
 }
 
 .cardFooter {
-  min-height: 33px;
-  padding-top: var(--space-md);
+  min-height: 44px;
   border-top: 1px solid var(--color-border-default);
 }
 
 .action {
   @include type.label;
 
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
   color: var(--color-text-primary);
   font-weight: var(--font-weight-semibold);
+  text-decoration: none;
 }
 
 .state {
