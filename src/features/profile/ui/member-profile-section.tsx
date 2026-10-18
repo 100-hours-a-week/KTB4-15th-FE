@@ -1,3 +1,4 @@
+import { redirectOnServerUnauthorized } from "@/shared/api/server";
 import { getMemberProfileServer } from "../api/member-profile-server";
 import styles from "./member-profile-section.module.scss";
 
@@ -41,7 +42,9 @@ export function MemberProfileSkeleton() {
 }
 
 export async function MemberProfileSection() {
-  const profile = await getMemberProfileServer();
+  const profile = await getMemberProfileServer().catch(
+    redirectOnServerUnauthorized,
+  );
 
   return (
     <section aria-labelledby="profile-title" className={styles.card}>
