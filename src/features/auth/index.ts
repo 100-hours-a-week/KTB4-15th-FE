@@ -1,4 +1,5 @@
 export { AuthenticatedUserRedirect } from "./guard/authenticated-user-redirect";
+export { EntryRedirect } from "./guard/entry-redirect";
 export { ServiceAccessGuard } from "./guard/service-access-guard";
 export { LoginForm } from "./ui/login-form";
 export { SessionExpiredToast } from "./ui/session-expired-toast";
