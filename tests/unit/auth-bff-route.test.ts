@@ -1,10 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-process.env.API_BASE_URL = "https://spring.example.com/api/v1/";
-
+delete process.env.API_BASE_URL;
 const { forwardAuthRequest } =
   await import("../../src/app/bff/auth/_lib/forward-auth-request.ts");
+process.env.API_BASE_URL = "https://spring.example.com/api/v1/";
 
 test("POST /bff/auth/refresh forwards cookies and Set-Cookie headers", async () => {
   const originalFetch = globalThis.fetch;

@@ -1,14 +1,12 @@
-const API_BASE_URL = process.env.API_BASE_URL;
-
-if (!API_BASE_URL) {
-  throw new Error("API_BASE_URL is not defined");
-}
+import { getServerApiBaseUrl } from "../../../../shared/api/server-config.ts";
 
 export async function forwardAuthRequest(request: Request, path: string) {
+  const apiBaseUrl = getServerApiBaseUrl();
+
   let upstreamResponse: Response;
 
   try {
-    upstreamResponse = await fetch(new URL(path, API_BASE_URL), {
+    upstreamResponse = await fetch(new URL(path, apiBaseUrl), {
       method: "POST",
       headers: {
         Cookie: request.headers.get("cookie") ?? "",

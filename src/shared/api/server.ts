@@ -2,12 +2,7 @@ import "server-only";
 
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
-
-const API_BASE_URL = process.env.API_BASE_URL;
-
-if (!API_BASE_URL) {
-  throw new Error("API_BASE_URL is not defined");
-}
+import { getServerApiBaseUrl } from "./server-config";
 
 export class ServerApiError extends Error {
   constructor(public readonly status: number) {
@@ -36,8 +31,9 @@ export async function redirectOnServerUnauthorized(
 
 export async function serverApi(path: string, init: RequestInit = {}) {
   const cookieStore = await cookies();
+  const apiBaseUrl = getServerApiBaseUrl();
 
-  const response = await fetch(new URL(path, API_BASE_URL), {
+  const response = await fetch(new URL(path, apiBaseUrl), {
     ...init,
     headers: {
       ...init.headers,
