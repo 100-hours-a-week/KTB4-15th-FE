@@ -58,7 +58,7 @@
 ### Overlay와 Toast
 
 - BottomSheet와 Dialog는 Radix Dialog를 기반으로 구현합니다.
-- Overlay의 열고 닫는 Lifecycle은 OverlayKit이 관리합니다.
+- BottomSheet와 Dialog의 열림 상태는 사용하는 화면이 소유합니다.
 - Dropdown은 Radix DropdownMenu를 사용하며 도메인 상태나 API 요청을 내부에서 처리하지 않습니다.
 - Toast Lifecycle은 Sonner가 담당하며 화면에서는 `showToast` 공통 API를 사용합니다.
 - Toast는 success와 error를 제공하고 각각 기본 3초와 4초 동안, 최대 3개까지 동시에 노출합니다.
