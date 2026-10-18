@@ -1,6 +1,6 @@
 # 인증 도메인
 
-마지막 업데이트: 2026-09-28
+마지막 업데이트: 2026-10-18
 
 ## 목적
 
@@ -26,13 +26,13 @@
 
 ### 로그아웃
 
-1. 마이 페이지에서 `POST /auth/logout`을 요청합니다.
+1. 마이 페이지에서 `POST /bff/auth/logout`을 요청합니다.
 2. 성공하면 피팅 선택과 모든 TanStack Query Cache를 제거합니다.
 3. `/login`으로 이동한 뒤 Route를 새로 고칩니다.
 
 ### 세션 만료
 
-1. 일반 API 요청이 `401`이면 공통 API Client가 Access Token 갱신을 한 번 시도합니다.
+1. 일반 API 요청이 `401`이면 공통 API Client가 `POST /bff/auth/refresh`로 Access Token 갱신을 한 번 시도합니다.
 2. 갱신 요청도 `401`이면 `ServiceAccessGuard`가 `/login?reason=session-expired`로 이동시킵니다.
 3. 로그인 화면은 세션 만료 Toast를 한 번 표시하고 주소의 Query String을 제거합니다.
 
@@ -56,12 +56,12 @@
 
 ## API
 
-| Method | Path            | 역할                            |
-| ------ | --------------- | ------------------------------- |
-| `POST` | `/auth/signup`  | 계정 생성                       |
-| `POST` | `/auth/login`   | 로그인 및 프로필 완료 여부 확인 |
-| `POST` | `/auth/logout`  | 현재 세션 종료                  |
-| `POST` | `/auth/refresh` | Access Token 갱신               |
+| Method | Path                | 역할                            |
+| ------ | ------------------- | ------------------------------- |
+| `POST` | `/auth/signup`      | 계정 생성                       |
+| `POST` | `/auth/login`       | 로그인 및 프로필 완료 여부 확인 |
+| `POST` | `/bff/auth/logout`  | Spring을 통한 현재 세션 종료    |
+| `POST` | `/bff/auth/refresh` | Spring을 통한 Access Token 갱신 |
 
 ## 오류와 예외 처리
 
@@ -75,8 +75,9 @@
 ## 관련 코드
 
 - `src/features/auth`: 인증 API, Schema와 Form
-- `src/features/auth/ui/service-access-guard.tsx`: 서비스 접근 제어
+- `src/features/auth/guard/service-access-guard.tsx`: 서비스 접근 제어
 - `src/shared/api/client.ts`: `401` 처리와 Token 갱신
+- `src/app/bff/auth`: Token 갱신과 로그아웃 응답 중계
 - `src/app/(public)/(auth)/login`, `src/app/(public)/(auth)/signup`: 인증 Route
 - `src/app/(service)/layout.tsx`: 보호된 Route의 Guard 적용
 
