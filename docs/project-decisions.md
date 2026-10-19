@@ -52,7 +52,9 @@
 ## 인증과 접근 제어
 
 - 인증은 HttpOnly Cookie를 사용합니다.
-- 일반 API 요청이 `401`이면 Access Token 갱신을 한 번 시도하고 원래 요청을 다시 보냅니다.
+- 일반 API 요청이 `401`이면 Next `/bff/auth/refresh`를 통해 Access Token 갱신을 한 번 시도하고 원래 요청을 다시 보냅니다.
+- SSR 데이터 요청이 `401`이면 BFF 갱신 경로로 이동한 뒤 원래 경로의 SSR을 다시 실행하며, 두 번째 `401`은 로그인 화면으로 이동합니다.
+- 로그인은 Spring API를 직접 사용하고, Token 갱신과 로그아웃은 Spring의 `Set-Cookie`를 중계하는 Next Route Handler를 사용합니다.
 - 갱신도 `401`이면 Client Cache와 피팅 선택을 제거한 뒤 로그인 화면으로 이동합니다.
 - `(public)`은 인증된 사용자를 프로필 상태에 따라 `/chat` 또는 `/profile/setup`으로 보냅니다.
 - `(service)`는 인증과 프로필 완료 여부가 확인된 경우에만 화면을 렌더링합니다.

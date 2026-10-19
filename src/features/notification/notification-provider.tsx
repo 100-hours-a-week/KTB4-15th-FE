@@ -3,7 +3,7 @@
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, type ReactNode } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { fittingQueryKeys } from "@/features/fitting";
+import { fittingQueryKeys } from "@/features/fitting/model/fitting-query";
 import { NotificationUnreadContext } from "@/shared/ui/header/notification-context";
 import { showToast } from "@/shared/ui/toast";
 import { connectNotificationStream } from "./api/notification";
