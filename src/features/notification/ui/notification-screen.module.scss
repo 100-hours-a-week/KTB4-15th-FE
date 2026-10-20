@@ -120,6 +120,10 @@
   color: var(--color-text-primary);
   font-weight: var(--font-weight-semibold);
   text-decoration: none;
+
+  &:is(button) {
+    padding-inline: 0;
+  }
 }
 
 .state {

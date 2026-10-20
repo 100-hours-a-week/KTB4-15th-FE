@@ -5,9 +5,9 @@ export {
   useCreateFittingCandidateMutation,
   useCreateFittingResultMutation,
   useDeleteFittingResultMutation,
+  useMarkFittingResultViewedMutation,
   useUpdateFittingResultOutfitNameMutation,
 } from "./model/fitting-query";
-export { FittingEntryRedirect } from "./guard/fitting-entry-redirect";
 export { FittingJobScreen } from "./ui/job/fitting-job-screen";
 export { FittingFullBodyPhotoSection } from "./ui/entry/fitting-full-body-photo-section";
 export { FittingResultDetailScreen } from "./ui/result/fitting-result-detail-screen";

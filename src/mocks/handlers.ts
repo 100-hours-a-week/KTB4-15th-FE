@@ -392,7 +392,7 @@ export const handlers: RequestHandler[] = [
   }),
 
   http.patch("*/fitting-jobs/:fittingJobId/result/viewed", ({ params }) => {
-    if (params.fittingJobId !== "123") {
+    if (params.fittingJobId !== "122" && params.fittingJobId !== "123") {
       return HttpResponse.json(
         {
           code: "FITTING_JOB_NOT_FOUND",
@@ -403,11 +403,11 @@ export const handlers: RequestHandler[] = [
       );
     }
 
-    fittingResultViewed = true;
+    if (params.fittingJobId === "123") fittingResultViewed = true;
 
     return HttpResponse.json({
       code: "OK",
-      data: { fittingJobId: 123 },
+      data: { fittingJobId: Number(params.fittingJobId) },
       message: "가상피팅 결과를 확인 처리했습니다.",
     });
   }),
