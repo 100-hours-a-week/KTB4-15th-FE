@@ -89,9 +89,16 @@
 - 문서만 변경된 Commit은 자동 배포를 실행하지 않습니다.
 - Liveness 확인은 외부 의존성을 조회하지 않는 `GET /health`와 HTTP 200 `{ "status": "UP" }`을 사용합니다.
 
+## 테스트
+
+- 함수와 Route Handler의 동작은 Node.js 내장 Test Runner로 검증합니다.
+- 핵심 사용자 흐름은 Chromium 기반 Playwright 브라우저 테스트로 검증합니다.
+- 브라우저 테스트의 API 응답은 기존 MSW Handler를 재사용합니다.
+- Firefox, WebKit과 시각적 회귀 테스트는 호환성 검증 필요가 생길 때 도입합니다.
+
 ## 보류 항목
 
-- UI Component와 Browser 동작의 Test 도구 및 범위
+- UI Component 단위 Test 도구 및 범위
 - Husky 및 Pre-commit Hook 도입
 - 인증 Cookie 이름, 만료, 갱신 주기와 CSRF 정책
 - Desktop 외부 영역 디자인

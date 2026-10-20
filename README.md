@@ -26,6 +26,7 @@ pnpm dev
 pnpm dev          # 개발 서버
 pnpm build        # 프로덕션 빌드
 pnpm test         # Unit 테스트
+pnpm test:e2e     # Playwright 브라우저 테스트
 pnpm lint         # ESLint와 Stylelint 검사
 pnpm lint:fix     # 수정 가능한 lint 오류 자동 수정
 pnpm format       # Prettier 포맷 적용
