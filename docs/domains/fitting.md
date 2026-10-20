@@ -50,15 +50,13 @@
 ## 피팅 작업 흐름
 
 1. 선택한 상의와 하의의 `productId`로 `POST /fitting-jobs`를 요청합니다.
-2. 성공하면 활성 Job id와 시작 시간을 `localStorage`에 저장합니다.
-3. `/fitting/jobs/[fittingJobId]`로 이동합니다.
-4. Job 상태를 조회하고 `GENERATING`이면 생성 진행 화면을 표시합니다.
+2. 성공하면 `/fitting/jobs/[fittingJobId]`로 이동합니다.
+3. Job 상태를 조회하고 `GENERATING`이면 `createdAt` 기준의 생성 진행 화면을 표시합니다.
    SSE 알림이 유실되어도 완료 상태를 확인할 수 있도록 5초마다 현재 Job을 다시 조회합니다.
-5. `COMPLETED`이면 진행률을 100%로 표시한 뒤 900ms 후 `/fitting/jobs/[fittingJobId]/result`로 이동합니다.
-6. `FAILED` 작업은 피팅 홈 이동 시 확인 처리 API가 성공하면 활성 Job과 진행 시간 정보를 제거합니다.
-7. `COMPLETED`이면 활성 Job과 진행 시간 정보를 제거합니다.
+4. `COMPLETED`이면 진행률을 100%로 표시한 뒤 900ms 후 `/fitting/jobs/[fittingJobId]/result`로 이동합니다.
+5. `FAILED` 작업은 피팅 홈 이동 시 확인 처리합니다.
 
-활성 Job이 남아 있는 상태에서 `/fitting`에 진입하면 해당 Job 화면으로 이동합니다. 진행 화면의 Percentage는 서버 진행률이 아니라 시작 시간을 이용한 시각적 추정치이며 완료 전 최대 92%까지만 표시합니다.
+활성 Job이 남아 있는 상태에서 `/fitting`에 진입하면 해당 Job 화면으로 이동합니다. 진행 화면의 Percentage는 서버 진행률이 아니라 Job의 `createdAt`을 이용한 시각적 추정치이며 완료 전 최대 92%까지만 표시합니다.
 
 ## 피팅 결과
 
