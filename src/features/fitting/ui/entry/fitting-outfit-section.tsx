@@ -20,8 +20,6 @@ import {
 import { showToast } from "@/shared/ui/toast";
 import { formatPrice } from "@/shared/utils/price-format";
 import { createFittingJob } from "../../api/fitting-job";
-import { setActiveFittingJobId } from "../../store/active-fitting-job-storage";
-import { saveFittingJobStartedAt } from "../../store/fitting-job-progress-storage";
 import { useFittingSelectionStore } from "../../store/fitting-selection-store";
 import { useRestoreFittingSelection } from "../../store/use-restore-fitting-selection";
 import type { FittingCandidate } from "../../schema/fitting-candidate";
@@ -114,8 +112,6 @@ export function FittingOutfitSection() {
   const createFittingJobMutation = useMutation({
     mutationFn: createFittingJob,
     onSuccess: ({ fittingJobId }) => {
-      setActiveFittingJobId(fittingJobId);
-      saveFittingJobStartedAt(fittingJobId);
       clearSelection();
       router.push(`/fitting/jobs/${fittingJobId}`);
     },

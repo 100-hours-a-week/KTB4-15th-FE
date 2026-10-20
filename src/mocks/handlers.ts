@@ -21,6 +21,7 @@ let validatedFullBodyImageUrl: string | null = null;
 let fittingResultSaved = false;
 let fittingResultViewed = false;
 let fittingResultOutfitName = "가을 출근 니트 룩";
+const fittingJobCreatedAt = new Date().toISOString();
 let profile: MockProfile = {
   age: null,
   email: "mock@lookddak.com",
@@ -291,6 +292,7 @@ export const handlers: RequestHandler[] = [
       data: {
         fittingJobId: 123,
         status,
+        createdAt: fittingJobCreatedAt,
         resultViewed: fittingResultViewed,
         products: [
           {
@@ -334,7 +336,12 @@ export const handlers: RequestHandler[] = [
 
     return HttpResponse.json({
       code: "OK",
-      data: { fittingJobId: 123, status, result: null },
+      data: {
+        fittingJobId: 123,
+        status,
+        createdAt: fittingJobCreatedAt,
+        result: null,
+      },
       message: "요청이 성공적으로 처리되었습니다.",
     });
   }),
