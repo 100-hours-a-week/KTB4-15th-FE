@@ -1,7 +1,8 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { EntryRedirect } from "@/features/auth";
+import { getMemberMeServer } from "@/features/member/api/member-server";
 import { ONBOARDING_COOKIE_NAME } from "@/features/onboarding/model/onboarding-cookie";
+import { redirectOnServerUnauthorized } from "@/shared/api/server";
 
 export default async function Home() {
   const cookieStore = await cookies();
@@ -10,5 +11,7 @@ export default async function Home() {
 
   if (!onboardingCompleted) redirect("/onboarding");
 
-  return <EntryRedirect />;
+  const member = await getMemberMeServer().catch(redirectOnServerUnauthorized);
+
+  redirect(member.profileCompleted ? "/chat" : "/profile/setup");
 }
