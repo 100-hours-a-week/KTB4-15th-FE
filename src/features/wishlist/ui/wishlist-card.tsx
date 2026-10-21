@@ -1,6 +1,6 @@
 "use client";
 
-import Image, { type ImageLoaderProps } from "next/image";
+import Image from "next/image";
 import { useState } from "react";
 import { recordPurchaseLinkClick } from "@/features/product";
 import { getApiErrorMessage } from "@/shared/api/error";
@@ -17,11 +17,13 @@ import {
 import type { WishlistItem } from "../schema/wishlist";
 import styles from "./wishlist-card.module.scss";
 
-function passthroughImageLoader({ src }: ImageLoaderProps) {
-  return src;
-}
-
-export function WishlistCard({ product }: { product: WishlistItem }) {
+export function WishlistCard({
+  preload = false,
+  product,
+}: {
+  preload?: boolean;
+  product: WishlistItem;
+}) {
   const ProductFallbackIcon = product.itemType === "TOP" ? TopIcon : BottomIcon;
   const [imageFailed, setImageFailed] = useState(!product.productImageUrl);
   const [isImageOpen, setIsImageOpen] = useState(false);
@@ -80,8 +82,8 @@ export function WishlistCard({ product }: { product: WishlistItem }) {
             alt=""
             className={styles.productImage}
             fill
-            loader={passthroughImageLoader}
             onError={() => setImageFailed(true)}
+            preload={preload}
             sizes="96px"
             src={product.productImageUrl}
           />

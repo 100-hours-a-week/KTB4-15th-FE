@@ -67,8 +67,12 @@ export function WishlistScreen() {
         <>
           <p className={styles.count}>전체 {totalCount.toLocaleString()}개</p>
           <div className={styles.list}>
-            {products.map((product) => (
-              <WishlistCard key={product.wishlistId} product={product} />
+            {products.map((product, index) => (
+              <WishlistCard
+                key={product.wishlistId}
+                preload={index === 0}
+                product={product}
+              />
             ))}
             <div className={styles.loadMore} ref={loadMoreRef}>
               {isFetchingNextPage && "찜 목록을 더 불러오고 있어요."}
