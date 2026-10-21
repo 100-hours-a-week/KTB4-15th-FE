@@ -40,54 +40,52 @@ export function WishlistScreen() {
 
   return (
     <>
-      <main className={styles.screen}>
-        {isPending && (
-          <LoadingMessage className={styles.state}>
-            찜 목록을 불러오고 있어요
-          </LoadingMessage>
-        )}
-        {isInitialError && (
-          <div className={styles.state} role="alert">
-            <p>찜 목록을 불러오지 못했어요.</p>
-            <Button
-              isLoading={isFetching}
-              onClick={() => void refetch()}
-              size="small"
-              variant="secondary"
-            >
-              다시 시도
-            </Button>
-          </div>
-        )}
-        {!isPending && !isInitialError && products.length === 0 && (
-          <div className={styles.empty}>
-            <p>찜 목록이 비어있어요.</p>
-          </div>
-        )}
-        {products.length > 0 && (
-          <>
-            <p className={styles.count}>전체 {totalCount.toLocaleString()}개</p>
-            <div className={styles.list}>
-              {products.map((product) => (
-                <WishlistCard key={product.wishlistId} product={product} />
-              ))}
-              <div className={styles.loadMore} ref={loadMoreRef}>
-                {isFetchingNextPage && "찜 목록을 더 불러오고 있어요."}
-                {isError && data && (
-                  <Button
-                    isLoading={isFetchingNextPage}
-                    onClick={() => void fetchNextPage()}
-                    size="small"
-                    variant="secondary"
-                  >
-                    다시 시도
-                  </Button>
-                )}
-              </div>
+      {isPending && (
+        <LoadingMessage className={styles.state}>
+          찜 목록을 불러오고 있어요
+        </LoadingMessage>
+      )}
+      {isInitialError && (
+        <div className={styles.state} role="alert">
+          <p>찜 목록을 불러오지 못했어요.</p>
+          <Button
+            isLoading={isFetching}
+            onClick={() => void refetch()}
+            size="small"
+            variant="secondary"
+          >
+            다시 시도
+          </Button>
+        </div>
+      )}
+      {!isPending && !isInitialError && products.length === 0 && (
+        <div className={styles.empty}>
+          <p>찜 목록이 비어있어요.</p>
+        </div>
+      )}
+      {products.length > 0 && (
+        <>
+          <p className={styles.count}>전체 {totalCount.toLocaleString()}개</p>
+          <div className={styles.list}>
+            {products.map((product) => (
+              <WishlistCard key={product.wishlistId} product={product} />
+            ))}
+            <div className={styles.loadMore} ref={loadMoreRef}>
+              {isFetchingNextPage && "찜 목록을 더 불러오고 있어요."}
+              {isError && data && (
+                <Button
+                  isLoading={isFetchingNextPage}
+                  onClick={() => void fetchNextPage()}
+                  size="small"
+                  variant="secondary"
+                >
+                  다시 시도
+                </Button>
+              )}
             </div>
-          </>
-        )}
-      </main>
+          </div>
+        </>
+      )}
     </>
   );
 }

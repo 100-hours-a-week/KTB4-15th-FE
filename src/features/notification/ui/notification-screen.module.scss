@@ -1,5 +1,11 @@
 @use "@/styles/typography" as type;
 
+.content {
+  display: flex;
+  min-height: 100%;
+  flex-direction: column;
+}
+
 .toolbar {
   @include type.body-medium;
 

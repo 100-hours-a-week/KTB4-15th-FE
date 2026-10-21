@@ -24,7 +24,7 @@ export function NotificationScreen() {
   );
 
   return (
-    <main className={styles.screen}>
+    <div className={styles.content}>
       {data && !isError && (
         <div className={styles.toolbar}>
           <span>읽지 않은 알림 {data.unreadCount}개</span>
@@ -83,6 +83,6 @@ export function NotificationScreen() {
           알림은 최근 7일 동안 보관되며 순차적으로 자동 삭제됩니다.
         </p>
       )}
-    </main>
+    </div>
   );
 }
