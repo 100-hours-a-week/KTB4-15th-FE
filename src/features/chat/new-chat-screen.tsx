@@ -20,7 +20,7 @@ function showSendChatMessageError(error: Error) {
 
 export function NewChatScreen({ date }: { date: string }) {
   const router = useRouter();
-  const { isNavigationVisible } = useNavigationVisibility();
+  const { isNavigationVisible, keyboardInset } = useNavigationVisibility();
   const submissionLockRef = useRef(false);
   const createChatRoomMutation = useCreateChatRoomMutation();
 
@@ -54,8 +54,11 @@ export function NewChatScreen({ date }: { date: string }) {
       <ChatIntro date={date} onSelectQuestion={handleSubmit} />
       <div
         className={`${styles.composerDock} ${
-          isNavigationVisible ? "" : styles.navigationHidden
+          isNavigationVisible && keyboardInset === 0
+            ? ""
+            : styles.navigationHidden
         }`}
+        style={keyboardInset > 0 ? { bottom: keyboardInset } : undefined}
       >
         <ChatComposer
           isSubmitting={createChatRoomMutation.isPending}

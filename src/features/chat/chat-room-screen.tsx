@@ -30,7 +30,7 @@ function showSendChatMessageError(error: Error) {
 
 export function ChatRoomScreen({ chatRoomId }: { chatRoomId: number }) {
   const router = useRouter();
-  const { isNavigationVisible } = useNavigationVisibility();
+  const { isNavigationVisible, keyboardInset } = useNavigationVisibility();
   const submissionLockRef = useRef(false);
   const sendChatMessageMutation = useSendChatMessageMutation();
   const chatRoomQuery = useInfiniteQuery(chatRoomQueryOptions(chatRoomId));
@@ -154,8 +154,11 @@ export function ChatRoomScreen({ chatRoomId }: { chatRoomId: number }) {
       />
       <div
         className={`${styles.composerDock} ${
-          isNavigationVisible ? "" : styles.navigationHidden
+          isNavigationVisible && keyboardInset === 0
+            ? ""
+            : styles.navigationHidden
         }`}
+        style={keyboardInset > 0 ? { bottom: keyboardInset } : undefined}
       >
         <ChatComposer
           disabled={isInitialChatRoomPending}
