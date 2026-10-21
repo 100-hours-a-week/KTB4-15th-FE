@@ -1,5 +1,6 @@
 import { getWishlistsServer } from "@/features/wishlist/api/wishlist-server";
 import { WishlistScreen } from "@/features/wishlist";
+import { WishlistCard } from "@/features/wishlist/ui/wishlist-card";
 import {
   isServerUnauthorizedError,
   redirectOnServerUnauthorized,
@@ -21,7 +22,16 @@ export default async function WishlistsPage() {
         right={<NotificationLink />}
       />
       <main className={styles.main}>
-        <WishlistScreen initialPage={initialPage} />
+        <WishlistScreen
+          initialCards={initialPage?.items.map((product, index) => (
+            <WishlistCard
+              key={product.wishlistId}
+              preload={index === 0}
+              product={product}
+            />
+          ))}
+          initialPage={initialPage}
+        />
       </main>
     </>
   );
