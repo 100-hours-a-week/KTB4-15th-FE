@@ -1,6 +1,6 @@
 import { NotificationScreen } from "@/features/notification";
 import { Header, HeaderTitle } from "@/shared/ui/header";
-import styles from "./page.module.scss";
+import styles from "../page-layout.module.scss";
 
 export default function NotificationsPage() {
   return (
