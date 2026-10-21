@@ -5,10 +5,15 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { Button } from "@/shared/ui/button";
 import { LoadingMessage } from "@/shared/ui/loading-message";
 import { wishlistListQueryOptions } from "../model/wishlist-query";
+import type { WishlistList } from "../schema/wishlist";
 import { WishlistCard } from "./wishlist-card";
 import styles from "./wishlist-screen.module.scss";
 
-export function WishlistScreen() {
+export function WishlistScreen({
+  initialPage,
+}: {
+  initialPage?: WishlistList;
+}) {
   const {
     data,
     fetchNextPage,
@@ -18,7 +23,16 @@ export function WishlistScreen() {
     isFetchingNextPage,
     isPending,
     refetch,
-  } = useInfiniteQuery(wishlistListQueryOptions);
+  } = useInfiniteQuery({
+    ...wishlistListQueryOptions,
+    initialData: initialPage
+      ? {
+          pageParams: [undefined],
+          pages: [initialPage],
+        }
+      : undefined,
+    staleTime: initialPage ? 30_000 : undefined,
+  });
   const loadMoreRef = useRef<HTMLDivElement>(null);
   const products = data?.pages.flatMap((page) => page.items) ?? [];
   const totalCount = data?.pages[0]?.totalCount ?? 0;
