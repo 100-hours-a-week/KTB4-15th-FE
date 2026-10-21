@@ -1,15 +1,5 @@
 @use "@/styles/typography" as type;
 
-.screen {
-  display: flex;
-  flex-direction: column;
-  min-height: calc(100dvh - var(--header-height) - var(--navigation-height));
-  padding-block: var(--space-xl)
-    calc(
-      var(--navigation-height) + env(safe-area-inset-bottom) + var(--space-xl)
-    );
-}
-
 .toolbar {
   @include type.body-medium;
 
