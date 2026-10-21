@@ -25,18 +25,19 @@ export function NotificationScreen() {
 
   return (
     <div className={styles.content}>
-      {data && !isError && (
+      {data && !isError && data.items.length > 0 && (
         <div className={styles.toolbar}>
           <span>읽지 않은 알림 {data.unreadCount}개</span>
-          <Button
-            disabled={data.unreadCount === 0}
-            isLoading={markAllReadMutation.isPending}
-            onClick={() => markAllReadMutation.mutate()}
-            size="small"
-            variant="text"
-          >
-            모두 읽음
-          </Button>
+          {data.unreadCount > 0 && (
+            <Button
+              isLoading={markAllReadMutation.isPending}
+              onClick={() => markAllReadMutation.mutate()}
+              size="small"
+              variant="text"
+            >
+              모두 읽음
+            </Button>
+          )}
         </div>
       )}
       {isPending && (
@@ -58,7 +59,7 @@ export function NotificationScreen() {
         </div>
       )}
       {!isPending && !isError && data.items.length === 0 && (
-        <p className={styles.state}>아직 도착한 알림이 없어요.</p>
+        <p className={styles.emptyState}>아직 도착한 알림이 없어요.</p>
       )}
       {data && data.items.length > 0 && (
         <div className={styles.list}>
