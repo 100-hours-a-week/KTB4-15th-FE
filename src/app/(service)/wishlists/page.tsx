@@ -1,5 +1,6 @@
 import { WishlistScreen } from "@/features/wishlist";
 import { Header, HeaderTitle, NotificationLink } from "@/shared/ui/header";
+import styles from "../page-layout.module.scss";
 
 export default function WishlistsPage() {
   return (
@@ -8,7 +9,9 @@ export default function WishlistsPage() {
         left={<HeaderTitle>찜</HeaderTitle>}
         right={<NotificationLink />}
       />
-      <WishlistScreen />
+      <main className={styles.main}>
+        <WishlistScreen />
+      </main>
     </>
   );
 }

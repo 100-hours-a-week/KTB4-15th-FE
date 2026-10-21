@@ -5,7 +5,7 @@
   min-height: calc(100dvh - var(--header-height));
   grid-template-rows: auto auto 1fr auto;
   gap: var(--space-md);
-  padding-block: var(--space-sm) var(--space-lg);
+  padding-block: var(--space-md) var(--space-lg);
 }
 
 .editing {
