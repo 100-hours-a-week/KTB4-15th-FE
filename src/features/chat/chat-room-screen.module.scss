@@ -38,11 +38,6 @@
   );
   width: min(100%, var(--app-max-width));
   padding: var(--space-sm) var(--screen-padding);
-  background: linear-gradient(
-    to bottom,
-    transparent,
-    var(--color-background-page) var(--space-md)
-  );
   transform: translateX(50%);
   transition: bottom var(--duration-normal) var(--easing-standard);
 }
