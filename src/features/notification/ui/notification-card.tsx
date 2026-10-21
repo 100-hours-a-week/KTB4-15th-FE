@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { getCurrentFittingJob } from "@/features/fitting/api/fitting-job";
 import { useMarkFittingResultViewedMutation } from "@/features/fitting";
 import { Button } from "@/shared/ui/button";
 import { showToast } from "@/shared/ui/toast";
@@ -37,6 +38,14 @@ export function NotificationCard({
         if (!item.isRead) void onRead();
 
         try {
+          const currentJob = await getCurrentFittingJob();
+          if (currentJob?.status === "GENERATING") {
+            showToast.error(
+              "다른 피팅 작업 중입니다. 잠시 후 다시 시도해주세요.",
+            );
+            return;
+          }
+
           await markViewedMutation.mutateAsync(item.targetId);
           router.push("/fitting");
         } catch {

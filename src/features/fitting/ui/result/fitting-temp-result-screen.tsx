@@ -31,16 +31,17 @@ function FittingTempResultContent({ result }: { result: FittingTempResult }) {
   const router = useRouter();
   const [outfitName, setOutfitName] = useState(result.outfitName);
   const [nameError, setNameError] = useState("");
-  const [saveState, setSaveState] = useState<SaveState>(
+  const [localSaveState, setLocalSaveState] = useState<SaveState>(
     result.saved ? "saved" : "idle",
   );
+  const saveState: SaveState = result.saved ? "saved" : localSaveState;
   const createFittingResultMutation = useCreateFittingResultMutation();
 
   useEffect(() => {
     if (saveState !== "saved-confirmation") return;
 
     const timer = window.setTimeout(
-      () => setSaveState("saved"),
+      () => setLocalSaveState("saved"),
       SAVE_CONFIRMATION_DURATION,
     );
 
@@ -73,7 +74,7 @@ function FittingTempResultContent({ result }: { result: FittingTempResult }) {
         },
         onSuccess: () => {
           setOutfitName(normalizedOutfitName);
-          setSaveState("saved-confirmation");
+          setLocalSaveState("saved-confirmation");
           showToast.success("가상 피팅 결과를 저장했어요.", {
             id: "create-fitting-result",
           });

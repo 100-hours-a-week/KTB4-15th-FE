@@ -137,7 +137,7 @@ export function FittingFullBodyPhotoSection() {
           <LoadingDots />
         </DialogTitle>
         <DialogDescription className={styles.processingDescription}>
-          처리가 끝날 때까지 이 화면에서 잠시만 기다려 주세요.
+          처리가 끝날 때까지 잠시만 기다려 주세요.
         </DialogDescription>
       </Dialog>
     </section>

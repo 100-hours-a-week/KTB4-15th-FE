@@ -324,6 +324,7 @@ export function FittingWardrobe({ initialFilter }: FittingWardrobeProps) {
           {!isEditing &&
             !isPending &&
             !isInitialError &&
+            products.length > 0 &&
             (filter === "ALL" ? (["TOP", "BOTTOM"] as const) : [filter]).map(
               (itemType) => (
                 <EmptyCandidateCard itemType={itemType} key={itemType} />

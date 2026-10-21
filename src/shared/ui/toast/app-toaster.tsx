@@ -12,6 +12,8 @@ export function AppToaster() {
       gap={8}
       mobileOffset={{
         bottom: "calc(env(safe-area-inset-bottom) + var(--space-lg))",
+        left: "var(--screen-padding)",
+        right: "var(--screen-padding)",
       }}
       offset={{
         bottom: "calc(env(safe-area-inset-bottom) + var(--space-lg))",
