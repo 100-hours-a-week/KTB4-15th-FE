@@ -3,13 +3,13 @@
 import Image, { type StaticImageData } from "next/image";
 import { useQuery } from "@tanstack/react-query";
 import { memberProfileQueryOptions } from "@/features/profile";
-import aiImage from "@/shared/assets/ai-avatar.png";
+import aiImage from "@/shared/assets/ai-avatar.webp";
 import { ChevronRightIcon } from "@/shared/ui/icon";
 import type { ChatSourceType } from "../../schema/chat";
-import knitImage from "../../icon/knit.png";
-import likeImage from "../../icon/like.png";
-import shirtImage from "../../icon/shirt.png";
-import suitImage from "../../icon/suit.png";
+import knitImage from "../../icon/knit.webp";
+import likeImage from "../../icon/like.webp";
+import shirtImage from "../../icon/shirt.webp";
+import suitImage from "../../icon/suit.webp";
 import styles from "./chat-intro.module.scss";
 
 type SuggestedQuestion = {
@@ -83,6 +83,7 @@ export function ChatIntro({
           loading="eager"
           sizes="44px"
           src={aiImage}
+          unoptimized
         />
         <div className={styles.messageArea}>
           <div className={styles.profile}>
@@ -124,6 +125,7 @@ export function ChatIntro({
                 className={styles.questionImage}
                 sizes="44px"
                 src={question.image}
+                unoptimized
               />
               <span className={styles.questionText}>
                 <strong>{question.title}</strong>

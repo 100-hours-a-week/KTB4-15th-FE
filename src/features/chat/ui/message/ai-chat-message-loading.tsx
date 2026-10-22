@@ -1,5 +1,5 @@
 import Image from "next/image";
-import aiImage from "@/shared/assets/ai-avatar.png";
+import aiImage from "@/shared/assets/ai-avatar.webp";
 import styles from "./ai-chat-message-loading.module.scss";
 
 export function AIChatMessageLoading() {
@@ -16,6 +16,7 @@ export function AIChatMessageLoading() {
         className={styles.avatar}
         sizes="40px"
         src={aiImage}
+        unoptimized
       />
       <div className={styles.content}>
         <div className={styles.meta}>
