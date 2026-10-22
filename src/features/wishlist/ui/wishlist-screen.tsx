@@ -1,28 +1,52 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { useEffect, useRef } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Button } from "@/shared/ui/button";
 import { LoadingMessage } from "@/shared/ui/loading-message";
 import { wishlistListQueryOptions } from "../model/wishlist-query";
+import type { WishlistList } from "../schema/wishlist";
 import { WishlistCard } from "./wishlist-card";
 import styles from "./wishlist-screen.module.scss";
 
-export function WishlistScreen() {
+export function WishlistScreen({
+  initialCards,
+  initialPage,
+}: {
+  initialCards?: ReactNode;
+  initialPage?: WishlistList;
+}) {
   const {
     data,
     fetchNextPage,
     hasNextPage,
     isError,
+    isFetchedAfterMount,
     isFetching,
     isFetchingNextPage,
     isPending,
     refetch,
-  } = useInfiniteQuery(wishlistListQueryOptions);
+  } = useInfiniteQuery({
+    ...wishlistListQueryOptions,
+    initialData: initialPage
+      ? {
+          pageParams: [undefined],
+          pages: [initialPage],
+        }
+      : undefined,
+    staleTime: initialPage ? 30_000 : undefined,
+  });
   const loadMoreRef = useRef<HTMLDivElement>(null);
-  const products = data?.pages.flatMap((page) => page.items) ?? [];
+  const showServerCards = Boolean(initialPage) && !isFetchedAfterMount;
+  const products =
+    data?.pages.slice(showServerCards ? 1 : 0).flatMap((page) => page.items) ??
+    [];
   const totalCount = data?.pages[0]?.totalCount ?? 0;
   const isInitialError = isError && data == null;
+  const hasInitialProducts =
+    showServerCards && Boolean(initialPage?.items.length);
+  const hasProducts = hasInitialProducts || products.length > 0;
 
   useEffect(() => {
     const target = loadMoreRef.current;
@@ -58,17 +82,22 @@ export function WishlistScreen() {
           </Button>
         </div>
       )}
-      {!isPending && !isInitialError && products.length === 0 && (
+      {!isPending && !isInitialError && !hasProducts && (
         <div className={styles.empty}>
           <p>찜 목록이 비어있어요.</p>
         </div>
       )}
-      {products.length > 0 && (
+      {hasProducts && (
         <>
           <p className={styles.count}>전체 {totalCount.toLocaleString()}개</p>
           <div className={styles.list}>
-            {products.map((product) => (
-              <WishlistCard key={product.wishlistId} product={product} />
+            {showServerCards && initialCards}
+            {products.map((product, index) => (
+              <WishlistCard
+                key={product.wishlistId}
+                preload={!showServerCards && index === 0}
+                product={product}
+              />
             ))}
             <div className={styles.loadMore} ref={loadMoreRef}>
               {isFetchingNextPage && "찜 목록을 더 불러오고 있어요."}
