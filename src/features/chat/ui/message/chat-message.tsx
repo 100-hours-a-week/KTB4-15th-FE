@@ -21,7 +21,12 @@ type AIChatMessageProps = {
 export function StreamingAIChatMessage({ content }: { content: string }) {
   return (
     <article className={styles.aiMessage}>
-      <Image alt="AI 스타일리스트" className={styles.avatar} src={aiImage} />
+      <Image
+        alt="AI 스타일리스트"
+        className={styles.avatar}
+        sizes="40px"
+        src={aiImage}
+      />
       <div className={styles.aiContent}>
         <div className={styles.aiMeta}>
           <strong className={styles.aiName}>AI 스타일리스트</strong>
@@ -73,7 +78,12 @@ export function UserChatMessage({
 export function AIChatMessage({ message }: AIChatMessageProps) {
   return (
     <article className={styles.aiMessage}>
-      <Image alt="AI 스타일리스트" className={styles.avatar} src={aiImage} />
+      <Image
+        alt="AI 스타일리스트"
+        className={styles.avatar}
+        sizes="40px"
+        src={aiImage}
+      />
       <div className={styles.aiContent}>
         <div className={styles.aiMeta}>
           <strong className={styles.aiName}>AI 스타일리스트</strong>

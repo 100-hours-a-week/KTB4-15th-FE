@@ -79,6 +79,7 @@ export function ChatIntro({ date, onSelectQuestion }: ChatIntroProps) {
           alt="AI 스타일리스트"
           className={styles.avatar}
           loading="eager"
+          sizes="44px"
           src={aiImage}
         />
         <div className={styles.messageArea}>
@@ -119,6 +120,7 @@ export function ChatIntro({ date, onSelectQuestion }: ChatIntroProps) {
               <Image
                 alt=""
                 className={styles.questionImage}
+                sizes="44px"
                 src={question.image}
               />
               <span className={styles.questionText}>

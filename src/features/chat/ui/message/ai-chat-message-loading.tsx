@@ -14,6 +14,7 @@ export function AIChatMessageLoading() {
         alt=""
         aria-hidden="true"
         className={styles.avatar}
+        sizes="40px"
         src={aiImage}
       />
       <div className={styles.content}>
