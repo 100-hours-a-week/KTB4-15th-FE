@@ -96,7 +96,7 @@ export function OnboardingScreen() {
               alt=""
               aria-hidden="true"
               className={styles.preloadImage}
-              loading="eager"
+              preload
               sizes="(max-width: 480px) 100vw, 360px"
               src={nextItem.image}
             />
