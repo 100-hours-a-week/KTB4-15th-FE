@@ -3,7 +3,6 @@
 import Image, { type StaticImageData } from "next/image";
 import { useQuery } from "@tanstack/react-query";
 import { memberProfileQueryOptions } from "@/features/profile";
-import { wishlistCountQueryOptions } from "@/features/wishlist";
 import aiImage from "@/shared/assets/ai-avatar.png";
 import { ChevronRightIcon } from "@/shared/ui/icon";
 import type { ChatSourceType } from "../../schema/chat";
@@ -59,16 +58,19 @@ type ChatIntroProps = {
     message: string,
     sourceType: ChatSourceType,
   ) => Promise<void>;
+  showWishlistQuestion: boolean;
 };
 
-export function ChatIntro({ date, onSelectQuestion }: ChatIntroProps) {
+export function ChatIntro({
+  date,
+  onSelectQuestion,
+  showWishlistQuestion,
+}: ChatIntroProps) {
   const memberProfileQuery = useQuery(memberProfileQueryOptions);
-  const wishlistCountQuery = useQuery(wishlistCountQueryOptions);
   const memberName = memberProfileQuery.data?.name;
-  const suggestedQuestions =
-    (wishlistCountQuery.data?.count ?? 0) >= 10
-      ? [WISHLIST_QUESTION, ...GENERAL_QUESTIONS]
-      : GENERAL_QUESTIONS;
+  const suggestedQuestions = showWishlistQuestion
+    ? [WISHLIST_QUESTION, ...GENERAL_QUESTIONS]
+    : GENERAL_QUESTIONS;
 
   return (
     <div className={styles.landing}>
