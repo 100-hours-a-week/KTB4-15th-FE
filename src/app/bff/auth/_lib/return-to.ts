@@ -9,3 +9,10 @@ export function getSafeReturnTo(requestUrl: string) {
 
   return `${target.pathname}${target.search}`;
 }
+
+export function isSecureRequest(request: Request) {
+  return (
+    request.headers.get("x-forwarded-proto") === "https" ||
+    new URL(request.url).protocol === "https:"
+  );
+}

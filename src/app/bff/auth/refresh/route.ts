@@ -1,8 +1,15 @@
 import { NextResponse } from "next/server";
 import { forwardAuthRequest } from "../_lib/forward-auth-request";
-import { getSafeReturnTo } from "../_lib/return-to";
+import { getSafeReturnTo, isSecureRequest } from "../_lib/return-to";
 
 const REFRESH_ATTEMPT_COOKIE = "lookddakRefreshAttempted";
+
+function redirectTo(path: string) {
+  return new NextResponse(null, {
+    status: 303,
+    headers: { Location: path },
+  });
+}
 
 function appendSetCookies(source: Response, target: NextResponse) {
   for (const cookie of source.headers.getSetCookie()) {
@@ -20,21 +27,15 @@ export async function GET(request: Request) {
   if (!refreshResponse.ok) {
     if (refreshResponse.status !== 401) return refreshResponse;
 
-    const loginResponse = NextResponse.redirect(
-      new URL("/login?reason=session-expired", request.url),
-      303,
-    );
+    const loginResponse = redirectTo("/login?reason=session-expired");
     appendSetCookies(refreshResponse, loginResponse);
     return loginResponse;
   }
 
-  const response = NextResponse.redirect(
-    new URL(getSafeReturnTo(request.url), request.url),
-    303,
-  );
+  const response = redirectTo(getSafeReturnTo(request.url));
   response.cookies.set(REFRESH_ATTEMPT_COOKIE, "1", {
     httpOnly: true,
-    secure: new URL(request.url).protocol === "https:",
+    secure: isSecureRequest(request),
     sameSite: "lax",
     path: "/",
     maxAge: 60,
