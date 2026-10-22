@@ -1,8 +1,10 @@
 import { z } from "zod";
+import { productItemTypeSchema } from "@/shared/schema/product";
 
 export const CHAT_ROOM_TITLE_MAX_LENGTH = 20;
 
 export const chatMessageGenerationStatus = z.enum([
+  "PENDING",
   "GENERATING",
   "COMPLETED",
   "FAILED",
@@ -45,10 +47,11 @@ export const recommendedProductResponse = z.object({
   productImageUrl: z.string(),
   currentPrice: z.number().int().nonnegative(),
   color: z.string(),
-  itemType: z.enum(["TOP", "BOTTOM"]),
+  itemType: productItemTypeSchema,
   purchaseUrl: z.string(),
   recommendedReason: z.string().optional(),
   isWishlisted: z.boolean(),
+  wishlistId: z.number().int().positive().nullable(),
   isFittingCandidate: z.boolean(),
   fittingCandidateId: z.number().int().positive().nullable(),
 });
@@ -103,37 +106,36 @@ export const chatRoomDetailResponse = z.object({
 
 export type ChatRoomDetailResponse = z.infer<typeof chatRoomDetailResponse>;
 
-export const chatMessageGenerationStatusResponse = z.discriminatedUnion(
-  "generationStatus",
-  [
-    z.object({
-      generationStatus: z.enum(["GENERATING", "FAILED"]),
-      message: z.null(),
-    }),
-    z.object({
-      generationStatus: z.literal("COMPLETED"),
-      message: aiMessageResponse,
-    }),
-  ],
-);
+export const chatStreamEvent = z.discriminatedUnion("type", [
+  z.object({
+    type: z.literal("connected"),
+    userMessageId: z.number().int().positive(),
+  }),
+  z.object({
+    type: z.literal("snapshot"),
+    userMessageId: z.number().int().positive(),
+    content: z.string(),
+  }),
+  z.object({
+    type: z.literal("token"),
+    userMessageId: z.number().int().positive(),
+    content: z.string(),
+  }),
+  z.object({
+    type: z.literal("done"),
+    userMessageId: z.number().int().positive(),
+    content: z.string(),
+    products: z.array(recommendedProductResponse),
+  }),
+  z.object({
+    type: z.literal("error"),
+    userMessageId: z.number().int().positive(),
+    code: z.string(),
+    message: z.string(),
+  }),
+]);
 
-export type ChatMessageGenerationStatusResponse = z.infer<
-  typeof chatMessageGenerationStatusResponse
->;
-
-export type ChatMessageGenerationErrorCode =
-  | "INVALID_INPUT_VALUE"
-  | "UNAUTHORIZED"
-  | "CHAT_ROOM_ACCESS_DENIED"
-  | "CHAT_ROOM_NOT_FOUND"
-  | "CHAT_MESSAGE_NOT_FOUND"
-  | "INTERNAL_SERVER_ERROR";
-
-export type ChatMessageGenerationErrorResponse = {
-  code: ChatMessageGenerationErrorCode;
-  data: null;
-  message: string;
-};
+export type ChatStreamEvent = z.infer<typeof chatStreamEvent>;
 
 export const chatRoomItem = z.object({
   chatRoomId: z.number().int().positive(),

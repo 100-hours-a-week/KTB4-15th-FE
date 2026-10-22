@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import "pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css";
 import "sonner/dist/styles.css";
 import { AppToaster } from "@/shared/ui/toast";
 import styles from "./layout.module.scss";
@@ -16,6 +15,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
+  themeColor: "#f8f9fb",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

@@ -95,13 +95,10 @@ export function MoreIcon({ className }: IconProps) {
 
 export function EditIcon({ className }: IconProps) {
   return (
-    <Icon className={className}>
+    <Icon className={className} viewBox="0 -960 960 960">
       <path
-        d="m14.5 5.5 4 4M5 19l3.3-.7L18 8.6a1.4 1.4 0 0 0 0-2l-.6-.6a1.4 1.4 0 0 0-2 0l-9.7 9.7L5 19Z"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="1.8"
+        d="M200-200h57l391-391-57-57-391 391v57Zm-80 80v-170l528-527q12-11 26.5-17t30.5-6q16 0 31 6t26 18l55 56q12 11 17.5 26t5.5 30q0 16-5.5 30.5T817-647L290-120H120Zm640-584-56-56 56 56Zm-141 85-28-29 57 57-29-28Z"
+        fill="currentColor"
       />
     </Icon>
   );
@@ -202,7 +199,7 @@ export function AiFittingIcon({ className }: IconProps) {
     <Icon className={className} viewBox="0 0 16 16">
       <path
         d="M8 1.333 9.6 6.4 14.667 8 9.6 9.6 8 14.667 6.4 9.6 1.333 8 6.4 6.4z"
-        fill="#6ee7b7"
+        fill="currentColor"
       />
     </Icon>
   );

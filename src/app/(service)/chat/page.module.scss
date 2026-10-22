@@ -1,6 +1,6 @@
 .main {
   width: 100%;
-  min-height: calc(100dvh - var(--header-height));
-  padding-block: var(--space-xl)
+  min-height: 100dvh;
+  padding-block: calc(var(--header-height) + var(--space-xl))
     calc(var(--navigation-height) + 72px + var(--space-xl));
 }

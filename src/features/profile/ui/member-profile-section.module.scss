@@ -65,16 +65,9 @@
   font-weight: var(--font-weight-regular);
 }
 
-.errorState {
-  display: grid;
-  place-items: center;
-  min-height: 280px;
+.measurement .emptyValue {
   color: var(--color-text-secondary);
-  text-align: center;
-}
-
-.retryButton {
-  margin-top: var(--space-lg);
+  font-weight: var(--font-weight-regular);
 }
 
 .skeleton {

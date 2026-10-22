@@ -1,0 +1,69 @@
+.dialog.dialog {
+  top: 50%;
+  left: 50%;
+  isolation: isolate;
+  overflow: hidden;
+  width: fit-content;
+  max-width: calc(100vw - 32px);
+  height: auto;
+  max-height: calc(100dvh - 96px);
+  border: 0;
+  border-radius: var(--radius-large);
+  background: transparent;
+  transform: translate(-50%, -50%);
+
+  &[data-state="open"] {
+    animation: image-viewer-in var(--duration-normal) var(--easing-standard);
+  }
+
+  &[data-state="closed"] {
+    animation: image-viewer-out var(--duration-normal) var(--easing-standard);
+  }
+}
+
+.dialog.dialog > .closeButton {
+  position: absolute;
+  z-index: 2;
+  top: var(--space-sm);
+  right: var(--space-sm);
+  width: 40px;
+  height: 40px;
+  background: rgb(0 0 0 / 56%);
+  color: var(--color-white);
+}
+
+.imageArea {
+  position: relative;
+  width: fit-content;
+  height: fit-content;
+  background: transparent;
+}
+
+.image {
+  display: block;
+  width: auto;
+  max-width: min(calc(100vw - 32px), 440px);
+  height: auto;
+  max-height: calc(100dvh - 96px);
+}
+
+.visuallyHidden {
+  position: absolute;
+  overflow: hidden;
+  width: 1px;
+  height: 1px;
+  white-space: nowrap;
+  clip-path: inset(50%);
+}
+
+@keyframes image-viewer-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes image-viewer-out {
+  to {
+    opacity: 0;
+  }
+}

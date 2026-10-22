@@ -1,0 +1,91 @@
+@use "@/styles/typography" as type;
+
+.state {
+  @include type.body-medium;
+
+  display: grid;
+  min-height: calc(100dvh - var(--header-height));
+  place-items: center;
+  color: var(--color-text-secondary);
+  text-align: center;
+
+  p {
+    margin: 0 0 var(--space-lg);
+  }
+}
+
+.outfitNameField {
+  display: grid;
+  gap: var(--space-xs);
+}
+
+.outfitNameLabel {
+  @include type.caption;
+
+  color: var(--color-text-secondary);
+}
+
+.outfitNameDisplay {
+  @include type.body-medium;
+
+  display: flex;
+  min-height: var(--control-height-large);
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  border-radius: var(--radius-medium);
+  padding: var(--space-sm) var(--space-md) var(--space-sm) var(--space-lg);
+  background: var(--color-background-surface);
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-medium);
+
+  > span {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  button {
+    --icon-size: 20px;
+
+    flex: 0 0 auto;
+    color: var(--color-text-secondary);
+  }
+}
+
+.primaryLink {
+  @include type.body-large;
+
+  display: flex;
+  min-height: var(--control-height-large);
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  border-radius: var(--radius-medium);
+  background: var(--color-action-primary-default);
+  color: var(--color-action-primary-text);
+  font-weight: var(--font-weight-semibold);
+
+  svg {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+.deleteButton {
+  @include type.label;
+
+  display: flex;
+  min-height: var(--control-height);
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs);
+  border: 0;
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+}

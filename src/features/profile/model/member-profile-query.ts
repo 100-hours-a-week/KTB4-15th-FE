@@ -3,7 +3,12 @@ import {
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query";
-import { createMemberProfile, getMemberProfile } from "../api/member-profile";
+import {
+  createMemberProfile,
+  getMemberProfile,
+  updateFullBodyImage,
+} from "../api/member-profile";
+import { fullBodyImageMutationKey } from "./full-body-image-query";
 
 export const memberProfileQueryOptions = queryOptions({
   queryKey: ["member", "profile"],
@@ -21,5 +26,18 @@ export function useCreateMemberProfileMutation() {
         queryKey: memberProfileQueryOptions.queryKey,
       });
     },
+  });
+}
+
+export function useUpdateFullBodyImageMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationKey: [...fullBodyImageMutationKey, "save"],
+    mutationFn: updateFullBodyImage,
+    onSuccess: () =>
+      queryClient.invalidateQueries({
+        queryKey: memberProfileQueryOptions.queryKey,
+      }),
   });
 }

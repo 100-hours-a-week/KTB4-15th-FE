@@ -9,12 +9,12 @@ export function normalizeName(value: string) {
 export function validateName(value: string) {
   const name = normalizeName(value);
 
-  if (!name) return "*이름을 입력해주세요.";
+  if (!name) return "이름을 입력해주세요.";
   if (name.length > NAME_MAX_LENGTH) {
-    return "*이름은 최대 10자까지 작성 가능합니다.";
+    return "이름은 최대 10자까지 작성 가능합니다.";
   }
   if (!NAME_PATTERN.test(name)) {
-    return "*이름은 한글, 영어, 숫자를 사용하고, 단어 사이는 한 칸만 띄어주세요.";
+    return "이름은 한글, 영어, 숫자를 사용하고, 단어 사이는 한 칸만 띄어주세요.";
   }
 
   return undefined;
@@ -33,16 +33,15 @@ export function sanitizeDecimalInput(value: string) {
   return `${sanitizedInteger}.${decimalParts.join("").slice(0, 1)}`;
 }
 
-function validateRequiredRange(
+function validateOptionalRange(
   value: string,
   options: {
-    emptyMessage: string;
     max: number;
     min: number;
     rangeMessage: string;
   },
 ) {
-  if (!value) return options.emptyMessage;
+  if (!value) return undefined;
 
   const numericValue = Number(value);
   if (
@@ -57,31 +56,30 @@ function validateRequiredRange(
 }
 
 export function validateAge(value: string) {
-  if (!value) return "*나이를 입력해주세요.";
+  if (!value) return undefined;
 
   const numericValue = Number(value);
-  if (!Number.isFinite(numericValue) || numericValue < 1) {
-    return "*나이는 1세 이상이어야 합니다.";
+  if (!Number.isInteger(numericValue)) return "나이는 정수로 입력해주세요.";
+  if (numericValue < 1) {
+    return "나이는 1세 이상이어야 합니다.";
   }
-  if (numericValue > 100) return "*나이는 100세까지 가능합니다.";
+  if (numericValue > 100) return "나이는 100세까지 가능합니다.";
 
   return undefined;
 }
 
 export function validateHeight(value: string) {
-  return validateRequiredRange(value, {
-    emptyMessage: "*키를 입력해주세요.",
+  return validateOptionalRange(value, {
     max: 250,
     min: 100,
-    rangeMessage: "*키는 100 ~ 250cm까지 가능합니다.",
+    rangeMessage: "키는 100 ~ 250cm까지 가능합니다.",
   });
 }
 
 export function validateWeight(value: string) {
-  return validateRequiredRange(value, {
-    emptyMessage: "*몸무게를 입력해주세요.",
+  return validateOptionalRange(value, {
     max: 200,
     min: 30,
-    rangeMessage: "*몸무게는 30 ~ 200kg까지 가능합니다.",
+    rangeMessage: "몸무게는 30 ~ 200kg까지 가능합니다.",
   });
 }

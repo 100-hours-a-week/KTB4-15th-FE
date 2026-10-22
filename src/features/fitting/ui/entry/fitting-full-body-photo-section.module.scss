@@ -1,0 +1,117 @@
+@use "@/styles/typography" as type;
+
+.photoSection {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-xs);
+}
+
+.card {
+  position: relative;
+  overflow: hidden;
+  width: min(100%, 320px);
+  height: clamp(300px, 40dvh, 360px);
+  margin-inline: auto;
+  border-radius: var(--radius-large);
+  background: #f1f3f4;
+}
+
+.image {
+  object-fit: contain;
+  object-position: center;
+}
+
+.imageBackdrop {
+  transform: scale(1.08);
+  filter: blur(18px);
+  object-fit: cover;
+  opacity: 0.35;
+}
+
+.emptyPhoto {
+  @include type.body-medium;
+
+  display: grid;
+  height: 100%;
+  margin: 0;
+  place-items: center;
+  color: var(--color-text-secondary);
+}
+
+.photoAction {
+  @include type.caption;
+
+  --button-icon-size: 14px;
+
+  position: absolute;
+  z-index: 1;
+  min-height: 44px;
+  border: 0;
+  padding-inline: 12px;
+  background: transparent;
+  color: var(--color-gray-800);
+  font-weight: var(--font-weight-semibold);
+
+  svg {
+    position: relative;
+    z-index: 2;
+  }
+
+  &::after {
+    inset: 5px 0;
+    border-radius: var(--radius-full);
+  }
+
+  &::before {
+    position: absolute;
+    z-index: -1;
+    inset: 5px 0;
+    border: 1px solid rgb(255 255 255 / 80%);
+    border-radius: var(--radius-full);
+    background: rgb(255 255 255 / 92%);
+    content: "";
+  }
+}
+
+.changePhotoButton {
+  right: var(--space-lg);
+  bottom: var(--space-lg);
+}
+
+.photoError {
+  @include type.caption;
+
+  position: static;
+  display: flex;
+  width: min(100%, 320px);
+  height: 1.75rem;
+  align-items: flex-start;
+  margin: 0;
+  color: var(--color-action-danger-default);
+  text-align: left;
+}
+
+.processingDialog {
+  padding: var(--space-xl);
+  text-align: center;
+}
+
+.processingTitle {
+  @include type.heading-small;
+
+  margin: 0;
+}
+
+.processingDescription {
+  @include type.body-medium;
+
+  margin: var(--space-sm) 0 0;
+  color: var(--color-text-secondary);
+}
+
+@media (width <= 359px) {
+  .changePhotoButton {
+    right: var(--space-md);
+    bottom: var(--space-md);
+  }
+}

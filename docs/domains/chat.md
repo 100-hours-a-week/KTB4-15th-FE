@@ -1,6 +1,6 @@
 # 채팅 도메인
 
-마지막 업데이트: 2026-09-28
+마지막 업데이트: 2026-10-16
 
 ## 목적
 
@@ -11,8 +11,8 @@
 - **Chat Room**: 여러 User·AI Message를 묶는 대화 단위입니다.
 - **User Message**: 사용자가 보낸 내용과 AI 생성 상태를 가집니다.
 - **AI Message**: 생성된 답변이며 선택적으로 상품 Recommendation을 포함합니다.
-- **Generation Status**: `GENERATING`, `COMPLETED`, `FAILED` 중 하나입니다.
-- **Source Type**: 일반 질문은 `GENERAL`, 찜 목록 기반 질문은 `WISHLIST`입니다. 현재 화면에서는 `GENERAL`만 사용합니다.
+- **Generation Status**: 생성 대기 `PENDING`, 생성 중 `GENERATING`, 완료 `COMPLETED`, 실패 `FAILED` 중 하나입니다.
+- **Source Type**: 일반 질문은 `GENERAL`, 찜 목록 기반 질문은 `WISHLIST`입니다.
 
 ## 화면과 경로
 
@@ -31,13 +31,16 @@
 2. 첫 메시지와 `sourceType`으로 `POST /chat-rooms`를 요청합니다.
 3. 성공하면 응답받은 `chatRoomId`의 `/chat/[chatId]`로 현재 Route를 교체합니다.
 
+찜한 상품이 10개 이상이면 새 대화 화면에 찜 목록 기반 코디 추천 질문을 표시하며, 선택 시 `WISHLIST`로 대화를 생성합니다. 찜 개수 조회가 완료되지 않았거나 실패하면 해당 질문만 표시하지 않습니다.
+
 ### 기존 대화
 
 1. `GET /chat-rooms/{chatRoomId}`로 최근 메시지를 가져옵니다.
 2. 사용자가 메시지를 보내면 `POST /chat-rooms/{chatRoomId}/messages`를 요청합니다.
 3. 대화 Query를 무효화하여 새 User Message와 생성 상태를 반영합니다.
-4. `GENERATING`인 User Message가 있으면 2초마다 생성 상태를 확인합니다.
-5. 상태가 `COMPLETED` 또는 `FAILED`가 되면 대화를 다시 조회합니다.
+4. `PENDING` 또는 `GENERATING`인 User Message가 있으면 해당 Message의 SSE에 연결합니다. 최초 연결은 `PENDING`을 `GENERATING`으로 전환하며 AI 생성을 시작합니다.
+5. `token`은 버퍼에 쌓아 임시 AI Message에 짧은 덩어리로 표시하고, 버퍼가 많이 쌓이면 출력량을 늘립니다. `done` 이후 남은 글자를 모두 표시한 다음 대화를 다시 조회하며, `error`는 즉시 반영합니다.
+6. 종료 이벤트 없이 연결이 끊기면 오류를 안내하고 대화를 다시 조회합니다.
 
 AI 답변 생성 중에는 추가 전송을 막습니다. 빠른 중복 입력도 별도의 Submission Lock으로 방지합니다.
 
@@ -68,11 +71,12 @@ Sidebar가 열렸을 때 대화 목록을 20개씩 Cursor 기반으로 조회합
 
 목록 끝이 가까워지면 Intersection Observer로 다음 Page를 불러옵니다.
 
-## 추천 상품과 피팅 연동
+## 추천 상품과 찜·피팅 연동
 
 AI Message의 Recommendation은 하나 이상의 추천 상품을 포함할 수 있습니다.
 
 - 상품 카드에서 가격, 색상, 추천 이유와 외부 구매 링크를 표시합니다.
+- 하트 버튼으로 상품을 찜하거나 해제합니다.
 - 피팅 후보가 아니면 `POST /fitting-candidates`로 추가합니다.
 - 이미 피팅 후보이면 해당 상품을 상의 또는 하의 선택 상태에 저장하고 `/fitting`으로 이동합니다.
 - 피팅 후보 추가 후 관련 Query를 무효화하여 옷장 목록을 갱신합니다.
@@ -85,7 +89,7 @@ AI Message의 Recommendation은 하나 이상의 추천 상품을 포함할 수 
 | `GET`    | `/chat-rooms`                                          | 대화 목록 조회        |
 | `GET`    | `/chat-rooms/{chatRoomId}`                             | 대화와 메시지 조회    |
 | `POST`   | `/chat-rooms/{chatRoomId}/messages`                    | 후속 메시지 전송      |
-| `GET`    | `/chat-rooms/{chatRoomId}/messages/{messageId}/status` | AI 생성 상태 조회     |
+| `GET`    | `/chat-rooms/{chatRoomId}/messages/{messageId}/stream` | AI 답변 SSE 스트리밍  |
 | `PATCH`  | `/chat-rooms/{chatRoomId}`                             | 대화 이름 수정        |
 | `DELETE` | `/chat-rooms/{chatRoomId}`                             | 대화 삭제             |
 
@@ -93,13 +97,12 @@ AI Message의 Recommendation은 하나 이상의 추천 상품을 포함할 수 
 
 - `src/features/chat/api`: 채팅 API
 - `src/features/chat/schema`: 메시지, 추천 상품과 대화 Schema
-- `src/features/chat/chat-screen.tsx`: 메시지 조회·전송·Polling 흐름
+- `src/features/chat/new-chat-screen.tsx`: 신규 채팅 생성 흐름
+- `src/features/chat/chat-room-screen.tsx`: 채팅방 조회·전송·SSE 흐름
 - `src/features/chat/ui/sidebar`: 대화 목록과 관리
 - `src/features/chat/ui/product`: 추천 상품과 피팅 연동
 - `src/app/(service)/chat`: 채팅 Route
 
 ## 보류 항목
 
-- 찜 목록 기반 질문 활성화 조건과 `WISHLIST` 흐름
 - 대화 내용 검색
-- 추천 상품 찜하기

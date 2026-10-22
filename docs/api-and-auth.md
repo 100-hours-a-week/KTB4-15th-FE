@@ -1,6 +1,6 @@
 # API와 인증
 
-마지막 업데이트: 2026-10-05
+마지막 업데이트: 2026-10-18
 
 이 문서는 백엔드 전체 API 명세가 아니라 프론트엔드의 통신 및 인증 처리 기준을 설명합니다.
 
@@ -26,6 +26,8 @@
 
 TanStack Query mutation은 오프라인 상태에서 대기하지 않고 즉시 실패하도록 `networkMode: "always"`를 사용합니다.
 
+채팅과 알림 SSE는 브라우저의 `EventSource` 대신 Ky 응답 Stream을 읽습니다. 기존 401 Token 갱신과 연결 취소 흐름을 재사용하기 위해서입니다. 장기 연결에는 공통 10초 Timeout과 자동 Retry를 적용하지 않습니다. 알림 SSE는 서비스 영역에서 연결 하나를 유지하며, 연결이 종료되면 3초 뒤 다시 연결합니다.
+
 ## 서버 요청
 
 Server Component과 Route Handler에서는 `src/shared/api/server.ts`의 `serverApi`를 사용합니다.
@@ -38,16 +40,29 @@ Server Component과 Route Handler에서는 `src/shared/api/server.ts`의 `server
 
 `API_BASE_URL`이 없으면 초기화 단계에서 오류를 발생시키며, `server-only`로 클라이언트 번들 포함을 방지합니다.
 
+## API 모킹
+
+개발 환경에서 `NEXT_PUBLIC_API_MOCKING=enabled`를 설정하면 MSW가 활성화됩니다.
+
+- 브라우저의 `apiClient` 요청은 Service Worker로 처리합니다.
+- Node.js 서버의 `serverApi` 요청은 `setupServer`로 처리합니다.
+- 두 환경은 `src/mocks/handlers.ts`의 Handler를 공유합니다.
+- Handler가 없는 요청은 경고를 출력하고 실제 API로 전달합니다.
+- 현재 Profile 조회·등록과 전신 사진 검증 Handler는 선택 입력 연동을 위해 인메모리 상태를 사용하며, 개발 서버를 재시작하면 초기화됩니다.
+
 ## 인증 갱신
 
 인증은 HttpOnly Cookie를 기반으로 합니다.
 
-1. 일반 API 요청이 `401`을 반환하면 `/auth/refresh`로 Access Token 갱신을 요청합니다.
-2. 동시에 여러 요청이 실패해도 갱신 요청은 하나만 실행합니다.
-3. 갱신이 성공하면 원래 요청을 한 번 다시 시도합니다.
-4. 갱신 요청도 `401`이면 세션 만료 상태를 알리고 로그인 화면으로 이동합니다.
+1. 일반 API 요청이 `401`을 반환하면 Next Route Handler인 `/bff/auth/refresh`로 Access Token 갱신을 요청합니다.
+2. Route Handler는 현재 요청의 Cookie를 Spring `/auth/refresh`에 전달하고, Spring 응답의 `Set-Cookie`를 브라우저에 전달합니다.
+3. SSR 데이터 요청이 `401`이면 `/bff/auth/refresh`로 이동해 Cookie를 갱신한 뒤 원래 경로로 돌아와 SSR을 다시 실행합니다. 중간 UI는 렌더링하지 않으며, 두 번째 `401`은 로그인 화면으로 이동해 반복을 막습니다.
+4. 동시에 여러 요청이 실패해도 갱신 요청은 하나만 실행합니다.
+5. 갱신이 성공하면 원래 요청을 한 번 다시 시도합니다.
+6. 갱신 요청도 `401`이면 세션 만료 상태를 알리고 로그인 화면으로 이동합니다.
 
 로그인, 회원가입, Token 갱신 요청 자체에는 이 갱신 흐름을 재적용하지 않습니다.
+로그아웃은 `/bff/auth/logout` Route Handler를 통해 Spring 응답의 Cookie 삭제 명령을 브라우저에 전달합니다.
 
 ## 서비스 접근 제어
 

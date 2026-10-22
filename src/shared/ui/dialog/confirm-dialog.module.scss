@@ -1,0 +1,28 @@
+@use "@/styles/typography" as type;
+
+.dialog {
+  padding: var(--space-xl);
+  text-align: center;
+}
+
+.title {
+  @include type.heading-small;
+
+  margin: 0;
+  color: var(--color-text-primary);
+}
+
+.description {
+  @include type.body-medium;
+
+  max-width: 270px;
+  margin: var(--space-md) auto 0;
+  color: var(--color-text-secondary);
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-md);
+  margin-top: var(--space-xl);
+}

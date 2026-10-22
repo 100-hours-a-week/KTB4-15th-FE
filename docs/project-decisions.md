@@ -1,6 +1,6 @@
 # FE 프로젝트 결정 사항
 
-마지막 업데이트: 2026-10-04
+마지막 업데이트: 2026-10-21
 
 프로젝트 전반에 영향을 주는 확정 사항과 보류 항목을 요약합니다. 현재 구현의 상세한 동작은 [FE 문서 목록](./README.md)과 [도메인 문서](./domains/README.md)를 기준으로 합니다.
 
@@ -15,6 +15,7 @@
 
 - 최상위 Route Group은 공개 화면의 `(public)`과 인증이 필요한 `(service)`로 구분합니다.
 - 서비스 라우트는 URL과 같은 도메인 계층으로 구성하고, 공통 `ServiceShell`에서 경로별 하단 Navigation과 화면 표면을 결정합니다.
+- 하단 Navigation은 표시 대상 화면에서 스크롤 방향에 따라 숨기거나 표시하고, 모바일 키보드가 열린 동안에는 숨깁니다. 채팅 입력창만 키보드 위에 유지합니다.
 - Route 전용 코드는 `app`, 비즈니스 기능은 `features`, 둘 이상의 Feature가 공유하는 코드는 `shared`에 배치합니다.
 - 폴더는 실제 코드가 필요한 시점에 만들며 빈 폴더 유지를 위한 파일은 추가하지 않습니다.
 - 서버 상태는 TanStack Query, 서버 저장 전 여러 화면에서 공유하는 임시 상태는 Zustand로 관리합니다.
@@ -35,6 +36,7 @@
 
 - 브라우저 API Client는 Ky와 `NEXT_PUBLIC_API_BASE_URL`을 사용하고 Cookie를 포함합니다.
 - 브라우저 요청의 기본 Timeout은 10초, Retry 한도는 1회입니다.
+- 채팅과 알림 SSE는 인증 갱신과 연결 취소 제어를 위해 `EventSource` 대신 Ky 응답 Stream을 사용합니다.
 - 오프라인 요청은 `OfflineError`, 문자열 오류 Code가 있는 HTTP 오류는 `ApiError`로 정규화하고 Ky의 네트워크·Timeout 오류는 사용자용 문구로 변환합니다.
 - Feature는 HTTP 응답을 다시 파싱하지 않고 필요한 오류만 `ApiError.code`로 처리합니다.
 - 서버 요청은 Next.js `fetch`와 서버 전용 `API_BASE_URL`을 사용하며 현재 요청의 Cookie를 전달합니다.
@@ -42,10 +44,18 @@
 
 자세한 내용은 [API와 인증](./api-and-auth.md)을 참고합니다.
 
+### API 모킹
+
+- 개발 환경에서 `NEXT_PUBLIC_API_MOCKING=enabled`일 때만 MSW를 활성화합니다.
+- 브라우저 요청은 Service Worker로, Node.js 서버 요청은 `setupServer`로 가로채며 Handler는 공유합니다.
+- Handler가 없는 요청은 경고를 출력하고 실제 API로 전달합니다.
+
 ## 인증과 접근 제어
 
 - 인증은 HttpOnly Cookie를 사용합니다.
-- 일반 API 요청이 `401`이면 Access Token 갱신을 한 번 시도하고 원래 요청을 다시 보냅니다.
+- 일반 API 요청이 `401`이면 Next `/bff/auth/refresh`를 통해 Access Token 갱신을 한 번 시도하고 원래 요청을 다시 보냅니다.
+- SSR 데이터 요청이 `401`이면 BFF 갱신 경로로 이동한 뒤 원래 경로의 SSR을 다시 실행하며, 두 번째 `401`은 로그인 화면으로 이동합니다.
+- 로그인은 Spring API를 직접 사용하고, Token 갱신과 로그아웃은 Spring의 `Set-Cookie`를 중계하는 Next Route Handler를 사용합니다.
 - 갱신도 `401`이면 Client Cache와 피팅 선택을 제거한 뒤 로그인 화면으로 이동합니다.
 - `(public)`은 인증된 사용자를 프로필 상태에 따라 `/chat` 또는 `/profile/setup`으로 보냅니다.
 - `(service)`는 인증과 프로필 완료 여부가 확인된 경우에만 화면을 렌더링합니다.
@@ -56,6 +66,7 @@
 - 서비스 본체는 최대 `480px`의 단일 Column으로 유지합니다.
 - Header `52px`, 하단 Navigation `56px`, 기본 터치 영역 최소 `44px`의 Mobile Compact 규격을 사용합니다.
 - 공통 UI는 비즈니스 로직과 API 요청을 직접 소유하지 않습니다.
+- Dialog와 BottomSheet의 열림 상태는 사용하는 화면에서 관리합니다.
 - 접근성과 `prefers-reduced-motion`을 지원합니다.
 - 다크 모드와 Shadow는 현재 지원하지 않습니다.
 

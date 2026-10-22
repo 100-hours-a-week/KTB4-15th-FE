@@ -1,6 +1,6 @@
 import Image from "next/image";
 import type { AIMessageResponse, UserMessageResponse } from "../../schema/chat";
-import aiImage from "../../icon/ai.png";
+import aiImage from "@/shared/assets/ai-avatar.png";
 import { formatKoreanTime } from "@/shared/utils/date-format";
 import { Button } from "@/shared/ui/button";
 import { InfoIcon, RetryIcon } from "@/shared/ui/icon";
@@ -17,6 +17,23 @@ type UserChatMessageProps = {
 type AIChatMessageProps = {
   message: AIMessageResponse;
 };
+
+export function StreamingAIChatMessage({ content }: { content: string }) {
+  return (
+    <article className={styles.aiMessage}>
+      <Image alt="AI 스타일리스트" className={styles.avatar} src={aiImage} />
+      <div className={styles.aiContent}>
+        <div className={styles.aiMeta}>
+          <strong className={styles.aiName}>AI 스타일리스트</strong>
+        </div>
+        <p className={styles.aiBubble}>{content}</p>
+        <span className={styles.visuallyHidden} role="status">
+          AI 스타일리스트가 답변을 작성하고 있어요
+        </span>
+      </div>
+    </article>
+  );
+}
 
 export function UserChatMessage({
   canRetry = false,
@@ -60,7 +77,6 @@ export function AIChatMessage({ message }: AIChatMessageProps) {
       <div className={styles.aiContent}>
         <div className={styles.aiMeta}>
           <strong className={styles.aiName}>AI 스타일리스트</strong>
-          <span className={styles.aiBadge}>스타일리스트</span>
           <time
             className={`${styles.time} ${styles.aiTime}`}
             dateTime={message.createdAt}

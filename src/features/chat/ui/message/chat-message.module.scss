@@ -66,9 +66,9 @@
 }
 
 .avatar {
-  width: 48px;
-  height: 48px;
-  flex: 0 0 48px;
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
   border-radius: var(--radius-full);
   object-fit: cover;
 }
@@ -115,4 +115,16 @@
   color: var(--color-text-primary);
   white-space: pre-line;
   word-break: keep-all;
+}
+
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  border: 0;
+  margin: -1px;
+  clip-path: inset(50%);
+  overflow: hidden;
+  white-space: nowrap;
 }

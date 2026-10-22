@@ -1,6 +1,10 @@
 .header {
-  position: sticky;
+  position: fixed;
   z-index: var(--z-sticky);
   top: 0;
+  left: 50%;
+  width: min(100%, var(--app-max-width));
+  margin-inline: 0;
   background: var(--color-background-page);
+  transform: translateX(-50%);
 }

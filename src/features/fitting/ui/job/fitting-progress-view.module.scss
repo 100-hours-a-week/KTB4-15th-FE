@@ -1,0 +1,210 @@
+@use "@/styles/typography" as type;
+
+.progressMain {
+  display: flex;
+  min-height: calc(100dvh - var(--header-height) - var(--navigation-height));
+  flex-direction: column;
+  justify-content: center;
+  padding-block: 0 calc(var(--navigation-height) + var(--space-xl));
+}
+
+.floatingVisual {
+  position: relative;
+  display: grid;
+  width: 148px;
+  height: 148px;
+  place-items: center;
+  margin: 0 auto;
+  border-radius: var(--radius-large);
+  background:
+    radial-gradient(circle at 50% 40%, rgb(232 242 238 / 72%), transparent 65%),
+    var(--color-background-surface);
+  box-shadow: 0 12px 30px rgb(17 75 54 / 8%);
+
+  &::after {
+    position: absolute;
+    right: 30px;
+    bottom: 19px;
+    left: 30px;
+    height: 12px;
+    border-radius: 50%;
+    background: rgb(17 75 54 / 12%);
+    content: "";
+    filter: blur(8px);
+    animation: floating-shadow 3.2s ease-in-out infinite;
+  }
+}
+
+.floatingImage {
+  position: relative;
+  z-index: 1;
+  width: 140px;
+  height: 140px;
+  object-fit: contain;
+  animation: floating-object 3.2s ease-in-out infinite;
+}
+
+.progressCopy {
+  margin-top: 24px;
+  text-align: center;
+
+  h2 {
+    @include type.heading-medium;
+
+    margin: 0;
+  }
+
+  p {
+    @include type.body-medium;
+
+    margin: 14px 0 0;
+    color: var(--color-text-secondary);
+  }
+}
+
+.progressStatus {
+  width: min(100%, 560px);
+  align-self: center;
+  margin-top: 22px;
+}
+
+.progressMeta {
+  @include type.caption;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--color-text-primary);
+
+  strong {
+    color: var(--color-text-brand);
+    font-weight: var(--font-weight-bold);
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.progressTrack {
+  overflow: hidden;
+  height: 6px;
+  margin-top: 10px;
+  border-radius: var(--radius-full);
+  background: var(--color-gray-200);
+
+  > span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--color-green-700);
+    transition: width 500ms var(--easing-standard);
+  }
+}
+
+.productsArea {
+  margin-top: 28px;
+}
+
+.tipCard {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+  border-radius: var(--radius-medium);
+  padding: 12px 14px;
+  background: var(--color-green-50);
+
+  p {
+    @include type.caption;
+
+    margin: 0 0 2px;
+    font-weight: var(--font-weight-semibold);
+  }
+
+  div > span {
+    @include type.caption;
+
+    color: var(--color-text-secondary);
+  }
+}
+
+.tipIcon {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: var(--radius-full);
+  background: var(--color-green-200);
+  font-size: 14px;
+}
+
+.backgroundAction {
+  @include type.caption;
+
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  align-self: center;
+  justify-content: center;
+  gap: 4px;
+  margin-top: 16px;
+  border-radius: var(--radius-small);
+  padding-inline: 12px;
+  color: var(--color-text-secondary);
+  transition:
+    color var(--duration-fast) var(--easing-standard),
+    background-color var(--duration-fast) var(--easing-standard);
+
+  &:hover {
+    background: var(--color-background-hover);
+    color: var(--color-text-primary);
+  }
+
+  &:active {
+    background: var(--color-background-pressed);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: 2px;
+  }
+
+  > span {
+    font-size: 18px;
+    line-height: 1;
+  }
+}
+
+@keyframes floating-object {
+  0%,
+  100% {
+    transform: translateY(2px) rotate(-0.8deg);
+  }
+
+  50% {
+    transform: translateY(-8px) rotate(0.8deg);
+  }
+}
+
+@keyframes floating-shadow {
+  0%,
+  100% {
+    opacity: 0.7;
+    transform: scaleX(1);
+  }
+
+  50% {
+    opacity: 0.35;
+    transform: scaleX(0.82);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .floatingImage,
+  .floatingVisual::after {
+    animation: none;
+  }
+
+  .progressTrack > span {
+    transition: none;
+  }
+}

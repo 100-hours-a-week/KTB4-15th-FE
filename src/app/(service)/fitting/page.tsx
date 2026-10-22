@@ -1,25 +1,32 @@
+import { redirect } from "next/navigation";
+import { getCurrentFittingJobServer } from "@/features/fitting/api/fitting-job-server";
 import {
-  FittingEntryGuard,
-  FittingPhotoCard,
-  FittingSelectionPanel,
+  FittingFullBodyPhotoSection,
+  FittingOutfitSection,
 } from "@/features/fitting";
-import { Header, HeaderTitle } from "@/shared/ui/header";
-import { IntroHero } from "@/shared/ui/intro-hero";
+import { redirectOnServerUnauthorized } from "@/shared/api/server";
+import { Header, HeaderTitle, NotificationLink } from "@/shared/ui/header";
 import styles from "./page.module.scss";
 
-export default function FittingPage() {
+export default async function FittingPage() {
+  const fittingJob = await getCurrentFittingJobServer().catch(
+    redirectOnServerUnauthorized,
+  );
+
+  if (fittingJob && !fittingJob.resultViewed) {
+    redirect(`/fitting/jobs/${fittingJob.fittingJobId}`);
+  }
+
   return (
-    <FittingEntryGuard>
-      <Header left={<HeaderTitle>피팅</HeaderTitle>} />
+    <>
+      <Header
+        left={<HeaderTitle>피팅</HeaderTitle>}
+        right={<NotificationLink />}
+      />
       <main className={styles.main}>
-        <IntroHero
-          description="상의와 하의를 골라 가상으로 피팅해 보세요"
-          size="compact"
-          title={"내 사진 위에\n마음에 드는 옷 입혀보기"}
-        />
-        <FittingPhotoCard />
-        <FittingSelectionPanel />
+        <FittingFullBodyPhotoSection />
+        <FittingOutfitSection />
       </main>
-    </FittingEntryGuard>
+    </>
   );
 }

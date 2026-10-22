@@ -16,6 +16,11 @@ body {
 html {
   background: var(--color-background-outer);
   color-scheme: light;
+  scrollbar-gutter: stable;
+}
+
+html body[data-scroll-locked] {
+  margin: 0 !important;
 }
 
 body {
