@@ -81,13 +81,19 @@
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
-  gap: var(--space-xs);
+  gap: var(--space-sm);
 
   em {
     @include type.label;
 
     color: var(--color-action-danger-default);
     font-style: normal;
+  }
+}
+
+.priceDecreased {
+  em {
+    color: var(--color-text-info);
   }
 }
 
