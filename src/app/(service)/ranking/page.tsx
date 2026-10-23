@@ -1,6 +1,6 @@
 import { RankingScreen } from "@/features/ranking";
 import { Header, HeaderTitle, NotificationLink } from "@/shared/ui/header";
-import styles from "./page.module.scss";
+import styles from "../page-layout.module.scss";
 
 export default function RankingPage() {
   return (

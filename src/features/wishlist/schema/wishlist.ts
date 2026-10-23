@@ -31,3 +31,4 @@ export const wishlistListResponse = z.object({
 });
 
 export type WishlistItem = z.infer<typeof wishlistItemSchema>;
+export type WishlistList = z.infer<typeof wishlistListResponse>;

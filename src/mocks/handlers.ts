@@ -21,6 +21,7 @@ let validatedFullBodyImageUrl: string | null = null;
 let fittingResultSaved = false;
 let fittingResultViewed = false;
 let fittingResultOutfitName = "가을 출근 니트 룩";
+const fittingJobCreatedAt = new Date().toISOString();
 let profile: MockProfile = {
   age: null,
   email: "mock@lookddak.com",
@@ -147,46 +148,37 @@ export const handlers: RequestHandler[] = [
     }),
   ),
 
-  http.get("*/notifications", () => {
-    const empty =
-      typeof window !== "undefined" &&
-      new URLSearchParams(window.location.search).get("mockNotifications") ===
-        "empty";
-
-    return HttpResponse.json({
+  http.get("*/notifications", () =>
+    HttpResponse.json({
       code: "NOTIFICATION_LIST_GET_SUCCESS",
       data: {
-        items: empty
-          ? []
-          : [
-              {
-                notificationId: 52,
-                type: "FITTING_SUCCESS",
-                isRead: false,
-                targetType: "FITTING_JOB",
-                targetId: 123,
-                payload: { outfitName: "가을 출근 니트 룩" },
-                createdAt: "2026-10-16T17:20:00",
-              },
-              {
-                notificationId: 51,
-                type: "FITTING_FAIL",
-                isRead: true,
-                targetType: "FITTING_JOB",
-                targetId: 122,
-                payload: {},
-                createdAt: "2026-10-16T16:10:00",
-              },
-            ],
-        unreadCount: empty ? 0 : 1,
+        items: [
+          {
+            notificationId: 52,
+            type: "FITTING_SUCCESS",
+            isRead: false,
+            targetType: "FITTING_JOB",
+            targetId: 123,
+            payload: { outfitName: "가을 출근 니트 룩" },
+            createdAt: "2026-10-16T17:20:00",
+          },
+          {
+            notificationId: 51,
+            type: "FITTING_FAIL",
+            isRead: true,
+            targetType: "FITTING_JOB",
+            targetId: 122,
+            payload: {},
+            createdAt: "2026-10-16T16:10:00",
+          },
+        ],
+        unreadCount: 1,
         nextCursor: null,
         hasNext: false,
       },
-      message: empty
-        ? "알림 목록이 비어 있습니다."
-        : "알림 목록을 조회했습니다.",
-    });
-  }),
+      message: "알림 목록을 조회했습니다.",
+    }),
+  ),
 
   http.get("*/products/rankings", ({ request }) => {
     const type = new URL(request.url).searchParams.get("type");
@@ -291,6 +283,7 @@ export const handlers: RequestHandler[] = [
       data: {
         fittingJobId: 123,
         status,
+        createdAt: fittingJobCreatedAt,
         resultViewed: fittingResultViewed,
         products: [
           {
@@ -334,7 +327,12 @@ export const handlers: RequestHandler[] = [
 
     return HttpResponse.json({
       code: "OK",
-      data: { fittingJobId: 123, status, result: null },
+      data: {
+        fittingJobId: 123,
+        status,
+        createdAt: fittingJobCreatedAt,
+        result: null,
+      },
       message: "요청이 성공적으로 처리되었습니다.",
     });
   }),
@@ -385,7 +383,7 @@ export const handlers: RequestHandler[] = [
   }),
 
   http.patch("*/fitting-jobs/:fittingJobId/result/viewed", ({ params }) => {
-    if (params.fittingJobId !== "123") {
+    if (params.fittingJobId !== "122" && params.fittingJobId !== "123") {
       return HttpResponse.json(
         {
           code: "FITTING_JOB_NOT_FOUND",
@@ -396,11 +394,11 @@ export const handlers: RequestHandler[] = [
       );
     }
 
-    fittingResultViewed = true;
+    if (params.fittingJobId === "123") fittingResultViewed = true;
 
     return HttpResponse.json({
       code: "OK",
-      data: { fittingJobId: 123 },
+      data: { fittingJobId: Number(params.fittingJobId) },
       message: "가상피팅 결과를 확인 처리했습니다.",
     });
   }),

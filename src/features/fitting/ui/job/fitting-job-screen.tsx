@@ -11,8 +11,6 @@ import {
   fittingJobQueryOptions,
   useMarkFittingResultViewedMutation,
 } from "../../model/fitting-query";
-import { clearActiveFittingJobId } from "../../store/active-fitting-job-storage";
-import { clearFittingJobProgress } from "../../store/fitting-job-progress-storage";
 import { FittingProgressView } from "./fitting-progress-view";
 import styles from "./fitting-job-screen.module.scss";
 
@@ -46,8 +44,6 @@ export function FittingJobScreen({ fittingJobId }: FittingJobScreenProps) {
       }
     }
 
-    clearActiveFittingJobId(fittingJobId);
-    clearFittingJobProgress(fittingJobId);
     router.replace("/fitting");
   };
 
@@ -56,9 +52,7 @@ export function FittingJobScreen({ fittingJobId }: FittingJobScreenProps) {
       return;
     }
 
-    clearActiveFittingJobId(fittingJobId);
     const timer = window.setTimeout(() => {
-      clearFittingJobProgress(fittingJobId);
       router.replace(`/fitting/jobs/${fittingJobId}/result`);
     }, RESULT_REVEAL_DELAY);
 
@@ -66,9 +60,7 @@ export function FittingJobScreen({ fittingJobId }: FittingJobScreenProps) {
   }, [data, fittingJobId, router]);
 
   if (isPending) {
-    return (
-      <FittingProgressView completed={false} fittingJobId={fittingJobId} />
-    );
+    return <FittingProgressView fittingJobId={fittingJobId} />;
   }
 
   if (isError || !data || data.fittingJobId !== fittingJobId) {
@@ -111,6 +103,7 @@ export function FittingJobScreen({ fittingJobId }: FittingJobScreenProps) {
   return (
     <FittingProgressView
       completed={data.status === "COMPLETED"}
+      createdAt={data.createdAt}
       fittingJobId={fittingJobId}
     />
   );

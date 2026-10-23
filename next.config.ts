@@ -3,6 +3,14 @@ import { withSentryConfig } from "@sentry/nextjs/config";
 
 const nextConfig: NextConfig = {
   devIndicators: false,
+  images: {
+    remotePatterns: [
+      {
+        hostname: "img.29cm.co.kr",
+        protocol: "https",
+      },
+    ],
+  },
   output: "standalone",
 };
 

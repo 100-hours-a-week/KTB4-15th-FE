@@ -1,13 +1,15 @@
 @use "@/styles/typography" as type;
 
-.screen {
+.content {
+  --chrome-height: calc(var(--header-height) + 2 * var(--navigation-height));
+  --page-spacing: calc(
+    var(--space-md) + var(--space-2xl) + env(safe-area-inset-bottom)
+  );
+  --content-offset: calc(var(--chrome-height) + var(--page-spacing));
+
   display: flex;
+  min-height: calc(100dvh - var(--content-offset));
   flex-direction: column;
-  min-height: calc(100dvh - var(--header-height) - var(--navigation-height));
-  padding-block: var(--space-xl)
-    calc(
-      var(--navigation-height) + env(safe-area-inset-bottom) + var(--space-xl)
-    );
 }
 
 .toolbar {
@@ -108,6 +110,8 @@
 
 .cardFooter {
   min-height: 44px;
+  flex-wrap: wrap;
+  padding-top: var(--space-md);
   border-top: 1px solid var(--color-border-default);
 }
 
@@ -120,9 +124,14 @@
   color: var(--color-text-primary);
   font-weight: var(--font-weight-semibold);
   text-decoration: none;
+
+  &:is(button) {
+    padding-inline: 0;
+  }
 }
 
-.state {
+.state,
+.emptyState {
   @include type.body-medium;
 
   display: grid;
@@ -137,4 +146,8 @@
   p {
     margin: 0;
   }
+}
+
+.emptyState {
+  flex: 1;
 }

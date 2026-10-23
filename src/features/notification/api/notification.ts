@@ -70,12 +70,12 @@ export async function* connectNotificationStream(
       buffer = parsed.rest;
 
       for (const event of parsed.events) {
-        const json: unknown = JSON.parse(event.data);
-
         if (event.event === "connected") {
+          const json: unknown = JSON.parse(event.data);
           const { data } = notificationConnectedEvent.parse(json);
           yield { event: "connected", ...data };
         } else if (event.event === "notification") {
+          const json: unknown = JSON.parse(event.data);
           const { data } = notificationReceivedEvent.parse(json);
           yield { event: "notification", ...data };
         }

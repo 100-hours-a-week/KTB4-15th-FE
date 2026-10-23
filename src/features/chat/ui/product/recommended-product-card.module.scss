@@ -150,4 +150,6 @@
 
 .fittingLink {
   @include type.label;
+
+  padding-inline: var(--space-sm);
 }

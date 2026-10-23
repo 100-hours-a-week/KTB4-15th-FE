@@ -1,6 +1,6 @@
 # FE 아키텍처
 
-마지막 업데이트: 2026-09-28
+마지막 업데이트: 2026-10-21
 
 ## 기술 구성
 
@@ -32,7 +32,9 @@ src/app/
 - 회원가입 직후 기본 정보 입력 화면은 `/profile/setup`입니다.
 - `/onboarding`은 회원 상태를 조회하지 않습니다. `/login`과 `/signup`은 화면을 바로 표시한 뒤 로그인 상태가 확인되면 프로필 상태에 맞는 서비스 화면으로 이동합니다.
 - 서비스 공통 `ServiceShell`에서 현재 경로에 따라 하단 Navigation, 페이지 표면과 Tab 전환을 적용합니다.
-- 하단 Navigation은 `/chat`과 하위 대화방, `/fitting`, `/mypage`에서만 표시합니다. `/fitting/wardrobe`, `/fitting/jobs/[fittingJobId]`, `/profile/setup`에서는 표시하지 않습니다.
+- 하단 Navigation은 `/chat`과 하위 대화방, `/fitting`, `/wishlists`, `/ranking`, `/mypage`, `/notifications`에서 표시합니다. `/fitting/wardrobe`, `/fitting/jobs/...`, `/fitting-results/...`, `/profile/setup`에서는 표시하지 않습니다.
+- 하단 Navigation은 아래로 스크롤하면 숨고 위로 스크롤하면 다시 표시하며, 모바일 키보드가 열린 동안에는 숨깁니다. 채팅 입력창은 키보드 바로 위에 유지합니다.
+- 일반 화면의 Header는 문서 흐름에 두고 채팅 Header만 화면 상단에 고정합니다.
 - 같은 헤더가 여러 하위 경로에서 유지되면 가장 가까운 공통 `layout.tsx`에 배치합니다. 한 화면에만 필요하면 `page.tsx`에서 선언합니다.
 
 ## 소스 구조

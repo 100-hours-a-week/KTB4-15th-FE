@@ -1,8 +1,9 @@
 "use client";
 
-import Image, { type ImageLoaderProps } from "next/image";
-import Link from "next/link";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { getCurrentFittingJob } from "@/features/fitting/api/fitting-job";
 import {
   useCreateWishlistMutation,
   useDeleteWishlistMutation,
@@ -23,14 +24,11 @@ type RecommendedProductCardProps = {
   product: RecommendedProductResponse;
 };
 
-function passthroughImageLoader({ src }: ImageLoaderProps) {
-  return src;
-}
-
 export function RecommendedProductCard({
   index,
   product,
 }: RecommendedProductCardProps) {
+  const router = useRouter();
   const selectProduct = useFittingSelectionStore(
     (state) => state.selectProduct,
   );
@@ -42,6 +40,7 @@ export function RecommendedProductCard({
   );
   const [isWishlisted, setIsWishlisted] = useState(product.isWishlisted);
   const [wishlistId, setWishlistId] = useState(product.wishlistId);
+  const [isEnteringFitting, setIsEnteringFitting] = useState(false);
   const fittingCandidateMutation = useCreateFittingCandidateMutation();
   const createWishlistMutation = useCreateWishlistMutation();
   const deleteWishlistMutation = useDeleteWishlistMutation();
@@ -108,6 +107,39 @@ export function RecommendedProductCard({
     });
   };
 
+  const handleEnterFitting = async () => {
+    if (!fittingCandidateId) return;
+
+    setIsEnteringFitting(true);
+    try {
+      const currentJob = await getCurrentFittingJob();
+      if (currentJob?.status === "GENERATING") {
+        showToast.error("다른 피팅 작업 중입니다. 잠시 후 다시 시도해주세요.");
+        return;
+      }
+
+      selectProduct({
+        fittingCandidateId,
+        productId: product.productId,
+        productName: product.productName,
+        productImageUrl: product.productImageUrl,
+        currentPrice: product.currentPrice,
+        color: product.color,
+        itemType: product.itemType,
+      });
+      router.push("/fitting");
+    } catch (error) {
+      showToast.error(
+        getApiErrorMessage(
+          error,
+          "피팅 작업을 확인하지 못했어요. 잠시 후 다시 시도해 주세요.",
+        ),
+      );
+    } finally {
+      setIsEnteringFitting(false);
+    }
+  };
+
   return (
     <article
       aria-label={`추천 상품 ${index + 1}: ${product.productName}`}
@@ -118,7 +150,6 @@ export function RecommendedProductCard({
           alt={product.productName}
           className={styles.productImage}
           fill
-          loader={passthroughImageLoader}
           sizes="(max-width: 480px) 75vw, 320px"
           src={product.productImageUrl}
         />
@@ -162,25 +193,16 @@ export function RecommendedProductCard({
             상품 보기 <span aria-hidden="true">↗</span>
           </a>
           {isFittingCandidate ? (
-            <Link
+            <Button
               className={styles.fittingLink}
-              href="/fitting"
-              onClick={() => {
-                if (!fittingCandidateId) return;
-
-                selectProduct({
-                  fittingCandidateId,
-                  productId: product.productId,
-                  productName: product.productName,
-                  productImageUrl: product.productImageUrl,
-                  currentPrice: product.currentPrice,
-                  color: product.color,
-                  itemType: product.itemType,
-                });
-              }}
+              fullWidth
+              isLoading={isEnteringFitting}
+              onClick={() => void handleEnterFitting()}
+              size="small"
+              variant="primary"
             >
               피팅룸에서 입어보기 <span aria-hidden="true">→</span>
-            </Link>
+            </Button>
           ) : (
             <Button
               className={styles.fittingButton}

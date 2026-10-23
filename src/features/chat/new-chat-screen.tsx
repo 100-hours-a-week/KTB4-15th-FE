@@ -18,9 +18,19 @@ function showSendChatMessageError(error: Error) {
   );
 }
 
-export function NewChatScreen({ date }: { date: string }) {
+type NewChatScreenProps = {
+  date: string;
+  memberName?: string;
+  showWishlistQuestion: boolean;
+};
+
+export function NewChatScreen({
+  date,
+  memberName,
+  showWishlistQuestion,
+}: NewChatScreenProps) {
   const router = useRouter();
-  const { isNavigationVisible } = useNavigationVisibility();
+  const { isNavigationVisible, keyboardInset } = useNavigationVisibility();
   const submissionLockRef = useRef(false);
   const createChatRoomMutation = useCreateChatRoomMutation();
 
@@ -51,11 +61,19 @@ export function NewChatScreen({ date }: { date: string }) {
 
   return (
     <>
-      <ChatIntro date={date} onSelectQuestion={handleSubmit} />
+      <ChatIntro
+        date={date}
+        memberName={memberName}
+        onSelectQuestion={handleSubmit}
+        showWishlistQuestion={showWishlistQuestion}
+      />
       <div
         className={`${styles.composerDock} ${
-          isNavigationVisible ? "" : styles.navigationHidden
+          isNavigationVisible && keyboardInset === 0
+            ? ""
+            : styles.navigationHidden
         }`}
+        style={keyboardInset > 0 ? { bottom: keyboardInset } : undefined}
       >
         <ChatComposer
           isSubmitting={createChatRoomMutation.isPending}

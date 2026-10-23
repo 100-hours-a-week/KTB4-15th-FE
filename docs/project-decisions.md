@@ -1,6 +1,6 @@
 # FE 프로젝트 결정 사항
 
-마지막 업데이트: 2026-10-18
+마지막 업데이트: 2026-10-21
 
 프로젝트 전반에 영향을 주는 확정 사항과 보류 항목을 요약합니다. 현재 구현의 상세한 동작은 [FE 문서 목록](./README.md)과 [도메인 문서](./domains/README.md)를 기준으로 합니다.
 
@@ -15,6 +15,7 @@
 
 - 최상위 Route Group은 공개 화면의 `(public)`과 인증이 필요한 `(service)`로 구분합니다.
 - 서비스 라우트는 URL과 같은 도메인 계층으로 구성하고, 공통 `ServiceShell`에서 경로별 하단 Navigation과 화면 표면을 결정합니다.
+- 하단 Navigation은 표시 대상 화면에서 스크롤 방향에 따라 숨기거나 표시하고, 모바일 키보드가 열린 동안에는 숨깁니다. 채팅 입력창만 키보드 위에 유지합니다.
 - Route 전용 코드는 `app`, 비즈니스 기능은 `features`, 둘 이상의 Feature가 공유하는 코드는 `shared`에 배치합니다.
 - 폴더는 실제 코드가 필요한 시점에 만들며 빈 폴더 유지를 위한 파일은 추가하지 않습니다.
 - 서버 상태는 TanStack Query, 서버 저장 전 여러 화면에서 공유하는 임시 상태는 Zustand로 관리합니다.
@@ -36,6 +37,7 @@
 - 브라우저 API Client는 Ky와 `NEXT_PUBLIC_API_BASE_URL`을 사용하고 Cookie를 포함합니다.
 - 브라우저 요청의 기본 Timeout은 10초, Retry 한도는 1회입니다.
 - 채팅과 알림 SSE는 인증 갱신과 연결 취소 제어를 위해 `EventSource` 대신 Ky 응답 Stream을 사용합니다.
+- 채팅 Sidebar는 첫 화면의 실행 비용을 줄이기 위해 목록 버튼을 처음 누를 때 동적으로 로드하고 이후에는 마운트를 유지합니다.
 - 오프라인 요청은 `OfflineError`, 문자열 오류 Code가 있는 HTTP 오류는 `ApiError`로 정규화하고 Ky의 네트워크·Timeout 오류는 사용자용 문구로 변환합니다.
 - Feature는 HTTP 응답을 다시 파싱하지 않고 필요한 오류만 `ApiError.code`로 처리합니다.
 - 서버 요청은 Next.js `fetch`와 서버 전용 `API_BASE_URL`을 사용하며 현재 요청의 Cookie를 전달합니다.

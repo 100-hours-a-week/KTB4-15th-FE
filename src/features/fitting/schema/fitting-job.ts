@@ -21,6 +21,7 @@ export const fittingJobCreateResponseSchema = z.object({
 export const fittingJobStatusResponseSchema = z.object({
   fittingJobId: z.number().int().positive(),
   status: z.enum(["GENERATING", "COMPLETED", "FAILED"]),
+  createdAt: z.string(),
 });
 
 export const fittingResultViewedResponseSchema = z.object({
@@ -31,6 +32,7 @@ export const currentFittingJobResponseSchema = z
   .object({
     fittingJobId: z.number().int().positive(),
     status: z.enum(["GENERATING", "COMPLETED", "FAILED"]),
+    createdAt: z.string(),
     resultViewed: z.boolean(),
     products: z.array(
       z.object({

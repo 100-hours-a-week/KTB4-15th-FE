@@ -74,6 +74,14 @@
   object-fit: contain;
 }
 
+.preloadImage {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
 .imageEnter {
   animation: image-enter var(--duration-slow) var(--easing-standard);
 }

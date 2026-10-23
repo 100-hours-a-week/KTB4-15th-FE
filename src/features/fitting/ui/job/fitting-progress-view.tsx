@@ -7,7 +7,6 @@ import { useQuery } from "@tanstack/react-query";
 import { memberProfileQueryOptions } from "@/features/profile";
 import { Header, HeaderTitle } from "@/shared/ui/header";
 import { currentFittingJobQueryOptions } from "../../model/fitting-query";
-import { getFittingJobStartedAt } from "../../store/fitting-job-progress-storage";
 import { FittingProductCombination } from "../fitting-product-combination";
 import styles from "./fitting-progress-view.module.scss";
 
@@ -36,17 +35,23 @@ function getProgressMessage(progress: number) {
 }
 
 export function FittingProgressView({
-  completed,
+  completed = false,
+  createdAt,
   fittingJobId,
 }: {
-  completed: boolean;
+  completed?: boolean;
+  createdAt?: string;
   fittingJobId: number;
 }) {
   const { data: memberProfile } = useQuery(memberProfileQueryOptions);
   const { data: currentFittingJob } = useQuery(currentFittingJobQueryOptions);
-  const [startedAt] = useState(() => getFittingJobStartedAt(fittingJobId));
+  const [fallbackStartedAt] = useState(Date.now);
+  const parsedCreatedAt = createdAt ? Date.parse(createdAt) : NaN;
+  const startedAt = Number.isFinite(parsedCreatedAt)
+    ? parsedCreatedAt
+    : fallbackStartedAt;
   const [progress, setProgress] = useState(() =>
-    getSimulatedProgress(startedAt ?? Date.now()),
+    getSimulatedProgress(startedAt),
   );
   const products =
     currentFittingJob?.fittingJobId === fittingJobId
@@ -62,7 +67,7 @@ export function FittingProgressView({
     }
 
     const timer = window.setInterval(() => {
-      setProgress(getSimulatedProgress(startedAt ?? Date.now()));
+      setProgress(getSimulatedProgress(startedAt));
     }, 500);
 
     return () => window.clearInterval(timer);

@@ -31,12 +31,16 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
 
     async function connect() {
       controller = new AbortController();
+      const startedAt = Date.now();
+
+      console.info("[notification-sse] connecting");
 
       try {
         for await (const event of connectNotificationStream(
           controller.signal,
         )) {
           if (event.event === "connected") {
+            console.info("[notification-sse] connected");
             queryClient.setQueryData<NotificationUnreadStatus>(
               notificationQueryKeys.unread,
               { hasUnread: event.hasUnread },
@@ -72,11 +76,28 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
             showToast.error(message);
           }
         }
-      } catch {
-        if (controller.signal.aborted) return;
+        console.warn("[notification-sse] response ended", {
+          elapsedMs: Date.now() - startedAt,
+        });
+      } catch (error) {
+        if (controller.signal.aborted) {
+          console.warn("[notification-sse] aborted", {
+            elapsedMs: Date.now() - startedAt,
+          });
+          return;
+        }
+
+        console.error("[notification-sse] failed", error, {
+          elapsedMs: Date.now() - startedAt,
+        });
       }
 
-      if (!stopped) reconnectTimer = setTimeout(connect, RECONNECT_DELAY);
+      if (!stopped) {
+        console.warn("[notification-sse] reconnect scheduled", {
+          delayMs: RECONNECT_DELAY,
+        });
+        reconnectTimer = setTimeout(connect, RECONNECT_DELAY);
+      }
     }
 
     void connect();
