@@ -18,7 +18,17 @@ function showSendChatMessageError(error: Error) {
   );
 }
 
-export function NewChatScreen({ date }: { date: string }) {
+type NewChatScreenProps = {
+  date: string;
+  memberName?: string;
+  showWishlistQuestion: boolean;
+};
+
+export function NewChatScreen({
+  date,
+  memberName,
+  showWishlistQuestion,
+}: NewChatScreenProps) {
   const router = useRouter();
   const { isNavigationVisible, keyboardInset } = useNavigationVisibility();
   const submissionLockRef = useRef(false);
@@ -51,7 +61,12 @@ export function NewChatScreen({ date }: { date: string }) {
 
   return (
     <>
-      <ChatIntro date={date} onSelectQuestion={handleSubmit} />
+      <ChatIntro
+        date={date}
+        memberName={memberName}
+        onSelectQuestion={handleSubmit}
+        showWishlistQuestion={showWishlistQuestion}
+      />
       <div
         className={`${styles.composerDock} ${
           isNavigationVisible && keyboardInset === 0
