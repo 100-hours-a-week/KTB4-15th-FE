@@ -121,6 +121,7 @@ export function ChatIntro({
               <Image
                 alt=""
                 className={styles.questionImage}
+                loading="eager"
                 sizes="44px"
                 src={question.image}
                 unoptimized
