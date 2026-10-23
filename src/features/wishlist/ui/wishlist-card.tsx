@@ -18,6 +18,7 @@ export function WishlistCard({
 }) {
   const ProductFallbackIcon = product.itemType === "TOP" ? TopIcon : BottomIcon;
   const priceChanged = product.wishedPrice !== product.currentPrice;
+  const priceDecreased = product.currentPrice < product.wishedPrice;
 
   return (
     <article className={styles.card}>
@@ -37,10 +38,18 @@ export function WishlistCard({
           {priceChanged && (
             <del>찜 당시 가격 {formatPrice(product.wishedPrice)}</del>
           )}
-          <span className={styles.currentPrice}>
+          <span
+            className={`${styles.currentPrice} ${priceDecreased ? styles.priceDecreased : ""}`}
+          >
             {formatPrice(product.currentPrice)}
             {priceChanged && (
-              <em>{getPriceChangeText(product.priceChangeRate)}</em>
+              <em>
+                {getPriceChangeText(
+                  product.priceChangeRate,
+                  product.wishedPrice,
+                  product.currentPrice,
+                )}
+              </em>
             )}
           </span>
         </span>
