@@ -20,11 +20,13 @@ function showSendChatMessageError(error: Error) {
 
 type NewChatScreenProps = {
   date: string;
+  memberName?: string;
   showWishlistQuestion: boolean;
 };
 
 export function NewChatScreen({
   date,
+  memberName,
   showWishlistQuestion,
 }: NewChatScreenProps) {
   const router = useRouter();
@@ -61,6 +63,7 @@ export function NewChatScreen({
     <>
       <ChatIntro
         date={date}
+        memberName={memberName}
         onSelectQuestion={handleSubmit}
         showWishlistQuestion={showWishlistQuestion}
       />

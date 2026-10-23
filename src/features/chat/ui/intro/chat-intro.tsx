@@ -1,8 +1,6 @@
 "use client";
 
 import Image, { type StaticImageData } from "next/image";
-import { useQuery } from "@tanstack/react-query";
-import { memberProfileQueryOptions } from "@/features/profile";
 import aiImage from "@/shared/assets/ai-avatar.webp";
 import { ChevronRightIcon } from "@/shared/ui/icon";
 import type { ChatSourceType } from "../../schema/chat";
@@ -54,6 +52,7 @@ const GENERAL_QUESTIONS: SuggestedQuestion[] = [
 
 type ChatIntroProps = {
   date: string;
+  memberName?: string;
   onSelectQuestion: (
     message: string,
     sourceType: ChatSourceType,
@@ -63,11 +62,10 @@ type ChatIntroProps = {
 
 export function ChatIntro({
   date,
+  memberName,
   onSelectQuestion,
   showWishlistQuestion,
 }: ChatIntroProps) {
-  const memberProfileQuery = useQuery(memberProfileQueryOptions);
-  const memberName = memberProfileQuery.data?.name;
   const suggestedQuestions = showWishlistQuestion
     ? [WISHLIST_QUESTION, ...GENERAL_QUESTIONS]
     : GENERAL_QUESTIONS;
