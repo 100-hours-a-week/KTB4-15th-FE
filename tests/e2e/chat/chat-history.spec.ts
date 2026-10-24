@@ -78,14 +78,10 @@ test("이전 대화 조회 실패는 현재 대화를 유지하고 안내한 뒤
   });
   await expect(page.getByRole("log").getByRole("article")).toHaveCount(20);
   await configure(request, { failHistory: false });
-  await page
-    .getByText("이전 대화 24", { exact: true })
-    .scrollIntoViewIfNeeded();
-  await expect
-    .poll(async () => {
-      await page.mouse.wheel(0, -10000);
-      return page.getByRole("log").getByRole("article").count();
-    })
-    .toBe(24);
+  await page.mouse.wheel(0, 10000);
+  await expect(
+    page.getByText("이전 대화 24", { exact: true }),
+  ).toBeInViewport();
+  await page.mouse.wheel(0, -10000);
   await expect(page.getByRole("log").getByRole("article")).toHaveCount(24);
 });
