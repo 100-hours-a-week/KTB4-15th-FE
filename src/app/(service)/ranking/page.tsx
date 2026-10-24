@@ -1,5 +1,6 @@
 import { RankingScreen } from "@/features/ranking";
 import { getProductRankingsServer } from "@/features/ranking/api/ranking-server";
+import { RANKING_RENDER_BATCH_SIZE } from "@/features/ranking/schema/ranking";
 import { RankingRow } from "@/features/ranking/ui/ranking-row";
 import {
   isServerUnauthorizedError,
@@ -29,15 +30,17 @@ export default async function RankingPage() {
       <main className={styles.main}>
         <RankingScreen
           initialRanking={initialRanking}
-          initialRows={initialRanking?.items.map((product) => (
-            <RankingRow
-              key={product.productId}
-              preload={product.productId === firstImageProductId}
-              product={product}
-              rank={product.rank}
-              rankingType={initialRanking.type}
-            />
-          ))}
+          initialRows={initialRanking?.items
+            .slice(0, RANKING_RENDER_BATCH_SIZE)
+            .map((product) => (
+              <RankingRow
+                key={product.productId}
+                preload={product.productId === firstImageProductId}
+                product={product}
+                rank={product.rank}
+                rankingType={initialRanking.type}
+              />
+            ))}
         />
       </main>
     </>

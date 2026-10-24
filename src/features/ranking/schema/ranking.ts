@@ -3,6 +3,8 @@ import { productItemTypeSchema } from "@/shared/schema/product";
 
 export const rankingTypeSchema = z.enum(["WISH", "CLICK"]);
 
+export const RANKING_RENDER_BATCH_SIZE = 20;
+
 export const rankingProductSchema = z.object({
   rank: z.number().int().positive(),
   productId: z.number().int().positive(),

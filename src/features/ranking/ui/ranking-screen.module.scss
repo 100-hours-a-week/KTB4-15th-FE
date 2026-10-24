@@ -83,7 +83,13 @@ $ranking-viewport-offset: calc(
   border-radius: var(--radius-medium);
   background: var(--color-background-surface);
 
-  > :last-child {
+  > article:last-of-type {
     border-bottom: 0;
   }
+}
+
+.loadMore {
+  display: flex;
+  justify-content: center;
+  padding-block: var(--space-md);
 }

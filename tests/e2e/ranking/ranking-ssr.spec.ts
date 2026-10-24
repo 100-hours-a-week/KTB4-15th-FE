@@ -99,3 +99,43 @@ test("이미지 확대창을 클릭할 때 열고 닫기·Escape·재열기를 �
   await page.keyboard.press("Escape");
   await expect(page.getByRole("dialog")).toHaveCount(0);
 });
+
+test("랭킹을 20개씩 추가 표시하고 추가 API 조회 없이 끝까지 보여준다", async ({
+  page,
+}) => {
+  let rankingRequests = 0;
+  await page.route(`${apiURL}/products/rankings?type=CLICK`, async (route) => {
+    rankingRequests += 1;
+    const response = await route.fetch();
+    const body = await response.json();
+    const product = body.data.items[0];
+    body.data.items = Array.from({ length: 55 }, (_, index) => ({
+      ...product,
+      productId: 2000 + index,
+      productImageUrl: "",
+      rank: index + 1,
+    }));
+    await route.fulfill({ json: body });
+  });
+  await page.route("**/_next/image?**", (route) =>
+    route.fulfill({ status: 404, body: "test image unavailable" }),
+  );
+  await page.goto("/ranking");
+  await page.getByRole("button", { name: "조회순", exact: true }).click();
+  await expect(page.locator("article")).toHaveCount(20);
+  await page.locator("article").last().scrollIntoViewIfNeeded();
+  await expect(page.locator("article")).toHaveCount(40);
+  await page.locator("article").last().scrollIntoViewIfNeeded();
+  await expect(page.locator("article")).toHaveCount(55);
+  await expect(page.getByRole("button", { name: "상품 더 보기" })).toHaveCount(
+    0,
+  );
+  expect(rankingRequests).toBe(1);
+  expect(await page.locator("article > strong").allTextContents()).toEqual(
+    Array.from({ length: 55 }, (_, index) => String(index + 1)),
+  );
+  await page.getByRole("button", { name: "찜순", exact: true }).click();
+  await expect(page.locator("article")).toHaveCount(13);
+  await page.getByRole("button", { name: "조회순", exact: true }).click();
+  await expect(page.locator("article")).toHaveCount(20);
+});
