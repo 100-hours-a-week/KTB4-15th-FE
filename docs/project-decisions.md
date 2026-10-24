@@ -140,3 +140,7 @@
 ## 첫 이미지 preload
 
 이미지 URL이 있는 첫 상품 한 개에 preload를 적용하고 나머지는 lazy loading을 유지합니다.
+
+## 첫 이미지 요청 우선순위
+
+첫 이미지와 preload 링크에 fetchPriority=high를 전달합니다.

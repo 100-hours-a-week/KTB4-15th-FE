@@ -16,14 +16,18 @@ test("최초 HTML에 랭킹을 포함하고 초기 중복 조회 없이 탭을 �
   const response = await page.goto("/ranking");
   const html = await response!.text();
   expect(html).toMatch(/<article[^>]*>/);
-  expect(html).toMatch(/<link(?=[^>]*rel="preload")(?=[^>]*as="image")[^>]*>/);
+  expect(html).toMatch(
+    /<link(?=[^>]*rel="preload")(?=[^>]*as="image")(?=[^>]*fetch[Pp]riority="high")[^>]*>/,
+  );
   const rankingImages = (html.match(/<img\b[^>]*>/g) ?? []).filter((tag) =>
     tag.includes("ranking-row"),
   );
   expect(rankingImages.length).toBeGreaterThan(1);
   expect(rankingImages[0]).not.toContain('loading="lazy"');
+  expect(rankingImages[0]).toMatch(/fetch[Pp]riority="high"/);
   for (const image of rankingImages.slice(1)) {
     expect(image).toContain('loading="lazy"');
+    expect(image).not.toMatch(/fetch[Pp]riority="high"/);
   }
   await expect(page.locator("article")).toHaveCount(13);
   expect(rankingRequests).toEqual([]);

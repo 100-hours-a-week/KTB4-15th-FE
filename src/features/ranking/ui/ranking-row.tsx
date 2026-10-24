@@ -46,6 +46,7 @@ export function RankingRow({
           <Image
             alt=""
             className={styles.image}
+            fetchPriority={preload ? "high" : undefined}
             fill
             onError={() => setImageFailed(true)}
             preload={preload}
