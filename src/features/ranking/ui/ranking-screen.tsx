@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/shared/ui/button";
 import { LoadingMessage } from "@/shared/ui/loading-message";
 import { productRankingQueryOptions } from "../model/ranking-query";
-import type { RankingType } from "../schema/ranking";
+import type { ProductRanking, RankingType } from "../schema/ranking";
 import { RankingRow } from "./ranking-row";
 import styles from "./ranking-screen.module.scss";
 
@@ -14,11 +14,18 @@ const RANKING_TABS: { label: string; type: RankingType }[] = [
   { label: "조회순", type: "CLICK" },
 ];
 
-export function RankingScreen() {
+export function RankingScreen({
+  initialRanking,
+}: {
+  initialRanking?: ProductRanking;
+}) {
   const [rankingType, setRankingType] = useState<RankingType>("WISH");
-  const { data, isError, isFetching, isPending, refetch } = useQuery(
-    productRankingQueryOptions(rankingType),
-  );
+  const { data, isError, isFetching, isPending, refetch } = useQuery({
+    ...productRankingQueryOptions(rankingType),
+    initialData:
+      initialRanking?.type === rankingType ? initialRanking : undefined,
+    staleTime: initialRanking?.type === rankingType ? 30_000 : undefined,
+  });
   const products = data?.items;
 
   return (
