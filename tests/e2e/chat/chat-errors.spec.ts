@@ -140,3 +140,28 @@ test.describe("채팅방 한도 초과", () => {
     await expect(input(page)).toBeEnabled();
   });
 });
+
+test.describe("채팅방 생성 한도 초과", () => {
+  test.use({ scenario: { roomLimit: true } });
+  test("409 생성 오류를 안내하고 입력 내용을 유지한다", async ({ page }) => {
+    await page.goto("/chat");
+    await input(page).fill("셔츠 추천해줘");
+    await page
+      .getByRole("button", { name: "메시지 전송", exact: true })
+      .click();
+    await expect(
+      page.getByText("채팅방은 최대 100개까지 가능해요.", { exact: true }),
+    ).toBeVisible();
+    await expect(page).toHaveURL(/\/chat$/);
+    await expect(input(page)).toHaveValue("셔츠 추천해줘");
+    await expect(input(page)).toBeEnabled();
+  });
+  test("추천 질문으로 생성해도 한도 오류를 안내한다", async ({ page }) => {
+    await page.goto("/chat");
+    await page.getByRole("button", { name: /결혼식 하객룩/ }).click();
+    await expect(
+      page.getByText("채팅방은 최대 100개까지 가능해요.", { exact: true }),
+    ).toBeVisible();
+    await expect(page).toHaveURL(/\/chat$/);
+  });
+});

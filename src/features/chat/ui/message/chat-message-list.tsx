@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { AIChatMessageLoading } from "./ai-chat-message-loading";
 import {
   AIChatMessage,
@@ -9,6 +9,7 @@ import {
 } from "./chat-message";
 import styles from "./chat-message-list.module.scss";
 import type { ChatMessageResponse } from "../../schema/chat";
+import { Button } from "@/shared/ui/button";
 import { formatKoreanDate } from "@/shared/utils/date-format";
 
 type ChatMessageListProps = {
@@ -32,6 +33,9 @@ export function ChatMessageList({
   onRetryMessage,
   streamingContent = "",
 }: ChatMessageListProps) {
+  const listRef = useRef<HTMLDivElement>(null);
+  const isNearBottomRef = useRef(true);
+  const [unreadReplyId, setUnreadReplyId] = useState<number | null>(null);
   const loadMoreRef = useRef<HTMLDivElement>(null);
   const isLoadingPreviousMessagesRef = useRef(false);
   const didInitialScrollRef = useRef(false);
@@ -60,57 +64,61 @@ export function ChatMessageList({
     return groups;
   }, []);
 
+  const scrollToReply = (messageId: number) => {
+    listRef.current
+      ?.querySelector<HTMLElement>(`[data-message-id="${messageId}"]`)
+      ?.scrollIntoView({
+        block: "start",
+        behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+          ? "instant"
+          : "smooth",
+      });
+    setUnreadReplyId(null);
+  };
+
+  useEffect(() => {
+    const updatePosition = () => {
+      isNearBottomRef.current =
+        document.documentElement.scrollHeight -
+          window.scrollY -
+          window.innerHeight <
+        120;
+      if (isNearBottomRef.current) setUnreadReplyId(null);
+    };
+    window.addEventListener("scroll", updatePosition, { passive: true });
+    return () => window.removeEventListener("scroll", updatePosition);
+  }, []);
+
   useLayoutEffect(() => {
-    if (latestMessageId == null) {
-      return;
-    }
+    if (latestMessageId == null) return;
+    const previousId = previousLatestMessageIdRef.current;
+    if (previousId === latestMessageId) return;
 
-    const isInitialScroll = !didInitialScrollRef.current;
-    const hasNewLatestMessage =
-      previousLatestMessageIdRef.current != null &&
-      previousLatestMessageIdRef.current !== latestMessageId;
-
-    previousLatestMessageIdRef.current = latestMessageId;
-
-    if (!isInitialScroll && !hasNewLatestMessage) {
-      return;
-    }
-
-    if (!isInitialScroll) {
-      const frameId = requestAnimationFrame(() => {
+    const latestMessage = messages.at(-1)!;
+    const initial = previousId == null;
+    const shouldFollow =
+      initial || latestMessage.senderType === "USER" || isNearBottomRef.current;
+    const frameId = requestAnimationFrame(() => {
+      previousLatestMessageIdRef.current = latestMessageId;
+      if (initial || latestMessage.senderType === "USER") {
+        setUnreadReplyId(null);
         window.scrollTo({
           top: document.documentElement.scrollHeight,
-          behavior: "auto",
+          behavior:
+            initial ||
+            window.matchMedia("(prefers-reduced-motion: reduce)").matches
+              ? "instant"
+              : "smooth",
         });
-      });
-
-      return () => {
-        cancelAnimationFrame(frameId);
-      };
-    }
-
-    const finishInitialScroll = () => {
+      } else if (shouldFollow) {
+        scrollToReply(latestMessageId);
+      } else {
+        setUnreadReplyId(latestMessageId);
+      }
       didInitialScrollRef.current = true;
-      window.clearTimeout(fallbackTimerId);
-      window.removeEventListener("scrollend", finishInitialScroll);
-    };
-
-    window.addEventListener("scrollend", finishInitialScroll, { once: true });
-    const fallbackTimerId = window.setTimeout(finishInitialScroll, 1000);
-
-    const frameId = requestAnimationFrame(() => {
-      window.scrollTo({
-        top: document.documentElement.scrollHeight,
-        behavior: "smooth",
-      });
     });
-
-    return () => {
-      cancelAnimationFrame(frameId);
-      window.clearTimeout(fallbackTimerId);
-      window.removeEventListener("scrollend", finishInitialScroll);
-    };
-  }, [latestMessageId]);
+    return () => cancelAnimationFrame(frameId);
+  }, [latestMessageId, messages]);
 
   useEffect(() => {
     const loadMoreElement = loadMoreRef.current;
@@ -166,7 +174,12 @@ export function ChatMessageList({
   }, [hasPreviousMessages, onLoadPreviousMessages]);
 
   return (
-    <div aria-label="채팅 메시지" className={styles.list} role="log">
+    <div
+      aria-label="채팅 메시지"
+      className={styles.list}
+      ref={listRef}
+      role="log"
+    >
       <div
         aria-hidden="true"
         className={styles.loadMoreTrigger}
@@ -206,11 +219,30 @@ export function ChatMessageList({
                 onRetryMessage={onRetryMessage}
               />
             ) : (
-              <AIChatMessage key={message.messageId} message={message} />
+              <div
+                className={styles.reply}
+                data-message-id={message.messageId}
+                key={message.messageId}
+              >
+                <AIChatMessage message={message} />
+              </div>
             ),
           )}
         </section>
       ))}
+      {unreadReplyId != null && (
+        <div className={styles.newReply}>
+          <Button
+            aria-label="새 답변 보기"
+            className={styles.newReplyButton}
+            onClick={() => scrollToReply(unreadReplyId)}
+            size="small"
+            variant="secondary"
+          >
+            ↓ 새 답변 도착
+          </Button>
+        </div>
+      )}
       {streamingContent ? (
         <StreamingAIChatMessage content={streamingContent} />
       ) : (
