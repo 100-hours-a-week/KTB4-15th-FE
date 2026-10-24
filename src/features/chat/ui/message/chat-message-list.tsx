@@ -17,7 +17,7 @@ type ChatMessageListProps = {
   isLoadingPreviousMessages?: boolean;
   isRetryPending?: boolean;
   messages: ChatMessageResponse[];
-  onLoadPreviousMessages?: () => Promise<unknown>;
+  onLoadPreviousMessages?: () => Promise<boolean>;
   onRetryMessage?: (content: string) => void;
   streamingContent?: string;
 };
@@ -33,6 +33,7 @@ export function ChatMessageList({
   streamingContent = "",
 }: ChatMessageListProps) {
   const loadMoreRef = useRef<HTMLDivElement>(null);
+  const isLoadingPreviousMessagesRef = useRef(false);
   const didInitialScrollRef = useRef(false);
   const latestMessageId = messages.at(-1)?.messageId;
   const previousLatestMessageIdRef = useRef<number | undefined>(undefined);
@@ -117,7 +118,6 @@ export function ChatMessageList({
     if (
       loadMoreElement == null ||
       !hasPreviousMessages ||
-      isLoadingPreviousMessages ||
       onLoadPreviousMessages == null
     ) {
       return;
@@ -125,23 +125,33 @@ export function ChatMessageList({
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (!entry.isIntersecting || !didInitialScrollRef.current) {
+        if (
+          !entry.isIntersecting ||
+          !didInitialScrollRef.current ||
+          isLoadingPreviousMessagesRef.current
+        ) {
           return;
         }
 
         const previousScrollHeight = document.documentElement.scrollHeight;
         const previousScrollY = window.scrollY;
 
-        void onLoadPreviousMessages().then(() => {
-          requestAnimationFrame(() => {
-            const addedHeight =
-              document.documentElement.scrollHeight - previousScrollHeight;
-            window.scrollTo({
-              top: previousScrollY + addedHeight,
-              behavior: "auto",
+        isLoadingPreviousMessagesRef.current = true;
+        void onLoadPreviousMessages()
+          .then((succeeded) => {
+            if (!succeeded) return;
+            requestAnimationFrame(() => {
+              const addedHeight =
+                document.documentElement.scrollHeight - previousScrollHeight;
+              window.scrollTo({
+                top: previousScrollY + addedHeight,
+                behavior: "auto",
+              });
             });
+          })
+          .finally(() => {
+            isLoadingPreviousMessagesRef.current = false;
           });
-        });
       },
       {
         rootMargin: "200px 0px 0px",
@@ -153,7 +163,7 @@ export function ChatMessageList({
     return () => {
       observer.disconnect();
     };
-  }, [hasPreviousMessages, isLoadingPreviousMessages, onLoadPreviousMessages]);
+  }, [hasPreviousMessages, onLoadPreviousMessages]);
 
   return (
     <div aria-label="채팅 메시지" className={styles.list} role="log">
