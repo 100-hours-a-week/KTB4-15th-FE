@@ -28,3 +28,35 @@ test("최초 HTML에 랭킹을 포함하고 초기 중복 조회 없이 탭을 �
   await expect(page.locator("article")).toHaveCount(13);
   expect(rankingRequests).toHaveLength(1);
 });
+
+test("다른 세션도 랭킹을 재사용하되 매 요청 인증을 확인한다", async ({
+  page,
+  request,
+}) => {
+  await page.route("**/_next/image?**", (route) =>
+    route.fulfill({ status: 404, body: "test image unavailable" }),
+  );
+  await page.goto("/ranking");
+  await expect(page.locator("article")).toHaveCount(13);
+  const before = (await (await request.get(`${apiURL}/__test/requests`)).json())
+    .data.requests as { path: string }[];
+  const beforeRanking = before.filter(
+    (item) => item.path === "/products/rankings",
+  ).length;
+  const beforeAuth = before.filter(
+    (item) => item.path === "/members/me",
+  ).length;
+  const response = await request.get("/ranking", {
+    headers: { Cookie: "accessToken=another-test-session" },
+  });
+  expect(response.ok()).toBeTruthy();
+  expect(await response.text()).toMatch(/<article[^>]*>/);
+  const after = (await (await request.get(`${apiURL}/__test/requests`)).json())
+    .data.requests as { path: string }[];
+  expect(
+    after.filter((item) => item.path === "/products/rankings"),
+  ).toHaveLength(beforeRanking);
+  expect(
+    after.filter((item) => item.path === "/members/me").length,
+  ).toBeGreaterThan(beforeAuth);
+});
