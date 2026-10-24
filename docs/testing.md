@@ -32,6 +32,19 @@ Playwright가 테스트용 Next 개발 서버(`3100`)와 로컬 API(`3101`)를 �
 
 `api-server.mts`에서 `Cannot use import statement outside a module`과 Node.js `v20`이 출력되면 테스트용 API 서버를 시작하기 전 Node.js 버전부터 맞춥니다. 이 파일은 Node.js 24의 TypeScript 직접 실행 기능을 사용합니다.
 
+## CI 실행
+
+브라우저와 시스템 의존성 설치는 [Playwright 공식 CI 안내](https://playwright.dev/docs/ci)를 따릅니다.
+
+`develop`·`main` 대상 PR을 열거나 업데이트하면 `frontend-ci.yml`의 **Unit and Playwright Tests** 작업이 실행됩니다. 기존 Docker 검사·빌드 작업과 병렬로 실행하며, 둘 중 하나라도 실패하면 CI는 실패합니다.
+
+- `.nvmrc`의 Node.js와 `package.json`의 pnpm 버전으로 의존성을 고정 설치합니다.
+- `pnpm test`를 실행한 뒤 Chromium과 Linux 시스템 의존성을 설치하고, `pnpm test:e2e --forbid-only --reporter=line,html`로 전체 브라우저 테스트를 실행합니다. `test.only`가 남아 있으면 실패합니다.
+- 테스트가 Next 개발 서버와 로컬 API를 자동 실행하므로 별도 백엔드나 Secret 설정은 필요하지 않습니다.
+- Actions 실행 페이지의 Artifacts에서 **playwright-results**를 내려받을 수 있습니다. HTML Report와 실패한 테스트의 스크린샷·Trace를 7일간 보관합니다. 압축을 푼 뒤 `pnpm exec playwright show-report <playwright-report 경로>`로 Report를 엽니다.
+
+PR 머지를 막는 필수 검사로 지정하려면 GitHub 브랜치 규칙에서 **Unit and Playwright Tests**를 Required Status Check로 등록해야 합니다.
+
 ## 데이터와 격리
 
 - `tests/e2e/fixtures/api-server.mts`는 MSW의 `getResponse`로 로컬 HTTP 응답을 제공합니다. 회원 정보는 기존 `src/mocks/handlers.ts`를 재사용합니다.
