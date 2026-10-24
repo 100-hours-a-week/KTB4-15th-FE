@@ -1,6 +1,6 @@
 .row {
   display: grid;
-  grid-template-columns: 24px 72px minmax(0, 1fr) auto;
+  grid-template-columns: 24px 72px minmax(0, 1fr) 56px;
   min-height: 96px;
   align-items: center;
   gap: var(--space-md);
@@ -84,7 +84,6 @@
 
 .count {
   display: flex;
-  max-width: 76px;
   align-self: end;
   align-items: center;
   gap: var(--space-xs);

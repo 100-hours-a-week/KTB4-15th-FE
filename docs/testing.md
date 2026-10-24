@@ -127,3 +127,9 @@ IME 검증은 `isComposing` Keyboard Event를 합성하여 전송 방지 로직�
 API 응답 고정 테스트는 프론트엔드 흐름을 검증합니다. 실제 API 계약과의 일치, 서버 저장, AI 추천 품질, 실제 피팅 이미지 생성, Firefox·WebKit 호환성은 별도 검증이 필요합니다.
 
 이전 메시지 조회는 TanStack Query의 `retry: false`를 사용합니다. ky의 `retry.limit: 1`로 재시도 가능한 오류(예: 503)는 최초 요청을 포함해 최대 2회 요청한 뒤 실패 토스트를 표시합니다.
+
+## 랭킹 숫자 표시 검증
+
+`NEXT_PUBLIC_API_MOCKING=enabled pnpm dev`로 실행하고 `/ranking`의 찜순·조회순을 확인합니다. 기존 MSW 응답은 백·천·만·억 단위와 경계값을 포함한 13개 상품을 제공합니다. DB를 변경하지 않으며 성능 측정용 데이터가 아닙니다.
+
+`tests/unit/number-format.test.ts`에서 영어 K·M·B 단위, 소수점 버림과 단위 경계를 확인합니다. `1234 → 1K`, `12345 → 12K`, `123456789 → 123M`이며 경계값 `999999`는 `999K`로 표시됩니다. `tests/unit/ranking-mock.test.ts`는 두 탭의 고정 수치, 상품 ID 중복과 순위 연속성을 검증합니다.

@@ -36,6 +36,11 @@ function success<T>(data: T) {
   return HttpResponse.json({ code: "SUCCESS", data, message: "성공" });
 }
 
+const rankingCounts = [
+  123456789, 100000000, 99999999, 12345, 10000, 9999, 1234, 1000, 999, 100, 99,
+  1, 0,
+];
+
 const rankingItems = {
   WISH: [
     {
@@ -196,7 +201,15 @@ export const handlers: RequestHandler[] = [
 
     return HttpResponse.json({
       code: "PRODUCT_RANKING_GET_SUCCESS",
-      data: { type, items: rankingItems[type] },
+      data: {
+        type,
+        items: rankingCounts.map((rankingCount, index) => ({
+          ...rankingItems[type][index % rankingItems[type].length],
+          rank: index + 1,
+          productId: 1000 + index,
+          rankingCount,
+        })),
+      },
       message: "상품 랭킹을 조회했습니다.",
     });
   }),
