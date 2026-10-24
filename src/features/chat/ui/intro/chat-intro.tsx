@@ -4,10 +4,10 @@ import Image, { type StaticImageData } from "next/image";
 import aiImage from "@/shared/assets/ai-avatar.webp";
 import { ChevronRightIcon } from "@/shared/ui/icon";
 import type { ChatSourceType } from "../../schema/chat";
-import knitImage from "../../icon/knit.webp";
-import likeImage from "../../icon/like.webp";
-import shirtImage from "../../icon/shirt.webp";
-import suitImage from "../../icon/suit.webp";
+import knitImage from "../icon/knit.webp";
+import likeImage from "../icon/like.webp";
+import shirtImage from "../icon/shirt.webp";
+import suitImage from "../icon/suit.webp";
 import styles from "./chat-intro.module.scss";
 
 type SuggestedQuestion = {
