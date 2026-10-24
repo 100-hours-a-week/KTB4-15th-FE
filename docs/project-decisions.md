@@ -96,6 +96,7 @@
 - 함수와 Route Handler의 동작은 Node.js 내장 Test Runner로 검증합니다.
 - 핵심 사용자 흐름은 Chromium 기반 Playwright 브라우저 테스트로 검증합니다.
 - 브라우저 테스트의 API 응답은 기존 MSW Handler를 재사용합니다.
+- 채팅 브라우저 테스트는 MSW 응답을 로컬 HTTP API로 제공하여 SSR과 브라우저의 저장 상태를 공유합니다. 테스트별 초기화와 단일 Worker로 격리하며 실제 서버에는 연결하지 않습니다. 상세 범위는 [테스트 문서](./testing.md)를 참고합니다.
 - Firefox, WebKit과 시각적 회귀 테스트는 호환성 검증 필요가 생길 때 도입합니다.
 
 ## 보류 항목
