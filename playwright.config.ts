@@ -19,7 +19,7 @@ export default defineConfig({
   ],
   webServer: [
     {
-      command: "node tests/e2e/fixtures/api-server.mts",
+      command: "node tests/e2e/mock-api/api-server.mts",
       url: "http://127.0.0.1:3101/health",
       reuseExistingServer: false,
     },

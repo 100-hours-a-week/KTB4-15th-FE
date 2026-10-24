@@ -1,16 +1,6 @@
 import type { APIRequestContext, Page } from "@playwright/test";
-import { expect } from "./test";
-import { apiURL, message, partialReply, selectedProduct } from "./chat-data";
-import type { Scenario } from "./chat-data";
-
-export async function configure(
-  request: APIRequestContext,
-  scenario: Partial<Scenario>,
-) {
-  expect(
-    (await request.post(`${apiURL}/__test/scenario`, { data: scenario })).ok(),
-  ).toBeTruthy();
-}
+import { expect } from "../fixtures/test";
+import { apiURL, message, partialReply, selectedProduct } from "../data/chat";
 
 export const input = (page: Page) =>
   page.getByRole("textbox", { name: "메시지, 최대 500자" });
@@ -33,14 +23,4 @@ export async function recommend(page: Page, request: APIRequestContext) {
   await page.getByRole("button", { name: "메시지 전송", exact: true }).click();
   await expect(page).toHaveURL(/\/chat\/1$/);
   await finishReply(page, request);
-}
-
-export async function writes(request: APIRequestContext, path: string) {
-  const { data } = await (
-    await request.get(`${apiURL}/__test/requests`)
-  ).json();
-  return data.requests.filter(
-    (item: { method: string; path: string }) =>
-      item.method === "POST" && item.path === path,
-  );
 }

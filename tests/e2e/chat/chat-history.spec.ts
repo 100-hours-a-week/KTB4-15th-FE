@@ -1,7 +1,7 @@
 import type { ChatMessageResponse } from "../../../src/features/chat/schema/chat";
 import { test, expect } from "../fixtures/test";
-import { configure } from "../fixtures/chat-actions";
-import { apiURL, createdAt, makeRoom } from "../fixtures/chat-data";
+import { configure } from "../helpers/mock-api";
+import { apiURL, createdAt, makeRoom } from "../data/chat";
 
 const history: ChatMessageResponse[] = Array.from(
   { length: 24 },

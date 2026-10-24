@@ -1,6 +1,7 @@
 import { test, expect } from "../fixtures/test";
-import { apiURL, message } from "../fixtures/chat-data";
-import { finishReply, input, writes } from "../fixtures/chat-actions";
+import { apiURL, message } from "../data/chat";
+import { finishReply, input } from "../helpers/chat";
+import { writes } from "../helpers/mock-api";
 
 for (const expiredRefresh of [false, true]) {
   test.describe(expiredRefresh ? "갱신 실패" : "갱신 성공", () => {

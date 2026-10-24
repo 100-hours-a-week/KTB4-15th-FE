@@ -1,6 +1,7 @@
 import { test, expect } from "../fixtures/test";
-import { configure, productCard, recommend } from "../fixtures/chat-actions";
-import { selectedProduct } from "../fixtures/chat-data";
+import { productCard, recommend } from "../helpers/chat";
+import { configure } from "../helpers/mock-api";
+import { selectedProduct } from "../data/chat";
 
 test("추천 상품 페이지 버튼으로 상품을 전환하고 현재 위치를 표시한다", async ({
   page,

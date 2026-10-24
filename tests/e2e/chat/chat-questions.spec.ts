@@ -1,5 +1,6 @@
 import { test, expect } from "../fixtures/test";
-import { finishReply, writes } from "../fixtures/chat-actions";
+import { finishReply } from "../helpers/chat";
+import { writes } from "../helpers/mock-api";
 
 const questions = [
   ["주말 데이트 5만원대 셔츠", "주말 데이트에 입을 5만원대 셔츠를 추천해줘"],

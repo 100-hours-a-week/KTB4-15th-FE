@@ -1,5 +1,6 @@
 import { test, expect } from "../fixtures/test";
-import { input, finishReply, writes } from "../fixtures/chat-actions";
+import { input, finishReply } from "../helpers/chat";
+import { writes } from "../helpers/mock-api";
 
 test("450자부터 글자 수를 표시하고 500자를 초과한 붙여넣기는 잘라서 전송한다", async ({
   page,

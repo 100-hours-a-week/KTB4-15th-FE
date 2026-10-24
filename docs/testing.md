@@ -45,10 +45,39 @@ Playwright가 테스트용 Next 개발 서버(`3100`)와 로컬 API(`3101`)를 �
 
 PR 머지를 막는 필수 검사로 지정하려면 GitHub 브랜치 규칙에서 **Unit and Playwright Tests**를 Required Status Check로 등록해야 합니다.
 
+## 폴더 구조
+
+```text
+tests/e2e/
+├── chat/                       # 기능별 테스트 시나리오 (*.spec.ts)
+├── data/
+│   └── chat.ts                 # 고정 데이터, 채팅방 생성 함수, Scenario 타입
+├── fixtures/
+│   └── test.ts                 # test.extend: 초기화·외부 요청 차단·종료 후 검증
+├── helpers/
+│   ├── chat.ts                 # 입력·추천 상품·답변 완료 등 공통 화면 조작
+│   └── mock-api.ts             # 실패 시나리오 변경·POST 요청 기록 조회
+└── mock-api/
+    ├── api-server.mts          # HTTP 서버·CORS·요청 기록·응답 전달
+    └── api-handlers.ts         # MSW 응답·가변 상태·초기화·SSE 스트림
+```
+
+`fixtures`에는 Playwright의 `test.extend`로 준비·정리하는 코드만 둡니다. 고정 데이터는 `data`, 재사용 조작은 `helpers`, 가짜 서버 구현은 `mock-api`에 둡니다. 새 기능 테스트는 `chat`과 같은 수준의 기능 폴더에 추가합니다.
+
+Handler와 상태 초기화·스트림 종료는 동일한 상태를 다루므로 `api-handlers.ts`에 함께 둡니다. 서버는 이 모듈의 요청 기록을 공유하여 `/__test/reset` 이후에도 현재 기록에 요청을 추가합니다. 순환 참조나 별도 상태 저장소는 추가하지 않습니다.
+
+참고한 기준과 공개 사례는 다음과 같습니다.
+
+- [Playwright Fixture 문서](https://playwright.dev/docs/test-fixtures)는 환경의 준비·정리를, [Page Object 문서](https://playwright.dev/docs/pom)는 반복 조작의 재사용을 설명합니다. 위 폴더 이름을 강제하는 규칙은 아닙니다.
+- [Cal.com 계열](https://github.com/calcom/cal.diy/tree/main/apps/web/playwright)은 기능별 테스트와 `fixtures`, `lib`를 구분합니다.
+- [npmx.dev](https://github.com/npmx-dev/npmx.dev/blob/main/CONTRIBUTING.md#testing-connector-features)는 가짜 HTTP 서버 구현과 E2E 전용 보조 코드를 분리합니다.
+
+현재 규모에서는 역할별 폴더와 함수로 충분하므로 Page Object 클래스나 별도 상태 저장소는 도입하지 않습니다.
+
 ## 데이터와 격리
 
-- `tests/e2e/fixtures/api-server.mts`는 MSW의 `getResponse`로 로컬 HTTP 응답을 제공합니다. 회원 정보는 기존 `src/mocks/handlers.ts`를 재사용합니다.
-- 채팅, 찜, 피팅 후보는 테스트 전용 Handler에서 관리합니다. SSR과 브라우저가 같은 로컬 API를 조회하므로 저장 후 목록 이동과 새로고침도 검증합니다.
+- `tests/e2e/mock-api/api-server.mts`는 MSW의 `getResponse`로 로컬 HTTP 응답을 제공합니다. 회원 정보는 기존 `src/mocks/handlers.ts`를 재사용합니다.
+- `mock-api/api-handlers.ts`에서 채팅, 찜, 피팅 후보와 실패 시나리오·스트림을 관리합니다. SSR과 브라우저가 같은 로컬 API를 조회하므로 저장 후 목록 이동과 새로고침도 검증합니다.
 - 실제 로그인 대신 프로필을 완료한 회원 API 응답을 제공합니다. 브라우저의 401 응답에서 BFF 갱신 성공 후 재전송과 갱신 실패 후 로그인 이동은 검증하지만, 실제 인증 서버·JWT·인증 Cookie 발급은 검증하지 않습니다.
 - 테스트마다 대화와 저장 목록을 초기화하고 새 Browser Context를 사용합니다. 로컬 API 상태를 공유하므로 Worker는 하나로 실행합니다.
 - 개발용 Service Worker는 끄고, 브라우저의 외부 요청은 차단합니다. 정의되지 않은 로컬 API 호출도 테스트 실패로 처리합니다.
@@ -56,7 +85,7 @@ PR 머지를 막는 필수 검사로 지정하려면 GitHub 브랜치 규칙에�
 
 ## 채팅 검증 범위
 
-기능별 Spec에 정상·실패 시나리오를 함께 둡니다. 메시지는 `chat-messages.spec.ts`, 찜은 `chat-wishlist.spec.ts`, 피팅은 `chat-fitting.spec.ts`, 외부 상품 링크는 `chat-product-link.spec.ts`에서 검증합니다. 공통 채팅 조작과 검증은 `fixtures/chat-actions.ts`를 재사용합니다.
+기능별 Spec에 정상·실패 시나리오를 함께 둡니다. 메시지는 `chat-messages.spec.ts`, 찜은 `chat-wishlist.spec.ts`, 피팅은 `chat-fitting.spec.ts`, 외부 상품 링크는 `chat-product-link.spec.ts`에서 검증합니다. 공통 채팅 조작과 검증은 `helpers/chat.ts`를 재사용합니다.
 
 이 테스트는 실제 Next 페이지와 여러 컴포넌트, API Client, Router를 함께 실행하는 브라우저 통합 테스트입니다. 컴포넌트 테스트는 페이지 대신 `ChatComposer`나 상품 카드 하나를 별도로 렌더링해 입력·버튼 상태 등의 동작을 검증하는 범위입니다.
 

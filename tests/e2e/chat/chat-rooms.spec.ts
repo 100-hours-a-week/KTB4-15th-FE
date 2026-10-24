@@ -1,7 +1,7 @@
 import type { Page } from "@playwright/test";
 import { test, expect } from "../fixtures/test";
-import { apiURL, makeRoom } from "../fixtures/chat-data";
-import { configure } from "../fixtures/chat-actions";
+import { apiURL, makeRoom } from "../data/chat";
+import { configure } from "../helpers/mock-api";
 
 async function openList(page: Page) {
   await page.getByRole("button", { name: "대화 목록 열기" }).click();

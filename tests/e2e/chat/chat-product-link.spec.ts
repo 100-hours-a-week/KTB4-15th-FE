@@ -1,6 +1,6 @@
 import { test, expect } from "../fixtures/test";
-import { selectedProduct } from "../fixtures/chat-data";
-import { productCard, recommend } from "../fixtures/chat-actions";
+import { selectedProduct } from "../data/chat";
+import { productCard, recommend } from "../helpers/chat";
 
 test("상품 보기는 해당 상품의 구매 URL을 새 탭으로 연다", async ({
   page,

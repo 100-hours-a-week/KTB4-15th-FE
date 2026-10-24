@@ -1,5 +1,5 @@
 import { test as base, expect } from "@playwright/test";
-import { apiURL, type Scenario } from "./chat-data";
+import { apiURL, type Scenario } from "../data/chat";
 
 export const test = base.extend<{ scenario: Scenario }>({
   scenario: [{}, { option: true }],

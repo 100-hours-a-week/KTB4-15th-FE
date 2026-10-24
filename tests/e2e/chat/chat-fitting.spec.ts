@@ -1,7 +1,8 @@
 import type { Page } from "@playwright/test";
 import { test, expect } from "../fixtures/test";
-import { selectedProduct } from "../fixtures/chat-data";
-import { productCard, recommend, writes } from "../fixtures/chat-actions";
+import { selectedProduct } from "../data/chat";
+import { productCard, recommend } from "../helpers/chat";
+import { writes } from "../helpers/mock-api";
 
 const fittingButton = (page: Page) =>
   productCard(page).getByRole("button", { name: "피팅 목록에 추가" });

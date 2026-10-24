@@ -1,12 +1,7 @@
 import { test, expect } from "../fixtures/test";
-import { apiURL, message, partialReply, reply } from "../fixtures/chat-data";
-import {
-  input,
-  productCard,
-  finishReply,
-  recommend,
-  writes,
-} from "../fixtures/chat-actions";
+import { apiURL, message, partialReply, reply } from "../data/chat";
+import { input, productCard, finishReply, recommend } from "../helpers/chat";
+import { writes } from "../helpers/mock-api";
 
 test("메시지를 보내 답변과 추천 상품을 받고 새로고침해도 대화가 유지된다", async ({
   page,

@@ -1,7 +1,8 @@
 import type { Page } from "@playwright/test";
 import { test, expect } from "../fixtures/test";
-import { apiURL, products, selectedProduct } from "../fixtures/chat-data";
-import { productCard, recommend, writes } from "../fixtures/chat-actions";
+import { apiURL, products, selectedProduct } from "../data/chat";
+import { productCard, recommend } from "../helpers/chat";
+import { writes } from "../helpers/mock-api";
 
 const wishlistButton = (page: Page) =>
   productCard(page).getByRole("button", {

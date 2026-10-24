@@ -1,12 +1,7 @@
 import { test, expect } from "../fixtures/test";
-import {
-  apiURL,
-  makeRoom,
-  message,
-  partialReply,
-  reply,
-} from "../fixtures/chat-data";
-import { input, configure, finishReply } from "../fixtures/chat-actions";
+import { apiURL, makeRoom, message, partialReply, reply } from "../data/chat";
+import { input, finishReply } from "../helpers/chat";
+import { configure } from "../helpers/mock-api";
 
 for (const invalidId of ["0", "-1", "abc", "1.5"]) {
   test(`유효하지 않은 채팅 ID ${invalidId}는 Not Found를 표시한다`, async ({
