@@ -58,3 +58,52 @@ test("한글 조합 중 Enter는 전송하지 않고 조합 종료 후 Enter로 
   await finishReply(page, request);
   expect(await writes(request, "/chat-rooms")).toHaveLength(1);
 });
+
+test("여러 줄 입력은 버튼 위 전체 너비를 쓰고 화면 너비에 맞춰 높이가 바뀐다", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/chat");
+  const textarea = input(page);
+  const button = page.getByRole("button", { name: "메시지 전송", exact: true });
+  await textarea.fill("한 줄");
+  const singleLine = (await textarea.boundingBox())!;
+  for (let length = 2; length <= 60; length += 1) {
+    await textarea.fill("가".repeat(length));
+    if ((await textarea.boundingBox())!.width > singleLine.width) break;
+  }
+  const expandedWidth = (await textarea.boundingBox())!.width;
+  expect(expandedWidth).toBeGreaterThan(singleLine.width);
+  await textarea.press("End");
+  await textarea.pressSequentially("가나다");
+  expect((await textarea.boundingBox())!.width).toBe(expandedWidth);
+  await textarea.fill("첫 줄\n둘째 줄");
+  await expect(async () => {
+    const box = (await textarea.boundingBox())!;
+    const action = (await button.boundingBox())!;
+    expect(box.width).toBeGreaterThan(singleLine.width);
+    expect(box.height).toBeGreaterThan(singleLine.height);
+    expect(action.y).toBeGreaterThanOrEqual(box.y + box.height);
+  }).toPass();
+  const multilineWidth = (await textarea.boundingBox())!.width;
+  await textarea.press("End");
+  await textarea.pressSequentially("계속 입력");
+  expect((await textarea.boundingBox())!.width).toBe(multilineWidth);
+  await textarea.fill("가".repeat(500));
+  await expect(page.getByText("500/500", { exact: true })).toBeVisible();
+  const full = (await textarea.boundingBox())!;
+  expect((await button.boundingBox())!.y).toBeGreaterThanOrEqual(
+    full.y + full.height,
+  );
+  expect(full.width).toBe(multilineWidth);
+  await textarea.fill("가".repeat(50));
+  const narrowHeight = (await textarea.boundingBox())!.height;
+  await page.setViewportSize({ width: 1280, height: 844 });
+  await expect(async () => {
+    expect((await textarea.boundingBox())!.height).toBeLessThan(narrowHeight);
+  }).toPass();
+  await textarea.fill("한 줄");
+  await expect(async () => {
+    expect((await textarea.boundingBox())!.height).toBe(singleLine.height);
+  }).toPass();
+});
