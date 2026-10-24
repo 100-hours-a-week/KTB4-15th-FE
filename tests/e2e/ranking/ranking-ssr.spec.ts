@@ -73,3 +73,29 @@ test("다른 세션도 랭킹을 재사용하되 매 요청 인증을 확인한�
     after.filter((item) => item.path === "/members/me").length,
   ).toBeGreaterThan(beforeAuth);
 });
+
+test("이미지 확대창을 클릭할 때 열고 닫기·Escape·재열기를 지원한다", async ({
+  page,
+  context,
+}) => {
+  const image =
+    '<svg xmlns="http://www.w3.org/2000/svg" width="72" height="72"><rect width="72" height="72" fill="gray"/></svg>';
+  await page.route("**/_next/image?**", (route) =>
+    route.fulfill({ contentType: "image/svg+xml", body: image }),
+  );
+  await context.route("https://img.29cm.co.kr/**", (route) =>
+    route.fulfill({ contentType: "image/svg+xml", body: image }),
+  );
+  await page.goto("/ranking");
+  const trigger = page.getByRole("button", { name: /이미지 확대$/ }).first();
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await trigger.click();
+  await expect(page.getByRole("dialog")).toBeVisible();
+  await expect(page.getByRole("dialog").locator("img")).toBeVisible();
+  await page.getByRole("button", { name: "이미지 확대 화면 닫기" }).click();
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await trigger.click();
+  await expect(page.getByRole("dialog")).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+});

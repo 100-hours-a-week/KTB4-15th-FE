@@ -1,12 +1,16 @@
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useState } from "react";
 import { recordPurchaseLinkClick } from "@/features/product";
-import { ImageViewerDialog } from "@/shared/ui/dialog";
 import { BottomIcon, EyeIcon, HeartIcon, TopIcon } from "@/shared/ui/icon";
 import { formatCompactNumber } from "@/shared/utils/number-format";
 import { formatPrice } from "@/shared/utils/price-format";
 import type { RankingProduct, RankingType } from "../schema/ranking";
 import styles from "./ranking-row.module.scss";
+
+const ImageViewerDialog = dynamic(() =>
+  import("@/shared/ui/dialog").then((module) => module.ImageViewerDialog),
+);
 
 type RankingRowProps = {
   preload?: boolean;
@@ -80,12 +84,12 @@ export function RankingRow({
         {isWishRanking ? <HeartIcon filled /> : <EyeIcon />}
         {count}
       </span>
-      {!imageFailed && (
+      {!imageFailed && isImageOpen && (
         <ImageViewerDialog
           alt={product.productName}
           onError={() => setImageFailed(true)}
           onOpenChange={setIsImageOpen}
-          open={isImageOpen}
+          open
           src={product.productImageUrl}
         />
       )}
