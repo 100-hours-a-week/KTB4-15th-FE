@@ -76,6 +76,7 @@
 - 기본 모션 시간은 `120ms`, `200ms`, `300ms`이며 `prefers-reduced-motion`을 지원합니다.
 - Loading Spinner의 회전 시간은 `800ms`입니다.
 - 주요 하단 Tab 사이를 이동할 때 본문에 짧은 좌우 방향 전환을 적용하고 하단 Navigation은 고정합니다. 같은 Tab의 하위 경로 사이에는 적용하지 않습니다.
+- 전환 애니메이션이 끝나면 효과를 해제하여 채팅 Header와 입력창의 화면 고정 기준을 유지합니다.
 - Layer 순서는 sticky 5, dropdown 10, overlay 15, modal 20, toast 25입니다.
 
 ## 컴포넌트 추가 기준

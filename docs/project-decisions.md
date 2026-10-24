@@ -66,6 +66,7 @@
 - 기준 디자인은 Figma, 구현 방식은 SCSS Modules와 프로젝트 토큰입니다.
 - 서비스 본체는 최대 `480px`의 단일 Column으로 유지합니다.
 - Header `52px`, 하단 Navigation `56px`, 기본 터치 영역 최소 `44px`의 Mobile Compact 규격을 사용합니다.
+- 탭 전환 애니메이션은 종료 후 효과를 유지하지 않아 채팅 Header와 입력창의 viewport 고정을 보장합니다.
 - 공통 UI는 비즈니스 로직과 API 요청을 직접 소유하지 않습니다.
 - Dialog와 BottomSheet의 열림 상태는 사용하는 화면에서 관리합니다.
 - 접근성과 `prefers-reduced-motion`을 지원합니다.
