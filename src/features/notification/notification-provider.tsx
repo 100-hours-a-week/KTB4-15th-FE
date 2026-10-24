@@ -100,7 +100,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
       }
     }
 
-    void connect();
+    //void connect();
 
     return () => {
       stopped = true;
