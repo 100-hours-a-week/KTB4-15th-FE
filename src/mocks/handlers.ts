@@ -47,7 +47,7 @@ const rankingItems = {
       rank: 1,
       productId: 101,
       productName: "에센셜 램스울 크루넥",
-      productImageUrl: "https://image.example.com/product101.jpg",
+      productImageUrl: "",
       itemType: "TOP",
       currentPrice: 59000,
       color: "네이비",

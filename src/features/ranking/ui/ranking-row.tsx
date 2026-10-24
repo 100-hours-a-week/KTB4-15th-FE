@@ -1,4 +1,4 @@
-import Image, { type ImageLoaderProps } from "next/image";
+import Image from "next/image";
 import { useState } from "react";
 import { recordPurchaseLinkClick } from "@/features/product";
 import { ImageViewerDialog } from "@/shared/ui/dialog";
@@ -7,10 +7,6 @@ import { formatCompactNumber } from "@/shared/utils/number-format";
 import { formatPrice } from "@/shared/utils/price-format";
 import type { RankingProduct, RankingType } from "../schema/ranking";
 import styles from "./ranking-row.module.scss";
-
-function passthroughImageLoader({ src }: ImageLoaderProps) {
-  return src;
-}
 
 type RankingRowProps = {
   product: RankingProduct;
@@ -45,7 +41,6 @@ export function RankingRow({ product, rank, rankingType }: RankingRowProps) {
             alt=""
             className={styles.image}
             fill
-            loader={passthroughImageLoader}
             onError={() => setImageFailed(true)}
             sizes="80px"
             src={product.productImageUrl}
