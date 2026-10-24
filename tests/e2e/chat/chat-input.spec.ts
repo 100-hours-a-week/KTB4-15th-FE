@@ -1,6 +1,7 @@
 import { test, expect } from "../fixtures/test";
 import { input, finishReply } from "../helpers/chat";
 import { writes } from "../helpers/mock-api";
+import { makeRoom } from "../data/chat";
 
 test("450자부터 글자 수를 표시하고 500자를 초과한 붙여넣기는 잘라서 전송한다", async ({
   page,
@@ -92,6 +93,17 @@ test("여러 줄 입력은 버튼 위 전체 너비를 쓰고 화면 너비에 �
   await textarea.fill("가".repeat(500));
   await expect(page.getByText("500/500", { exact: true })).toBeVisible();
   const full = (await textarea.boundingBox())!;
+  const scrollArea = await textarea.evaluate((element) => ({
+    paddingRight: parseFloat(getComputedStyle(element).paddingRight),
+    scrollbarWidth: getComputedStyle(element, "::-webkit-scrollbar").width,
+    scrollbarGutter: getComputedStyle(element).scrollbarGutter,
+    scrollHeight: element.scrollHeight,
+    clientHeight: element.clientHeight,
+  }));
+  expect(scrollArea.paddingRight).toBeGreaterThanOrEqual(8);
+  expect(scrollArea.scrollbarWidth).toBe("6px");
+  expect(scrollArea.scrollbarGutter).toBe("stable");
+  expect(scrollArea.scrollHeight).toBeGreaterThan(scrollArea.clientHeight);
   expect((await button.boundingBox())!.y).toBeGreaterThanOrEqual(
     full.y + full.height,
   );
@@ -106,4 +118,58 @@ test("여러 줄 입력은 버튼 위 전체 너비를 쓰고 화면 너비에 �
   await expect(async () => {
     expect((await textarea.boundingBox())!.height).toBe(singleLine.height);
   }).toPass();
+});
+
+test.describe("입력창 하단 여백", () => {
+  test.use({ scenario: { rooms: [makeRoom(1)] } });
+
+  for (const path of ["/chat", "/chat/1"]) {
+    test(`${path}에서 입력창 높이만큼 여백을 확보하고 마지막 내용을 가리지 않는다`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width: 390, height: 844 });
+      await page.goto(path);
+      const textarea = input(page);
+      const main = page.getByRole("main");
+      const initialPadding = await main.evaluate((element) =>
+        parseFloat(getComputedStyle(element).paddingBottom),
+      );
+      await textarea.fill("가".repeat(500));
+      await expect(async () => {
+        const box = (await textarea.boundingBox())!;
+        expect(box.height).toBe(96);
+        const padding = await main.evaluate((element) =>
+          parseFloat(getComputedStyle(element).paddingBottom),
+        );
+        expect(padding).toBeGreaterThan(initialPadding);
+      }).toPass();
+      await page.evaluate(() =>
+        window.scrollTo({
+          top: document.documentElement.scrollHeight,
+          behavior: "instant",
+        }),
+      );
+      const content =
+        path === "/chat/1"
+          ? page.getByRole("log").getByRole("article").last()
+          : page.getByRole("button", { name: /데일리 출근용/ });
+      await expect(async () => {
+        const bottom = (await content.boundingBox())!;
+        const dockTop = await textarea.evaluate(
+          (element) =>
+            element
+              .closest("form")!
+              .parentElement!.parentElement!.getBoundingClientRect().top,
+        );
+        expect(bottom.y + bottom.height).toBeLessThanOrEqual(dockTop);
+      }).toPass();
+      await textarea.fill("");
+      await expect(async () => {
+        const padding = await main.evaluate((element) =>
+          parseFloat(getComputedStyle(element).paddingBottom),
+        );
+        expect(padding).toBe(initialPadding);
+      }).toPass();
+    });
+  }
 });

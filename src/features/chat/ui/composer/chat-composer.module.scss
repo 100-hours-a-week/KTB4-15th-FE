@@ -50,14 +50,28 @@
 
   width: 100%;
   min-height: 24px;
-  max-height: 104px;
+  max-height: 96px;
   resize: none;
   overflow-y: auto;
+  scrollbar-gutter: stable;
   border: 0;
-  padding: 0;
+  padding: 0 8px 0 0;
   background: transparent;
   color: var(--color-text-primary);
   outline: none;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    border-radius: var(--radius-full);
+    background: var(--color-text-placeholder);
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
 
   &::placeholder {
     color: var(--color-text-placeholder);

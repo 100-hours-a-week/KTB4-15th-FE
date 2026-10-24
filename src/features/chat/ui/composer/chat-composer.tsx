@@ -81,6 +81,27 @@ export function ChatComposer({
     return () => observer.disconnect();
   }, [content]);
 
+  useLayoutEffect(() => {
+    const dock =
+      textareaRef.current?.closest("form")?.parentElement?.parentElement;
+    const main = dock?.closest("main");
+    if (!dock || !main) return;
+
+    const updateSpacing = () => {
+      main.style.setProperty(
+        "--chat-composer-height",
+        `${dock.getBoundingClientRect().height}px`,
+      );
+    };
+    updateSpacing();
+    const observer = new ResizeObserver(updateSpacing);
+    observer.observe(dock);
+    return () => {
+      observer.disconnect();
+      main.style.removeProperty("--chat-composer-height");
+    };
+  }, []);
+
   const submit = async () => {
     if (!canSubmit) {
       return;
