@@ -91,9 +91,19 @@
 - 문서만 변경된 Commit은 자동 배포를 실행하지 않습니다.
 - Liveness 확인은 외부 의존성을 조회하지 않는 `GET /health`와 HTTP 200 `{ "status": "UP" }`을 사용합니다.
 
+## 테스트
+
+- 함수와 Route Handler의 동작은 Node.js 내장 Test Runner로 검증합니다.
+- 핵심 사용자 흐름은 Chromium 기반 Playwright 브라우저 테스트로 검증합니다.
+- 브라우저 테스트의 API 응답은 기존 MSW Handler를 재사용합니다.
+- 채팅 브라우저 테스트는 MSW 응답을 로컬 HTTP API로 제공하여 SSR과 브라우저의 저장 상태를 공유합니다. 테스트별 초기화와 단일 Worker로 격리하며 실제 서버에는 연결하지 않습니다. 상세 범위는 [테스트 문서](./testing.md)를 참고합니다.
+- `develop`·`main` 대상 PR의 CI에서 Unit 테스트와 Chromium 브라우저 테스트를 실행하며, Report와 실패 진단 자료를 7일간 보관합니다. 기존 Docker 검사·빌드와 별도 Job으로 실행합니다.
+- E2E 코드는 기능별 Spec과 `fixtures`(준비·정리), `data`(고정 데이터), `helpers`(공통 조작), `mock-api`(서버·응답)로 나눕니다. 가짜 API의 Handler와 가변 상태는 함께 유지하고 HTTP 서버 실행부만 분리합니다.
+- Firefox, WebKit과 시각적 회귀 테스트는 호환성 검증 필요가 생길 때 도입합니다.
+
 ## 보류 항목
 
-- UI Component와 Browser 동작의 Test 도구 및 범위
+- UI Component 단위 Test 도구 및 범위
 - Husky 및 Pre-commit Hook 도입
 - 인증 Cookie 이름, 만료, 갱신 주기와 CSRF 정책
 - Desktop 외부 영역 디자인
