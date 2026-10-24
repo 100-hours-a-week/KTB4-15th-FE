@@ -67,7 +67,11 @@ test("여러 줄 입력은 버튼 위 전체 너비를 쓰고 화면 너비에 �
   await page.goto("/chat");
   const textarea = input(page);
   const button = page.getByRole("button", { name: "메시지 전송", exact: true });
+  await expect(button).toHaveCSS("background-color", "rgb(242, 244, 246)");
   await textarea.fill("한 줄");
+  await expect(button).toHaveCSS("background-color", "rgb(25, 31, 40)");
+  await expect(button).toHaveCSS("color", "rgb(255, 255, 255)");
+  await expect(button).toHaveCSS("border-radius", "20px");
   const singleLine = (await textarea.boundingBox())!;
   for (let length = 2; length <= 60; length += 1) {
     await textarea.fill("가".repeat(length));
@@ -108,7 +112,12 @@ test("여러 줄 입력은 버튼 위 전체 너비를 쓰고 화면 너비에 �
     full.y + full.height,
   );
   expect(full.width).toBe(multilineWidth);
+  // 앱 최대 너비가 480px이므로 390px에서는 글꼴에 따라 줄 수가 같을 수 있다.
+  await page.setViewportSize({ width: 320, height: 844 });
   await textarea.fill("가".repeat(50));
+  await expect(async () => {
+    expect((await textarea.boundingBox())!.height).toBe(full.height);
+  }).toPass();
   const narrowHeight = (await textarea.boundingBox())!.height;
   await page.setViewportSize({ width: 1280, height: 844 });
   await expect(async () => {
