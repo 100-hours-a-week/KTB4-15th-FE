@@ -112,6 +112,8 @@ export const testHandlers = [
     });
   }),
   http.post("*/chat-rooms", async ({ request }) => {
+    if (scenario.roomLimit)
+      return failure("채팅방 한도 초과", 409, "CHAT_ROOM_LIMIT_EXCEEDED");
     if (consumeFailure("failCreate"))
       return failure("메시지를 보내지 못했어요.");
     const { content } = (await request.json()) as { content: string };
