@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/shared/ui/button";
 import { LoadingMessage } from "@/shared/ui/loading-message";
@@ -16,18 +16,25 @@ const RANKING_TABS: { label: string; type: RankingType }[] = [
 
 export function RankingScreen({
   initialRanking,
+  initialRows,
 }: {
   initialRanking?: ProductRanking;
+  initialRows?: ReactNode;
 }) {
   const [rankingType, setRankingType] = useState<RankingType>("WISH");
-  const { data, isError, isFetching, isPending, refetch } = useQuery({
-    ...productRankingQueryOptions(rankingType),
-    initialData:
-      initialRanking?.type === rankingType ? initialRanking : undefined,
-    staleTime: initialRanking?.type === rankingType ? 30_000 : undefined,
-  });
+  const { data, isError, isFetchedAfterMount, isFetching, isPending, refetch } =
+    useQuery({
+      ...productRankingQueryOptions(rankingType),
+      initialData:
+        initialRanking?.type === rankingType ? initialRanking : undefined,
+      staleTime: initialRanking?.type === rankingType ? 30_000 : undefined,
+    });
   const products = data?.items;
 
+  const showServerRows =
+    initialRows != null &&
+    initialRanking?.type === rankingType &&
+    !isFetchedAfterMount;
   const firstImageProductId = products?.find(
     (product) => product.productImageUrl,
   )?.productId;
@@ -80,15 +87,17 @@ export function RankingScreen({
         )}
         {products && products.length > 0 && (
           <div className={styles.list}>
-            {products.map((product) => (
-              <RankingRow
-                key={product.productId}
-                preload={product.productId === firstImageProductId}
-                product={product}
-                rank={product.rank}
-                rankingType={rankingType}
-              />
-            ))}
+            {showServerRows
+              ? initialRows
+              : products.map((product) => (
+                  <RankingRow
+                    key={product.productId}
+                    preload={product.productId === firstImageProductId}
+                    product={product}
+                    rank={product.rank}
+                    rankingType={rankingType}
+                  />
+                ))}
           </div>
         )}
       </div>

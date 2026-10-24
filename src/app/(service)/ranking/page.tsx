@@ -1,5 +1,6 @@
 import { RankingScreen } from "@/features/ranking";
 import { getProductRankingsServer } from "@/features/ranking/api/ranking-server";
+import { RankingRow } from "@/features/ranking/ui/ranking-row";
 import {
   isServerUnauthorizedError,
   redirectOnServerUnauthorized,
@@ -15,6 +16,9 @@ export default async function RankingPage() {
       }
     },
   );
+  const firstImageProductId = initialRanking?.items.find(
+    (product) => product.productImageUrl,
+  )?.productId;
 
   return (
     <>
@@ -23,7 +27,18 @@ export default async function RankingPage() {
         right={<NotificationLink />}
       />
       <main className={styles.main}>
-        <RankingScreen initialRanking={initialRanking} />
+        <RankingScreen
+          initialRanking={initialRanking}
+          initialRows={initialRanking?.items.map((product) => (
+            <RankingRow
+              key={product.productId}
+              preload={product.productId === firstImageProductId}
+              product={product}
+              rank={product.rank}
+              rankingType={initialRanking.type}
+            />
+          ))}
+        />
       </main>
     </>
   );

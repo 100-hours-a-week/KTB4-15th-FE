@@ -1,16 +1,9 @@
-import dynamic from "next/dynamic";
-import Image from "next/image";
-import { useState } from "react";
-import { recordPurchaseLinkClick } from "@/features/product";
 import { BottomIcon, EyeIcon, HeartIcon, TopIcon } from "@/shared/ui/icon";
 import { formatCompactNumber } from "@/shared/utils/number-format";
 import { formatPrice } from "@/shared/utils/price-format";
 import type { RankingProduct, RankingType } from "../schema/ranking";
+import { RankingImage, RankingProductLink } from "./ranking-row-actions";
 import styles from "./ranking-row.module.scss";
-
-const ImageViewerDialog = dynamic(() =>
-  import("@/shared/ui/dialog").then((module) => module.ImageViewerDialog),
-);
 
 type RankingRowProps = {
   preload?: boolean;
@@ -28,55 +21,27 @@ export function RankingRow({
   const ProductFallbackIcon = product.itemType === "TOP" ? TopIcon : BottomIcon;
   const count = formatCompactNumber(product.rankingCount);
   const isWishRanking = rankingType === "WISH";
-  const [imageFailed, setImageFailed] = useState(!product.productImageUrl);
-  const [isImageOpen, setIsImageOpen] = useState(false);
 
   return (
     <article className={styles.row}>
       <strong className={styles.rank}>{rank}</strong>
-      {imageFailed ? (
-        <span className={styles.imageArea}>
-          <span aria-label="상품 이미지 없음" className={styles.imageFallback}>
-            <ProductFallbackIcon />
-          </span>
-        </span>
-      ) : (
-        <button
-          aria-label={`${product.productName} 이미지 확대`}
-          className={`${styles.imageArea} ${styles.imageButton}`}
-          onClick={() => setIsImageOpen(true)}
-          type="button"
-        >
-          <Image
-            alt=""
-            className={styles.image}
-            fetchPriority={preload ? "high" : undefined}
-            fill
-            onError={() => setImageFailed(true)}
-            preload={preload}
-            sizes="80px"
-            src={product.productImageUrl}
-          />
-        </button>
-      )}
-      <a
-        aria-label={`${product.productName} 구매 페이지로 이동`}
-        className={styles.productLink}
-        href={product.purchaseUrl}
-        onClick={() => {
-          void recordPurchaseLinkClick(product.productId).catch(
-            () => undefined,
-          );
-        }}
-        rel="noopener noreferrer"
-        target="_blank"
+      <RankingImage
+        fallback={<ProductFallbackIcon />}
+        name={product.productName}
+        preload={preload}
+        src={product.productImageUrl}
+      />
+      <RankingProductLink
+        name={product.productName}
+        productId={product.productId}
+        url={product.purchaseUrl}
       >
         <strong className={styles.name}>{product.productName}</strong>
         {product.color && <span className={styles.color}>{product.color}</span>}
         <span className={styles.price}>
           {formatPrice(product.currentPrice)}
         </span>
-      </a>
+      </RankingProductLink>
       <span
         aria-label={`${isWishRanking ? "찜" : "조회"} ${count}`}
         className={`${styles.count} ${isWishRanking ? styles.wishCount : ""}`}
@@ -84,15 +49,6 @@ export function RankingRow({
         {isWishRanking ? <HeartIcon filled /> : <EyeIcon />}
         {count}
       </span>
-      {!imageFailed && isImageOpen && (
-        <ImageViewerDialog
-          alt={product.productName}
-          onError={() => setImageFailed(true)}
-          onOpenChange={setIsImageOpen}
-          open
-          src={product.productImageUrl}
-        />
-      )}
     </article>
   );
 }
