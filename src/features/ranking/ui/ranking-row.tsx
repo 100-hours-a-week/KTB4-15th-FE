@@ -9,12 +9,18 @@ import type { RankingProduct, RankingType } from "../schema/ranking";
 import styles from "./ranking-row.module.scss";
 
 type RankingRowProps = {
+  preload?: boolean;
   product: RankingProduct;
   rank: number;
   rankingType: RankingType;
 };
 
-export function RankingRow({ product, rank, rankingType }: RankingRowProps) {
+export function RankingRow({
+  preload = false,
+  product,
+  rank,
+  rankingType,
+}: RankingRowProps) {
   const ProductFallbackIcon = product.itemType === "TOP" ? TopIcon : BottomIcon;
   const count = formatCompactNumber(product.rankingCount);
   const isWishRanking = rankingType === "WISH";
@@ -42,6 +48,7 @@ export function RankingRow({ product, rank, rankingType }: RankingRowProps) {
             className={styles.image}
             fill
             onError={() => setImageFailed(true)}
+            preload={preload}
             sizes="80px"
             src={product.productImageUrl}
           />

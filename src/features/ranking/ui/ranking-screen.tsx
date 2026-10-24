@@ -28,6 +28,10 @@ export function RankingScreen({
   });
   const products = data?.items;
 
+  const firstImageProductId = products?.find(
+    (product) => product.productImageUrl,
+  )?.productId;
+
   return (
     <>
       <div
@@ -79,6 +83,7 @@ export function RankingScreen({
             {products.map((product) => (
               <RankingRow
                 key={product.productId}
+                preload={product.productId === firstImageProductId}
                 product={product}
                 rank={product.rank}
                 rankingType={rankingType}
