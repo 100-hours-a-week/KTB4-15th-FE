@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod";
 import { apiClient } from "@/shared/api/client";
 import { getPhotoValidationMessage } from "../lib/full-body-image-validation";
 import { fullBodyImageValidationSchema } from "../schema/full-body-image";

@@ -122,3 +122,7 @@
 ## 서비스 공통 클라이언트 import
 
 - 공통 레이아웃의 인증 가드와 알림 Provider는 구현 파일에서 직접 import해 다른 화면 코드가 초기 번들에 포함되지 않도록 합니다. 측정 근거는 [랭킹 성능 개선 기록](./performance/ranking.md)을 참고합니다.
+
+## Zod import
+
+- Zod는 `import * as z from "zod"`로 가져옵니다. 현재 빌드에서 미사용 코드 제거를 개선하며 응답 스키마와 런타임 검증은 유지합니다. 비교 결과는 [랭킹 성능 개선 기록](./performance/ranking.md)을 참고합니다.

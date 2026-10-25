@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod";
 
 function responseSchema<T>(dataSchema: z.ZodType<T>) {
   return z.object({
