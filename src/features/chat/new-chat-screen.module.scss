@@ -2,20 +2,15 @@
   position: fixed;
   z-index: var(--z-sticky);
   right: 50%;
-  bottom: calc(
-    var(--navigation-height) + env(safe-area-inset-bottom) + var(--space-sm)
-  );
+  bottom: 0;
   width: min(100%, var(--app-max-width));
-  padding: var(--space-sm) var(--screen-padding);
-  background: linear-gradient(
-    to bottom,
-    transparent,
-    var(--color-background-page) var(--space-md)
-  );
+  padding: var(--space-xs) var(--screen-padding)
+    calc(var(--navigation-height) + env(safe-area-inset-bottom) + 16px);
+  background-color: var(--color-background-page);
   transform: translateX(50%);
-  transition: bottom var(--duration-normal) var(--easing-standard);
+  transition: padding-bottom var(--duration-normal) var(--easing-standard);
 }
 
 .navigationHidden {
-  bottom: env(safe-area-inset-bottom);
+  padding-bottom: calc(env(safe-area-inset-bottom) + var(--space-sm));
 }

@@ -1,16 +1,13 @@
 "use client";
 
 import Image, { type StaticImageData } from "next/image";
-import { useQuery } from "@tanstack/react-query";
-import { memberProfileQueryOptions } from "@/features/profile";
-import { wishlistCountQueryOptions } from "@/features/wishlist";
-import aiImage from "@/shared/assets/ai-avatar.png";
+import aiImage from "@/shared/assets/ai-avatar.webp";
 import { ChevronRightIcon } from "@/shared/ui/icon";
 import type { ChatSourceType } from "../../schema/chat";
-import knitImage from "../../icon/knit.png";
-import likeImage from "../../icon/like.png";
-import shirtImage from "../../icon/shirt.png";
-import suitImage from "../../icon/suit.png";
+import knitImage from "../icon/knit.webp";
+import likeImage from "../icon/like.webp";
+import shirtImage from "../icon/shirt.webp";
+import suitImage from "../icon/suit.webp";
 import styles from "./chat-intro.module.scss";
 
 type SuggestedQuestion = {
@@ -55,20 +52,23 @@ const GENERAL_QUESTIONS: SuggestedQuestion[] = [
 
 type ChatIntroProps = {
   date: string;
+  memberName?: string;
   onSelectQuestion: (
     message: string,
     sourceType: ChatSourceType,
   ) => Promise<void>;
+  showWishlistQuestion: boolean;
 };
 
-export function ChatIntro({ date, onSelectQuestion }: ChatIntroProps) {
-  const memberProfileQuery = useQuery(memberProfileQueryOptions);
-  const wishlistCountQuery = useQuery(wishlistCountQueryOptions);
-  const memberName = memberProfileQuery.data?.name;
-  const suggestedQuestions =
-    (wishlistCountQuery.data?.count ?? 0) >= 10
-      ? [WISHLIST_QUESTION, ...GENERAL_QUESTIONS]
-      : GENERAL_QUESTIONS;
+export function ChatIntro({
+  date,
+  memberName,
+  onSelectQuestion,
+  showWishlistQuestion,
+}: ChatIntroProps) {
+  const suggestedQuestions = showWishlistQuestion
+    ? [WISHLIST_QUESTION, ...GENERAL_QUESTIONS]
+    : GENERAL_QUESTIONS;
 
   return (
     <div className={styles.landing}>
@@ -79,7 +79,9 @@ export function ChatIntro({ date, onSelectQuestion }: ChatIntroProps) {
           alt="AI 스타일리스트"
           className={styles.avatar}
           loading="eager"
+          sizes="44px"
           src={aiImage}
+          unoptimized
         />
         <div className={styles.messageArea}>
           <div className={styles.profile}>
@@ -119,7 +121,10 @@ export function ChatIntro({ date, onSelectQuestion }: ChatIntroProps) {
               <Image
                 alt=""
                 className={styles.questionImage}
+                loading="eager"
+                sizes="44px"
                 src={question.image}
+                unoptimized
               />
               <span className={styles.questionText}>
                 <strong>{question.title}</strong>

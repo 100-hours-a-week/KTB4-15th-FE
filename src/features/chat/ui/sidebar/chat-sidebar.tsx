@@ -36,6 +36,7 @@ export function ChatSidebar({ open, onOpenChange }: ChatSidebarProps) {
   const router = useRouter();
   const chatRoomListRef = useRef<HTMLElement>(null);
   const loadMoreRef = useRef<HTMLDivElement>(null);
+  const returnFocusRef = useRef<HTMLElement | null>(null);
   const [renameTarget, setRenameTarget] = useState<{
     id: number;
     title: string;
@@ -102,6 +103,16 @@ export function ChatSidebar({ open, onOpenChange }: ChatSidebarProps) {
           <Dialog.Content
             aria-describedby={undefined}
             className={styles.sidebar}
+            onOpenAutoFocus={() => {
+              returnFocusRef.current =
+                document.activeElement instanceof HTMLElement
+                  ? document.activeElement
+                  : null;
+            }}
+            onCloseAutoFocus={(event) => {
+              event.preventDefault();
+              returnFocusRef.current?.focus();
+            }}
           >
             <header className={styles.sidebarHeader}>
               <div className={styles.heading}>

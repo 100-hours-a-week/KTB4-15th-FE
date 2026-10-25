@@ -7,18 +7,33 @@ import type { ChatSourceType } from "./schema/chat";
 import styles from "./new-chat-screen.module.scss";
 import { ChatComposer } from "./ui/composer/chat-composer";
 import { ChatIntro } from "./ui/intro/chat-intro";
-import { getApiErrorMessage } from "@/shared/api/error";
+import { ApiError, getApiErrorMessage } from "@/shared/api/error";
 import { useNavigationVisibility } from "@/shared/ui/navigation";
 import { showToast } from "@/shared/ui/toast";
 
 function showSendChatMessageError(error: Error) {
   showToast.error(
-    getApiErrorMessage(error, "메시지를 보내지 못했어요. 다시 시도해 주세요."),
+    error instanceof ApiError && error.code === "CHAT_ROOM_LIMIT_EXCEEDED"
+      ? "채팅방은 최대 100개까지 가능해요."
+      : getApiErrorMessage(
+          error,
+          "메시지를 보내지 못했어요. 다시 시도해 주세요.",
+        ),
     { id: "send-chat-message" },
   );
 }
 
-export function NewChatScreen({ date }: { date: string }) {
+type NewChatScreenProps = {
+  date: string;
+  memberName?: string;
+  showWishlistQuestion: boolean;
+};
+
+export function NewChatScreen({
+  date,
+  memberName,
+  showWishlistQuestion,
+}: NewChatScreenProps) {
   const router = useRouter();
   const { isNavigationVisible, keyboardInset } = useNavigationVisibility();
   const submissionLockRef = useRef(false);
@@ -51,7 +66,12 @@ export function NewChatScreen({ date }: { date: string }) {
 
   return (
     <>
-      <ChatIntro date={date} onSelectQuestion={handleSubmit} />
+      <ChatIntro
+        date={date}
+        memberName={memberName}
+        onSelectQuestion={handleSubmit}
+        showWishlistQuestion={showWishlistQuestion}
+      />
       <div
         className={`${styles.composerDock} ${
           isNavigationVisible && keyboardInset === 0

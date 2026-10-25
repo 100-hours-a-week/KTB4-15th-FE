@@ -1,6 +1,6 @@
 # FE 프로젝트 결정 사항
 
-마지막 업데이트: 2026-10-21
+마지막 업데이트: 2026-10-24
 
 프로젝트 전반에 영향을 주는 확정 사항과 보류 항목을 요약합니다. 현재 구현의 상세한 동작은 [FE 문서 목록](./README.md)과 [도메인 문서](./domains/README.md)를 기준으로 합니다.
 
@@ -19,6 +19,7 @@
 - Route 전용 코드는 `app`, 비즈니스 기능은 `features`, 둘 이상의 Feature가 공유하는 코드는 `shared`에 배치합니다.
 - 폴더는 실제 코드가 필요한 시점에 만들며 빈 폴더 유지를 위한 파일은 추가하지 않습니다.
 - 서버 상태는 TanStack Query, 서버 저장 전 여러 화면에서 공유하는 임시 상태는 Zustand로 관리합니다.
+- 채팅 새 답변은 하단을 보는 중에만 자동 이동하며, 이전 대화를 읽는 중에는 위치를 유지하고 답변 이동 버튼을 제공합니다. 상세 기준은 [채팅 도메인](./domains/chat.md)을 따릅니다.
 - 사용자 흐름과 비즈니스 규칙은 [도메인 문서](./domains/README.md)에서 관리합니다.
 
 ### TanStack Query 규칙
@@ -37,6 +38,7 @@
 - 브라우저 API Client는 Ky와 `NEXT_PUBLIC_API_BASE_URL`을 사용하고 Cookie를 포함합니다.
 - 브라우저 요청의 기본 Timeout은 10초, Retry 한도는 1회입니다.
 - 채팅과 알림 SSE는 인증 갱신과 연결 취소 제어를 위해 `EventSource` 대신 Ky 응답 Stream을 사용합니다.
+- 채팅 Sidebar는 첫 화면의 실행 비용을 줄이기 위해 목록 버튼을 처음 누를 때 동적으로 로드하고 이후에는 마운트를 유지합니다.
 - 오프라인 요청은 `OfflineError`, 문자열 오류 Code가 있는 HTTP 오류는 `ApiError`로 정규화하고 Ky의 네트워크·Timeout 오류는 사용자용 문구로 변환합니다.
 - Feature는 HTTP 응답을 다시 파싱하지 않고 필요한 오류만 `ApiError.code`로 처리합니다.
 - 서버 요청은 Next.js `fetch`와 서버 전용 `API_BASE_URL`을 사용하며 현재 요청의 Cookie를 전달합니다.
@@ -65,6 +67,7 @@
 - 기준 디자인은 Figma, 구현 방식은 SCSS Modules와 프로젝트 토큰입니다.
 - 서비스 본체는 최대 `480px`의 단일 Column으로 유지합니다.
 - Header `52px`, 하단 Navigation `56px`, 기본 터치 영역 최소 `44px`의 Mobile Compact 규격을 사용합니다.
+- 탭 전환 애니메이션은 종료 후 효과를 유지하지 않아 채팅 Header와 입력창의 viewport 고정을 보장합니다.
 - 공통 UI는 비즈니스 로직과 API 요청을 직접 소유하지 않습니다.
 - Dialog와 BottomSheet의 열림 상태는 사용하는 화면에서 관리합니다.
 - 접근성과 `prefers-reduced-motion`을 지원합니다.
@@ -90,9 +93,19 @@
 - 문서만 변경된 Commit은 자동 배포를 실행하지 않습니다.
 - Liveness 확인은 외부 의존성을 조회하지 않는 `GET /health`와 HTTP 200 `{ "status": "UP" }`을 사용합니다.
 
+## 테스트
+
+- 함수와 Route Handler의 동작은 Node.js 내장 Test Runner로 검증합니다.
+- 핵심 사용자 흐름은 Chromium 기반 Playwright 브라우저 테스트로 검증합니다.
+- 브라우저 테스트의 API 응답은 기존 MSW Handler를 재사용합니다.
+- 채팅 브라우저 테스트는 MSW 응답을 로컬 HTTP API로 제공하여 SSR과 브라우저의 저장 상태를 공유합니다. 테스트별 초기화와 단일 Worker로 격리하며 실제 서버에는 연결하지 않습니다. 상세 범위는 [테스트 문서](./testing.md)를 참고합니다.
+- `develop`·`main` 대상 PR의 CI에서 Unit 테스트와 Chromium 브라우저 테스트를 실행하며, Report와 실패 진단 자료를 7일간 보관합니다. 기존 Docker 검사·빌드와 별도 Job으로 실행합니다.
+- E2E 코드는 기능별 Spec과 `fixtures`(준비·정리), `data`(고정 데이터), `helpers`(공통 조작), `mock-api`(서버·응답)로 나눕니다. 가짜 API의 Handler와 가변 상태는 함께 유지하고 HTTP 서버 실행부만 분리합니다.
+- Firefox, WebKit과 시각적 회귀 테스트는 호환성 검증 필요가 생길 때 도입합니다.
+
 ## 보류 항목
 
-- UI Component와 Browser 동작의 Test 도구 및 범위
+- UI Component 단위 Test 도구 및 범위
 - Husky 및 Pre-commit Hook 도입
 - 인증 Cookie 이름, 만료, 갱신 주기와 CSRF 정책
 - Desktop 외부 영역 디자인

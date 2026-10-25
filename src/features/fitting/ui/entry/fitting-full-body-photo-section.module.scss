@@ -38,7 +38,7 @@
   color: var(--color-text-secondary);
 }
 
-.photoAction {
+.card .photoAction {
   @include type.caption;
 
   --button-icon-size: 14px;

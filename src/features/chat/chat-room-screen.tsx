@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import {
@@ -62,9 +62,20 @@ export function ChatRoomScreen({ chatRoomId }: { chatRoomId: number }) {
     });
   }, [chatMessageStream.error]);
 
-  const handleLoadPreviousMessages = async () => {
-    await chatRoomQuery.fetchNextPage();
-  };
+  const { fetchNextPage } = chatRoomQuery;
+  const handleLoadPreviousMessages = useCallback(async () => {
+    const result = await fetchNextPage();
+    if (result.isFetchNextPageError) {
+      showToast.error(
+        "이전 메시지를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.",
+        {
+          id: "previous-chat-messages",
+        },
+      );
+      return false;
+    }
+    return true;
+  }, [fetchNextPage]);
 
   const isGenerating = generatingMessageId != null;
 

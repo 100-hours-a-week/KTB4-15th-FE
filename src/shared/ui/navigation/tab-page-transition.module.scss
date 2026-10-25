@@ -5,11 +5,13 @@
 }
 
 .forward {
-  animation: enter-from-right var(--duration-normal) var(--easing-standard) both;
+  animation: enter-from-right var(--duration-normal) var(--easing-standard)
+    backwards;
 }
 
 .back {
-  animation: enter-from-left var(--duration-normal) var(--easing-standard) both;
+  animation: enter-from-left var(--duration-normal) var(--easing-standard)
+    backwards;
 }
 
 @keyframes enter-from-right {

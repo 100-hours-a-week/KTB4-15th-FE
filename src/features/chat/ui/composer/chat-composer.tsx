@@ -39,7 +39,6 @@ export function ChatComposer({
   onSubmit,
 }: ChatComposerProps) {
   const [content, setContent] = useState("");
-  const [isMultiline, setIsMultiline] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const trimmedContent = content.trim();
   const isInputDisabled = disabled || isSubmitting;
@@ -55,10 +54,53 @@ export function ChatComposer({
       return;
     }
 
-    textarea.style.height = "0px";
-    textarea.style.height = `${textarea.scrollHeight}px`;
-    setIsMultiline(textarea.scrollHeight > 28);
+    const form = textarea.form;
+    if (!form) return;
+
+    const resize = () => {
+      // 한 줄 레이아웃에서 전환 여부를 판단해야 확장 후 너비 때문에 다시 줄어들지 않는다.
+      form.classList.remove(styles.multiline);
+      textarea.style.height = "0px";
+      const lineHeight = parseFloat(getComputedStyle(textarea).lineHeight);
+      form.classList.toggle(
+        styles.multiline,
+        textarea.scrollHeight > lineHeight,
+      );
+      textarea.style.height = `${textarea.scrollHeight}px`;
+    };
+
+    resize();
+    let width = form.clientWidth;
+    const observer = new ResizeObserver(() => {
+      if (form.clientWidth !== width) {
+        width = form.clientWidth;
+        resize();
+      }
+    });
+    observer.observe(form);
+    return () => observer.disconnect();
   }, [content]);
+
+  useLayoutEffect(() => {
+    const dock =
+      textareaRef.current?.closest("form")?.parentElement?.parentElement;
+    const main = dock?.closest("main");
+    if (!dock || !main) return;
+
+    const updateSpacing = () => {
+      main.style.setProperty(
+        "--chat-composer-height",
+        `${dock.getBoundingClientRect().height}px`,
+      );
+    };
+    updateSpacing();
+    const observer = new ResizeObserver(updateSpacing);
+    observer.observe(dock);
+    return () => {
+      observer.disconnect();
+      main.style.removeProperty("--chat-composer-height");
+    };
+  }, []);
 
   const submit = async () => {
     if (!canSubmit) {
@@ -96,7 +138,7 @@ export function ChatComposer({
     <div className={styles.composerArea}>
       <form
         aria-label="채팅 메시지 입력"
-        className={`${styles.composer} ${isMultiline ? styles.multiline : ""}`}
+        className={styles.composer}
         onSubmit={handleSubmit}
       >
         <div className={styles.inputArea}>

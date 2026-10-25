@@ -1,6 +1,6 @@
 "use client";
 
-import Image, { type ImageLoaderProps } from "next/image";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { getCurrentFittingJob } from "@/features/fitting/api/fitting-job";
@@ -23,10 +23,6 @@ type RecommendedProductCardProps = {
   index: number;
   product: RecommendedProductResponse;
 };
-
-function passthroughImageLoader({ src }: ImageLoaderProps) {
-  return src;
-}
 
 export function RecommendedProductCard({
   index,
@@ -154,7 +150,6 @@ export function RecommendedProductCard({
           alt={product.productName}
           className={styles.productImage}
           fill
-          loader={passthroughImageLoader}
           sizes="(max-width: 480px) 75vw, 320px"
           src={product.productImageUrl}
         />

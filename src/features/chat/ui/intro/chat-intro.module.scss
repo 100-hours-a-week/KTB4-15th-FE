@@ -120,11 +120,11 @@
   transition: background-color var(--duration-fast) var(--easing-standard);
 
   &:hover {
-    background: var(--color-background-hover);
+    background: var(--color-gray-100);
   }
 
   &:active {
-    background: var(--color-background-pressed);
+    background: var(--color-gray-200);
   }
 }
 

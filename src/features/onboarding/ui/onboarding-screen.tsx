@@ -50,6 +50,7 @@ export function OnboardingScreen() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const isLast = currentIndex === onboardingItems.length - 1;
   const currentItem = onboardingItems[currentIndex];
+  const nextItem = onboardingItems[currentIndex + 1];
 
   const completeOnboarding = (destination: "/login" | "/signup") => {
     const secure = window.location.protocol === "https:" ? "; Secure" : "";
@@ -90,6 +91,16 @@ export function OnboardingScreen() {
             sizes="(max-width: 480px) 100vw, 360px"
             src={currentItem.image}
           />
+          {nextItem && (
+            <Image
+              alt=""
+              aria-hidden="true"
+              className={styles.preloadImage}
+              preload
+              sizes="(max-width: 480px) 100vw, 360px"
+              src={nextItem.image}
+            />
+          )}
         </div>
 
         <div className={styles.copy}>
