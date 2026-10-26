@@ -44,7 +44,7 @@ Server Component과 Route Handler에서는 `src/shared/api/server.ts`의 `server
 
 개발 환경에서 `NEXT_PUBLIC_API_MOCKING=enabled`를 설정하면 MSW가 활성화됩니다.
 
-- 브라우저의 `apiClient` 요청은 Service Worker로 처리합니다.
+- 브라우저의 `apiClient` 요청은 Service Worker로 처리합니다. 개발 모킹에서는 최초 API 요청도 MSW 시작 완료를 기다리며, 시작 Promise를 공유해 중복 시작을 방지합니다.
 - Node.js 서버의 `serverApi` 요청은 `setupServer`로 처리합니다.
 - 두 환경은 `src/mocks/handlers.ts`의 Handler를 공유합니다.
 - Handler가 없는 요청은 경고를 출력하고 실제 API로 전달합니다.

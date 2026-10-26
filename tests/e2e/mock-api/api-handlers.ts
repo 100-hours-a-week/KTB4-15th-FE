@@ -324,7 +324,16 @@ export const testHandlers = [
         ),
   ),
   http.post("*/products/:productId/purchase-link-clicks", () => success(null)),
-  http.get("*/notifications/unread", () => success({ hasUnread: false })),
+  http.get("*/notifications/unread", async () => {
+    if (scenario.notificationUnreadDelayMs) {
+      await new Promise((resolve) =>
+        setTimeout(resolve, scenario.notificationUnreadDelayMs),
+      );
+    }
+    return scenario.failNotificationUnread
+      ? failure("알림 여부 조회 실패")
+      : success({ hasUnread: scenario.hasUnreadNotifications ?? false });
+  }),
   http.get(
     "*/notifications/stream",
     () =>

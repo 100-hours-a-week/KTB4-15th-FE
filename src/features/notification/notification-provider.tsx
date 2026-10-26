@@ -1,6 +1,6 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, type ReactNode } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { fittingQueryKeys } from "@/features/fitting/model/fitting-query";
@@ -14,11 +14,22 @@ import {
 import type { NotificationUnreadStatus } from "./schema/notification";
 
 const RECONNECT_DELAY = 3000;
-export function NotificationProvider({ children }: { children: ReactNode }) {
+export function NotificationProvider({
+  children,
+  initialUnreadStatus,
+}: {
+  children: ReactNode;
+  initialUnreadStatus?: NotificationUnreadStatus;
+}) {
   const pathname = usePathname();
+  const router = useRouter();
   const pathnameRef = useRef(pathname);
   const queryClient = useQueryClient();
-  const { data: unreadStatus } = useQuery(notificationUnreadQueryOptions);
+  const { data: unreadStatus } = useQuery({
+    ...notificationUnreadQueryOptions,
+    initialData: initialUnreadStatus,
+    refetchOnMount: initialUnreadStatus == null,
+  });
 
   useEffect(() => {
     pathnameRef.current = pathname;
@@ -71,7 +82,13 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
               : "가상 피팅 생성에 실패했어요.";
 
           if (event.type === "FITTING_SUCCESS") {
-            showToast.success(message);
+            showToast.success(message, {
+              duration: 5000,
+              action: {
+                label: "결과 보기",
+                onClick: () => router.push(`${fittingJobPath}/result`),
+              },
+            });
           } else {
             showToast.error(message);
           }
@@ -107,7 +124,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
       controller?.abort();
       if (reconnectTimer) clearTimeout(reconnectTimer);
     };
-  }, [queryClient]);
+  }, [queryClient, router]);
 
   return (
     <NotificationUnreadContext value={unreadStatus?.hasUnread ?? false}>
