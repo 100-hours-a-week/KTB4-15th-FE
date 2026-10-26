@@ -14,11 +14,21 @@ import {
 import type { NotificationUnreadStatus } from "./schema/notification";
 
 const RECONNECT_DELAY = 3000;
-export function NotificationProvider({ children }: { children: ReactNode }) {
+export function NotificationProvider({
+  children,
+  initialUnreadStatus,
+}: {
+  children: ReactNode;
+  initialUnreadStatus?: NotificationUnreadStatus;
+}) {
   const pathname = usePathname();
   const pathnameRef = useRef(pathname);
   const queryClient = useQueryClient();
-  const { data: unreadStatus } = useQuery(notificationUnreadQueryOptions);
+  const { data: unreadStatus } = useQuery({
+    ...notificationUnreadQueryOptions,
+    initialData: initialUnreadStatus,
+    refetchOnMount: initialUnreadStatus == null,
+  });
 
   useEffect(() => {
     pathnameRef.current = pathname;
