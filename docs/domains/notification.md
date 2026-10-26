@@ -19,3 +19,5 @@
 - 연결이 종료되면 3초 뒤 다시 연결하고, 서비스 영역을 벗어나면 연결을 정리합니다.
 
 알림 아이콘은 `/chat`, `/wishlists`, `/fitting`, `/ranking`, `/mypage`의 헤더에 표시합니다.
+
+개발용 MSW는 초기 알림 여부를 `false`로 응답하고 SSE 연결 2초 후 피팅 성공 알림을 보냅니다. `NEXT_PUBLIC_API_MOCKING=enabled pnpm dev`로 실행한 뒤 `/mypage`에 직접 접속하면 빨간 점이 없다가 새 알림과 함께 표시되는 모습을 확인할 수 있습니다. `/mypage?mockNotification=fail`은 피팅 실패 알림을 보냅니다. 이 목 시나리오는 SSE 연결마다 반복되며 실제 서버에 알림을 생성하지 않습니다.
