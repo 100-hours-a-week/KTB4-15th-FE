@@ -21,9 +21,12 @@ for (const width of [390, 824]) {
     const header = page.getByRole("banner");
     await expect(header).toBeVisible();
     await expect(async () => {
+      const contentWidth = await page.evaluate(
+        () => document.body.getBoundingClientRect().width,
+      );
       const box = await header.boundingBox();
-      expect(box?.width).toBe(Math.min(width, 480));
-      expect(box?.x).toBe((width - Math.min(width, 480)) / 2);
+      expect(box?.width).toBe(Math.min(contentWidth, 480));
+      expect(box?.x).toBe((contentWidth - Math.min(contentWidth, 480)) / 2);
       for (const control of [
         header.getByRole("button", { name: "대화 목록 열기" }),
         header.getByRole("link", { name: /^알림으로 이동/ }),
