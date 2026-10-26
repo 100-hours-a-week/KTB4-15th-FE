@@ -86,3 +86,54 @@ for (const scenario of [
     });
   });
 }
+
+for (const type of ["FITTING_SUCCESS", "FITTING_FAIL"]) {
+  test(`채팅에서 SSE ${type} 수신 시 빨간 점과 토스트를 표시한다`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 320, height: 844 });
+    let release!: () => void;
+    const pending = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    await page.route("**/notifications/stream", async (route) => {
+      await pending;
+      await route.fulfill({
+        contentType: "text/event-stream",
+        body: `event: connected\ndata: {"code":"NOTIFICATION_STREAM_CONNECTED","data":{"unreadCount":0,"hasUnread":false},"message":"연결"}\n\nevent: notification\ndata: {"code":"NOTIFICATION_RECEIVED","data":{"notificationId":52,"fittingJobId":123,"type":"${type}"},"message":"새 알림"}\n\n`,
+      });
+    });
+    await page.goto("/chat");
+    await expect(
+      page.getByRole("link", { name: "알림으로 이동", exact: true }),
+    ).toBeVisible();
+    release();
+    await expect(
+      page.getByRole("link", {
+        name: "알림으로 이동, 새 알림 있음",
+        exact: true,
+      }),
+    ).toBeVisible();
+    await expect(
+      page.getByText(
+        type === "FITTING_SUCCESS"
+          ? "가상 피팅이 완성되었어요."
+          : "가상 피팅 생성에 실패했어요.",
+        { exact: true },
+      ),
+    ).toBeVisible();
+    const action = page.getByRole("button", { name: "결과 보기", exact: true });
+    if (type === "FITTING_SUCCESS") {
+      await expect(action).toBeVisible();
+      const box = await action.boundingBox();
+      expect(box!.x).toBeGreaterThanOrEqual(0);
+      expect(box!.x + box!.width).toBeLessThanOrEqual(320);
+      await action.focus();
+      await page.keyboard.press("Enter");
+      await expect(page).toHaveURL(/\/fitting\/jobs\/123\/result$/);
+      await expect(action).toBeHidden();
+    } else {
+      await expect(action).toHaveCount(0);
+    }
+  });
+}

@@ -1,6 +1,6 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, type ReactNode } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { fittingQueryKeys } from "@/features/fitting/model/fitting-query";
@@ -22,6 +22,7 @@ export function NotificationProvider({
   initialUnreadStatus?: NotificationUnreadStatus;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
   const pathnameRef = useRef(pathname);
   const queryClient = useQueryClient();
   const { data: unreadStatus } = useQuery({
@@ -81,7 +82,13 @@ export function NotificationProvider({
               : "가상 피팅 생성에 실패했어요.";
 
           if (event.type === "FITTING_SUCCESS") {
-            showToast.success(message);
+            showToast.success(message, {
+              duration: 5000,
+              action: {
+                label: "결과 보기",
+                onClick: () => router.push(`${fittingJobPath}/result`),
+              },
+            });
           } else {
             showToast.error(message);
           }
@@ -117,7 +124,7 @@ export function NotificationProvider({
       controller?.abort();
       if (reconnectTimer) clearTimeout(reconnectTimer);
     };
-  }, [queryClient]);
+  }, [queryClient, router]);
 
   return (
     <NotificationUnreadContext value={unreadStatus?.hasUnread ?? false}>
