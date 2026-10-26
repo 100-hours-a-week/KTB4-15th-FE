@@ -30,6 +30,7 @@ src/app/
 - `/`는 온보딩 완료 쿠키가 없으면 `/onboarding`, 있으면 `/login`으로 이동합니다. `/onboarding`은 첫 방문자에게 3단계 소개를 보여주며, 완료하거나 건너뛰면 쿠키를 저장하고 `/login`으로 이동합니다.
 - 로그인 완료 후 기본 진입 화면은 `/chat`입니다.
 - 회원가입 직후 기본 정보 입력 화면은 `/profile/setup`입니다.
+- `/onboarding`은 정적으로 생성하며, 슬라이드 전환은 Client Component에서 처리합니다. 완료 쿠키가 `true`인 요청은 Proxy에서 `/login`으로 보냅니다.
 - `/onboarding`은 회원 상태를 조회하지 않습니다. `/login`과 `/signup`은 화면을 바로 표시한 뒤 로그인 상태가 확인되면 프로필 상태에 맞는 서비스 화면으로 이동합니다.
 - 서비스 공통 `ServiceShell`에서 현재 경로에 따라 하단 Navigation, 페이지 표면과 Tab 전환을 적용합니다.
 - 하단 Navigation은 `/chat`과 하위 대화방, `/fitting`, `/wishlists`, `/ranking`, `/mypage`, `/notifications`에서 표시합니다. `/fitting/wardrobe`, `/fitting/jobs/...`, `/fitting-results/...`, `/profile/setup`에서는 표시하지 않습니다.
