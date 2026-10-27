@@ -15,7 +15,7 @@ test("최초 HTML에 랭킹을 포함하고 초기 중복 조회 없이 탭을 �
   );
   const response = await page.goto("/ranking");
   const html = await response!.text();
-  expect(html).toMatch(/<article[^>]*>/);
+  expect(html.match(/<article\b/g)).toHaveLength(12);
   expect(html).toMatch(
     /<link(?=[^>]*rel="preload")(?=[^>]*as="image")(?=[^>]*fetch[Pp]riority="high")[^>]*>/,
   );
@@ -29,7 +29,7 @@ test("최초 HTML에 랭킹을 포함하고 초기 중복 조회 없이 탭을 �
     expect(image).toContain('loading="lazy"');
     expect(image).not.toMatch(/fetch[Pp]riority="high"/);
   }
-  await expect(page.locator("article")).toHaveCount(13);
+  await expect(page.locator("article")).toHaveCount(12);
   expect(rankingRequests).toEqual([]);
   await page.getByRole("button", { name: "조회순", exact: true }).click();
   await expect(
@@ -38,7 +38,7 @@ test("최초 HTML에 랭킹을 포함하고 초기 중복 조회 없이 탭을 �
   await expect.poll(() => rankingRequests.length).toBe(1);
   expect(rankingRequests[0]).toContain("type=CLICK");
   await page.getByRole("button", { name: "찜순", exact: true }).click();
-  await expect(page.locator("article")).toHaveCount(13);
+  await expect(page.locator("article")).toHaveCount(12);
   expect(rankingRequests).toHaveLength(1);
 });
 
@@ -50,7 +50,7 @@ test("다른 세션도 랭킹을 재사용하되 매 요청 인증을 확인한�
     route.fulfill({ status: 404, body: "test image unavailable" }),
   );
   await page.goto("/ranking");
-  await expect(page.locator("article")).toHaveCount(13);
+  await expect(page.locator("article")).toHaveCount(12);
   const before = (await (await request.get(`${apiURL}/__test/requests`)).json())
     .data.requests as { path: string }[];
   const beforeRanking = before.filter(
@@ -100,7 +100,7 @@ test("이미지 확대창을 클릭할 때 열고 닫기·Escape·재열기를 �
   await expect(page.getByRole("dialog")).toHaveCount(0);
 });
 
-test("랭킹을 20개씩 추가 표시하고 추가 API 조회 없이 끝까지 보여준다", async ({
+test("랭킹을 12개씩 추가 표시하고 추가 API 조회 없이 끝까지 보여준다", async ({
   page,
 }) => {
   let rankingRequests = 0;
@@ -122,9 +122,13 @@ test("랭킹을 20개씩 추가 표시하고 추가 API 조회 없이 끝까지 
   );
   await page.goto("/ranking");
   await page.getByRole("button", { name: "조회순", exact: true }).click();
-  await expect(page.locator("article")).toHaveCount(20);
+  await expect(page.locator("article")).toHaveCount(12);
   await page.locator("article").last().scrollIntoViewIfNeeded();
-  await expect(page.locator("article")).toHaveCount(40);
+  await expect(page.locator("article")).toHaveCount(24);
+  await page.locator("article").last().scrollIntoViewIfNeeded();
+  await expect(page.locator("article")).toHaveCount(36);
+  await page.getByRole("button", { name: "상품 더 보기" }).click();
+  await expect(page.locator("article")).toHaveCount(48);
   await page.locator("article").last().scrollIntoViewIfNeeded();
   await expect(page.locator("article")).toHaveCount(55);
   await expect(page.getByRole("button", { name: "상품 더 보기" })).toHaveCount(
@@ -135,7 +139,7 @@ test("랭킹을 20개씩 추가 표시하고 추가 API 조회 없이 끝까지 
     Array.from({ length: 55 }, (_, index) => String(index + 1)),
   );
   await page.getByRole("button", { name: "찜순", exact: true }).click();
-  await expect(page.locator("article")).toHaveCount(13);
+  await expect(page.locator("article")).toHaveCount(12);
   await page.getByRole("button", { name: "조회순", exact: true }).click();
-  await expect(page.locator("article")).toHaveCount(20);
+  await expect(page.locator("article")).toHaveCount(12);
 });
