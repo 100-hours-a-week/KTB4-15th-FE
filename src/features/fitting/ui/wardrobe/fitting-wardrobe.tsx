@@ -1,6 +1,6 @@
 "use client";
 
-import Image, { type ImageLoaderProps } from "next/image";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
@@ -37,10 +37,6 @@ const FILTERS: Array<{ label: string; value: WardrobeFilter }> = [
   { label: "하의", value: "BOTTOM" },
   { label: "전체", value: "ALL" },
 ];
-
-function passthroughImageLoader({ src }: ImageLoaderProps) {
-  return src;
-}
 
 type CandidateCardProps = {
   isEditing: boolean;
@@ -89,7 +85,6 @@ function CandidateCard({
             alt=""
             className={styles.productImage}
             fill
-            loader={passthroughImageLoader}
             onError={() => setImageFailed(true)}
             sizes="72px"
             src={product.productImageUrl}
