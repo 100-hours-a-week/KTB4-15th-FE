@@ -56,7 +56,7 @@ export function WishlistImage({
           fill
           onError={() => setImageFailed(true)}
           preload={preload}
-          sizes="96px"
+          sizes="72px"
           src={product.productImageUrl}
         />
       </button>
@@ -149,7 +149,7 @@ export function WishlistToggle({
       className={className}
       disabled={isPending}
       onClick={handleToggleWishlist}
-      size="medium"
+      size="small"
       variant="standard"
     >
       <HeartIcon filled={isWishlisted} />
