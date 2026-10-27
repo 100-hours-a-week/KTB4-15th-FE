@@ -47,6 +47,15 @@
   }
 }
 
+.actionButton {
+  margin-left: var(--space-xs);
+  white-space: nowrap;
+}
+
+.withAction {
+  grid-template-columns: 36px minmax(0, 1fr) auto auto;
+}
+
 .success .statusIcon {
   background: var(--color-green-100);
   color: var(--color-green-700);
@@ -108,5 +117,9 @@
   .statusIcon {
     width: 32px;
     height: 32px;
+  }
+
+  .withAction {
+    grid-template-columns: 32px minmax(0, 1fr) auto auto;
   }
 }

@@ -2,7 +2,8 @@
 
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
-import { NotificationProvider } from "@/features/notification/notification-provider";
+import { NotificationProvider } from "@/features/notification";
+import type { NotificationUnreadStatus } from "@/features/notification/schema/notification";
 import {
   NavigationBar,
   NavigationVisibilityProvider,
@@ -22,7 +23,13 @@ function hasNavigation(pathname: string) {
   );
 }
 
-export function ServiceShell({ children }: { children: ReactNode }) {
+export function ServiceShell({
+  children,
+  initialUnreadStatus,
+}: {
+  children: ReactNode;
+  initialUnreadStatus?: NotificationUnreadStatus;
+}) {
   const pathname = usePathname();
   const showNavigation = hasNavigation(pathname);
   const content = (
@@ -32,7 +39,7 @@ export function ServiceShell({ children }: { children: ReactNode }) {
   );
 
   return (
-    <NotificationProvider>
+    <NotificationProvider initialUnreadStatus={initialUnreadStatus}>
       <NavigationVisibilityProvider>
         {showNavigation ? (
           <>
