@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
-import { NotificationProvider } from "@/features/notification";
+import { NotificationProvider } from "@/features/notification/notification-provider";
 import type { NotificationUnreadStatus } from "@/features/notification/schema/notification";
 import {
   NavigationBar,
