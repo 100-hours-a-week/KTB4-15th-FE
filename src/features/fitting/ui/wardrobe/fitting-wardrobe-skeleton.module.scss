@@ -1,0 +1,20 @@
+.skeleton {
+  display: block;
+  border-radius: var(--radius-small);
+  background: var(--color-background-subtle);
+}
+
+.details > .skeletonLabel {
+  width: 30%;
+  height: 16px;
+}
+
+.details > .skeletonName {
+  width: 90%;
+  height: 20px;
+}
+
+.details > .skeletonPrice {
+  width: 55%;
+  height: 24px;
+}

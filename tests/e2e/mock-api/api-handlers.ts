@@ -294,9 +294,11 @@ export const testHandlers = [
     fittingProductIds.add(productId);
     return success({ fittingCandidateId: productId, productId });
   }),
-  http.get("*/fitting-candidates", () => {
+  http.get("*/fitting-candidates", ({ request }) => {
+    const itemType = new URL(request.url).searchParams.get("itemType");
     const items = products
       .filter((item) => fittingProductIds.has(item.productId))
+      .filter((item) => !itemType || item.itemType === itemType)
       .map((product) => ({
         ...product,
         fittingCandidateId: product.productId,
