@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod";
 import { productItemTypeSchema } from "@/shared/schema/product";
 
 export const CHAT_ROOM_TITLE_MAX_LENGTH = 20;

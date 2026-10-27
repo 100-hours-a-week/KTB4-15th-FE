@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod";
 
 const EMAIL_MAX_LENGTH = 254;
 const PASSWORD_PATTERN =

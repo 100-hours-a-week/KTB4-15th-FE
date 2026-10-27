@@ -1,4 +1,4 @@
-import { ServiceAccessGuard } from "@/features/auth";
+import { ServiceAccessGuard } from "@/features/auth/guard/service-access-guard";
 import { getMemberMeServer } from "@/features/member/api/member-server";
 import { getNotificationUnreadStatusServer } from "@/features/notification/api/notification-server";
 import { redirectOnServerUnauthorized } from "@/shared/api/server";

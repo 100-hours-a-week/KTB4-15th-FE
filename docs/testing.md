@@ -127,3 +127,11 @@ IME 검증은 `isComposing` Keyboard Event를 합성하여 전송 방지 로직�
 API 응답 고정 테스트는 프론트엔드 흐름을 검증합니다. 실제 API 계약과의 일치, 서버 저장, AI 추천 품질, 실제 피팅 이미지 생성, Firefox·WebKit 호환성은 별도 검증이 필요합니다.
 
 이전 메시지 조회는 TanStack Query의 `retry: false`를 사용합니다. ky의 `retry.limit: 1`로 재시도 가능한 오류(예: 503)는 최초 요청을 포함해 최대 2회 요청한 뒤 실패 토스트를 표시합니다.
+
+## 랭킹 검증
+
+- 실행: `pnpm exec playwright test tests/e2e/ranking/ranking-ssr.spec.ts`
+- SSR 초기 행, 초기 중복 요청 방지, 인증 호출과 캐시 재사용, 탭 전환, 이미지 preload·우선순위, 확대창 열기·닫기·재열기, 12개씩 추가 표시를 검증합니다.
+- 숫자 단위는 `tests/unit/number-format.test.ts`, MSW 고정 응답은 `tests/unit/ranking-mock.test.ts`에서 확인합니다.
+- 목 인증은 실제 쿠키 유효성을 검증하지 않습니다. 실제 세션 만료, 캐시 300초 만료·실패, 다중 인스턴스 동작은 별도 검증 대상입니다.
+- 개발 목 실행 방법과 단계별 측정 조건·실험 기록은 [랭킹 성능 개선 기록](./performance/ranking.md)을 참고합니다.
