@@ -13,44 +13,6 @@
   background: var(--color-background-surface);
 }
 
-.productLink {
-  min-width: 0;
-  color: inherit;
-  text-decoration: none;
-}
-
-.imageArea {
-  position: relative;
-  overflow: hidden;
-  width: 72px;
-  height: 72px;
-  border-radius: var(--radius-medium);
-  background: var(--color-background-subtle);
-}
-
-.productImage {
-  object-fit: cover;
-}
-
-.imageButton {
-  border: 0;
-  padding: 0;
-  color: inherit;
-  cursor: zoom-in;
-}
-
-.imageFallback {
-  display: grid;
-  height: 100%;
-  place-items: center;
-  color: var(--color-text-secondary);
-
-  svg {
-    width: 32px;
-    height: 32px;
-  }
-}
-
 .details {
   display: grid;
   min-width: 0;
@@ -95,14 +57,5 @@
 .priceDecreased {
   em {
     color: var(--color-text-info);
-  }
-}
-
-.deleteButton {
-  align-self: center;
-  color: var(--color-text-primary);
-
-  &[aria-pressed="true"] {
-    color: var(--color-action-danger-default);
   }
 }

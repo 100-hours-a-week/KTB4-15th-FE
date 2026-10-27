@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { Button } from "@/shared/ui/button";
 import { Header, HeaderIconLink, HeaderTitle } from "@/shared/ui/header";
 import { BackIcon, CheckIcon, DeleteIcon, InfoIcon } from "@/shared/ui/icon";
@@ -8,13 +9,18 @@ import {
   type WardrobeFilter,
 } from "../../hooks/use-fitting-wardrobe";
 import type { FittingCandidateListResponse } from "../../schema/fitting-candidate";
-import { CandidateCard, EmptyCandidateCard } from "./fitting-wardrobe-card";
+import { CandidateCard } from "./fitting-wardrobe-card";
+import {
+  EmptyCandidateCard,
+  WardrobeSelectionContext,
+} from "./fitting-wardrobe-card-actions";
 import { FittingWardrobeSkeleton } from "./fitting-wardrobe-skeleton";
 import styles from "./fitting-wardrobe-screen.module.scss";
 
 type FittingWardrobeScreenProps = {
   initialFilter: WardrobeFilter;
   initialCandidates?: FittingCandidateListResponse;
+  initialCards?: ReactNode;
 };
 
 const FILTERS: Array<{ label: string; value: WardrobeFilter }> = [
@@ -26,6 +32,7 @@ const FILTERS: Array<{ label: string; value: WardrobeFilter }> = [
 export function FittingWardrobeScreen({
   initialFilter,
   initialCandidates,
+  initialCards,
 }: FittingWardrobeScreenProps) {
   const {
     filter,
@@ -47,6 +54,11 @@ export function FittingWardrobeScreen({
     loadMoreRef,
     completeSelection,
   } = useFittingWardrobe(initialFilter, initialCandidates);
+
+  const showServerCards =
+    initialCards != null &&
+    filter === initialFilter &&
+    !query.isFetchedAfterMount;
 
   return (
     <>
@@ -117,49 +129,60 @@ export function FittingWardrobeScreen({
           </button>
         )}
 
-        <div className={styles.list}>
-          {!isEditing &&
-            !query.isPending &&
-            !isInitialError &&
-            products.length > 0 &&
-            (filter === "ALL" ? (["TOP", "BOTTOM"] as const) : [filter]).map(
-              (itemType) => (
-                <EmptyCandidateCard itemType={itemType} key={itemType} />
-              ),
-            )}
-          {query.isPending && <FittingWardrobeSkeleton />}
-          {isInitialError && (
-            <div className={styles.stateMessage} role="alert">
-              <p>옷장을 불러오지 못했어요.</p>
-              <Button
-                isLoading={query.isFetching}
-                onClick={() => void query.refetch()}
-                size="small"
-                variant="secondary"
-              >
-                다시 시도
-              </Button>
-            </div>
-          )}
-          {!query.isPending && !query.isError && products.length === 0 && (
-            <p className={styles.stateMessage}>담아둔 상품이 아직 없어요.</p>
-          )}
-          {products.map((product) => (
-            <CandidateCard
-              isEditing={isEditing}
-              isSelectedForDelete={selectedForDelete.has(
-                product.fittingCandidateId,
+        <WardrobeSelectionContext
+          value={{
+            isEditing,
+            selectedForDelete,
+            onToggleDelete: toggleDeleteCandidate,
+          }}
+        >
+          <div className={styles.list}>
+            {!isEditing &&
+              !query.isPending &&
+              !isInitialError &&
+              products.length > 0 &&
+              (filter === "ALL" ? (["TOP", "BOTTOM"] as const) : [filter]).map(
+                (itemType) => (
+                  <EmptyCandidateCard itemType={itemType} key={itemType} />
+                ),
               )}
-              key={product.fittingCandidateId}
-              onToggleDelete={toggleDeleteCandidate}
-              product={product}
-              priority={product.fittingCandidateId === firstImageCandidateId}
-            />
-          ))}
-          <div aria-hidden="true" className={styles.loadMore} ref={loadMoreRef}>
-            {query.isFetchingNextPage && "상품을 더 불러오고 있어요."}
+            {query.isPending && <FittingWardrobeSkeleton />}
+            {isInitialError && (
+              <div className={styles.stateMessage} role="alert">
+                <p>옷장을 불러오지 못했어요.</p>
+                <Button
+                  isLoading={query.isFetching}
+                  onClick={() => void query.refetch()}
+                  size="small"
+                  variant="secondary"
+                >
+                  다시 시도
+                </Button>
+              </div>
+            )}
+            {!query.isPending && !query.isError && products.length === 0 && (
+              <p className={styles.stateMessage}>담아둔 상품이 아직 없어요.</p>
+            )}
+            {showServerCards && initialCards}
+            {!showServerCards &&
+              products.map((product) => (
+                <CandidateCard
+                  key={product.fittingCandidateId}
+                  product={product}
+                  priority={
+                    product.fittingCandidateId === firstImageCandidateId
+                  }
+                />
+              ))}
+            <div
+              aria-hidden="true"
+              className={styles.loadMore}
+              ref={loadMoreRef}
+            >
+              {query.isFetchingNextPage && "상품을 더 불러오고 있어요."}
+            </div>
           </div>
-        </div>
+        </WardrobeSelectionContext>
 
         {isEditing && (
           <div className={styles.deleteNotice}>

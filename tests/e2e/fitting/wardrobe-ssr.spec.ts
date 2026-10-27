@@ -74,3 +74,78 @@ test("서버의 빈 옷장 응답은 빈 상태로 표시한다", async ({ page 
     page.getByRole("status", { name: "옷장을 불러오고 있어요" }),
   ).toHaveCount(0);
 });
+
+test("서버 카드에서 이미지 실패 대체 표시·선택·삭제 후 새 목록을 반영한다", async ({
+  page,
+  request,
+}) => {
+  await request.post(`${apiURL}/fitting-candidates`, {
+    data: { productId: products[0].productId },
+  });
+  await page.route("**/_next/image?**", (route) =>
+    route.fulfill({ status: 404, body: "unavailable" }),
+  );
+  await page.goto("/fitting/wardrobe?itemType=TOP");
+  const card = page.getByRole("button", {
+    name: new RegExp(products[0].productName),
+  });
+  await expect(card.getByLabel("상품 이미지 없음")).toBeVisible();
+  await card.click();
+  await expect(card).toHaveAttribute("aria-pressed", "true");
+  await page.getByRole("button", { name: "편집", exact: true }).click();
+  await expect(card).toHaveAttribute("aria-pressed", "false");
+  await card.click();
+  await expect(card).toHaveAttribute("aria-pressed", "true");
+  await page.getByRole("button", { name: "1개 삭제하기" }).click();
+  await expect(card).toHaveCount(0);
+  await page.getByRole("button", { name: "완료", exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "선택 완료 (0/2)" }),
+  ).toBeVisible();
+  await expect(page.getByText("담아둔 상품이 아직 없어요.")).toBeVisible();
+});
+
+test("추가 페이지 카드도 선택·편집을 지원한다", async ({ page, request }) => {
+  await request.post(`${apiURL}/fitting-candidates`, {
+    data: { productId: products[0].productId },
+  });
+  const extra = {
+    ...products[1],
+    productId: 303,
+    fittingCandidateId: 303,
+    productName: "추가 하의",
+    productImageUrl: "",
+  };
+  await page.route(`${apiURL}/fitting-candidates?**`, (route) => {
+    const url = new URL(route.request().url());
+    const nextPage = url.searchParams.has("cursor");
+    return route.fulfill({
+      json: {
+        code: "SUCCESS",
+        message: "",
+        data: {
+          items: nextPage
+            ? [extra]
+            : [{ ...products[1], fittingCandidateId: products[1].productId }],
+          totalCount: 2,
+          hasNext: !nextPage,
+          nextCursor: nextPage ? null : products[1].productId,
+        },
+      },
+    });
+  });
+  await page.route("**/_next/image?**", (route) =>
+    route.fulfill({ status: 404, body: "unavailable" }),
+  );
+  await page.goto("/fitting/wardrobe?itemType=TOP");
+  await page.getByRole("tab", { name: "하의", exact: true }).click();
+  const card = page.getByRole("button", { name: /추가 하의/ });
+  await expect(card).toBeVisible();
+  await card.click();
+  await expect(card).toHaveAttribute("aria-pressed", "true");
+  await page.getByRole("button", { name: "편집", exact: true }).click();
+  await card.click();
+  await expect(
+    page.getByRole("button", { name: "1개 삭제하기" }),
+  ).toBeEnabled();
+});

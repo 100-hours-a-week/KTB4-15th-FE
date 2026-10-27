@@ -294,6 +294,15 @@ export const testHandlers = [
     fittingProductIds.add(productId);
     return success({ fittingCandidateId: productId, productId });
   }),
+  http.delete("*/fitting-candidates", async ({ request }) => {
+    const { fittingCandidateIds } = (await request.json()) as {
+      fittingCandidateIds: number[];
+    };
+    const deletedCount = fittingCandidateIds.filter((id) =>
+      fittingProductIds.delete(id),
+    ).length;
+    return success({ deletedCount });
+  }),
   http.get("*/fitting-candidates", ({ request }) => {
     const itemType = new URL(request.url).searchParams.get("itemType");
     const items = products
