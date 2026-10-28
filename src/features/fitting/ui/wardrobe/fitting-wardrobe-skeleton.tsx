@@ -12,7 +12,11 @@ export function FittingWardrobeSkeleton() {
       className={styles.list}
     >
       {Array.from({ length: 5 }, (_, index) => (
-        <div aria-hidden="true" className={cardStyles.productCard} key={index}>
+        <div
+          aria-hidden="true"
+          className={`${cardStyles.productCard} ${skeletonStyles.card}`}
+          key={index}
+        >
           <span
             className={`${cardStyles.imageArea} ${skeletonStyles.skeleton}`}
           />
