@@ -1,3 +1,4 @@
+import type { FittingCandidate } from "../../../src/features/fitting/schema/fitting-candidate";
 import type {
   ChatMessageResponse,
   RecommendedProductResponse,
@@ -72,6 +73,7 @@ export function makeRoom(chatRoomId: number): MockChatRoom {
 }
 
 export type Scenario = {
+  fittingCandidates?: FittingCandidate[];
   hasUnreadNotifications?: boolean;
   notificationUnreadDelayMs?: number;
   failNotificationUnread?: boolean;

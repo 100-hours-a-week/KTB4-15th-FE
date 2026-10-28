@@ -149,3 +149,63 @@ test("추가 페이지 카드도 선택·편집을 지원한다", async ({ page,
     page.getByRole("button", { name: "1개 삭제하기" }),
   ).toBeEnabled();
 });
+
+test("API·초기 HTML을 10개로 맞추고 다음 페이지와 전체 선택을 지원한다", async ({
+  page,
+  request,
+}) => {
+  await request.post(`${apiURL}/__test/scenario`, {
+    data: {
+      fittingCandidates: Array.from({ length: 25 }, (_, index) => ({
+        ...products[0],
+        fittingCandidateId: index + 1000,
+        productId: index + 1000,
+        productName: `실험 상품 ${index + 1}`,
+      })),
+    },
+  });
+  const listRequests: string[] = [];
+  page.on("request", (request) => {
+    if (request.url().startsWith(`${apiURL}/fitting-candidates`))
+      listRequests.push(request.url());
+  });
+  await page.route("**/_next/image?**", (route) =>
+    route.fulfill({ status: 404, body: "unavailable" }),
+  );
+  const response = await page.goto("/fitting/wardrobe?itemType=TOP");
+  const html = await response!.text();
+  expect(
+    (html.match(/<img\b[^>]*>/g) ?? []).filter((tag) =>
+      tag.includes("productImage"),
+    ),
+  ).toHaveLength(10);
+  const cards = page.getByRole("button", { name: /실험 상품/ });
+  await expect(cards).toHaveCount(10);
+  expect(listRequests).toHaveLength(0);
+  await page.getByRole("button", { name: "편집", exact: true }).click();
+  const selectAll = page.getByRole("button", { name: /전체 선택/ });
+  await selectAll.click();
+  await expect(
+    page.getByRole("button", { name: "10개 삭제하기" }),
+  ).toBeEnabled();
+  await page.locator('[class*="__loadMore"]').scrollIntoViewIfNeeded();
+  await expect(cards).toHaveCount(20);
+  await page.locator('[class*="__loadMore"]').scrollIntoViewIfNeeded();
+  await expect(cards).toHaveCount(25);
+  await selectAll.click();
+  await expect(
+    page.getByRole("button", { name: "25개 삭제하기" }),
+  ).toBeEnabled();
+  expect(listRequests).toHaveLength(2);
+  expect(
+    listRequests.map((url) => new URL(url).searchParams.get("size")),
+  ).toEqual(["10", "10"]);
+  expect(
+    listRequests.map((url) => new URL(url).searchParams.get("cursor")),
+  ).toEqual(["1009", "1019"]);
+  await page.getByRole("button", { name: "완료", exact: true }).click();
+  await page.getByRole("tab", { name: "하의", exact: true }).click();
+  await expect(cards).toHaveCount(0);
+  await page.getByRole("tab", { name: "상의", exact: true }).click();
+  await expect(cards).toHaveCount(25);
+});

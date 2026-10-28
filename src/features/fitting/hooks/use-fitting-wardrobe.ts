@@ -6,7 +6,7 @@ import {
   fittingCandidatesQueryOptions,
   useDeleteFittingCandidatesMutation,
 } from "../model/fitting-query";
-import type { FittingCandidateListResponse } from "../schema/fitting-candidate";
+import { type FittingCandidateListResponse } from "../schema/fitting-candidate";
 import { useFittingSelectionStore } from "../store/fitting-selection-store";
 import { useRestoreFittingSelection } from "../store/use-restore-fitting-selection";
 

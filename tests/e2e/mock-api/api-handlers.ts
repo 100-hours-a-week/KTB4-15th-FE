@@ -304,19 +304,29 @@ export const testHandlers = [
     return success({ deletedCount });
   }),
   http.get("*/fitting-candidates", ({ request }) => {
-    const itemType = new URL(request.url).searchParams.get("itemType");
-    const items = products
-      .filter((item) => fittingProductIds.has(item.productId))
+    const params = new URL(request.url).searchParams;
+    const itemType = params.get("itemType");
+    const size = Number(params.get("size") ?? 20);
+    const cursor = Number(params.get("cursor"));
+    const items = (
+      scenario.fittingCandidates ??
+      products.filter((item) => fittingProductIds.has(item.productId))
+    )
       .filter((item) => !itemType || item.itemType === itemType)
       .map((product) => ({
         ...product,
         fittingCandidateId: product.productId,
       }));
+    const start = cursor
+      ? items.findIndex((item) => item.fittingCandidateId === cursor) + 1
+      : 0;
+    const page = items.slice(start, start + size);
+    const hasNext = start + page.length < items.length;
     return success({
-      items,
+      items: page,
       totalCount: items.length,
-      nextCursor: null,
-      hasNext: false,
+      nextCursor: hasNext ? page.at(-1)!.fittingCandidateId : null,
+      hasNext,
     });
   }),
   http.get("*/fitting-jobs/current", () =>

@@ -8,7 +8,7 @@ import {
   useFittingWardrobe,
   type WardrobeFilter,
 } from "../../hooks/use-fitting-wardrobe";
-import type { FittingCandidateListResponse } from "../../schema/fitting-candidate";
+import { type FittingCandidateListResponse } from "../../schema/fitting-candidate";
 import { CandidateCard } from "./fitting-wardrobe-card";
 import {
   EmptyCandidateCard,
