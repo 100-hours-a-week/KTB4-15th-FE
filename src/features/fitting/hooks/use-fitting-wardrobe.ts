@@ -1,6 +1,7 @@
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
+import { useScrollPagination } from "@/shared/hooks/use-scroll-pagination";
 import type { ProductItemType } from "@/shared/schema/product";
 import {
   fittingCandidatesQueryOptions,
@@ -32,9 +33,12 @@ export function useFittingWardrobe(
     staleTime:
       filter === initialFilter && initialCandidates ? 30_000 : undefined,
   });
-  const { data, fetchNextPage, hasNextPage, isError, isFetchingNextPage } =
-    query;
-  const loadMoreRef = useRef<HTMLDivElement>(null);
+  const { data, fetchNextPage, hasNextPage, isError } = query;
+  const loadMoreRef = useScrollPagination({
+    enabled: Boolean(hasNextPage) && !isError,
+    isFetching: query.isFetching,
+    fetchNextPage,
+  });
   const top = useFittingSelectionStore((state) => state.top);
   const bottom = useFittingSelectionStore((state) => state.bottom);
   const clearProduct = useFittingSelectionStore((state) => state.clearProduct);
@@ -110,25 +114,6 @@ export function useFittingWardrobe(
       },
     });
   };
-
-  useEffect(() => {
-    const target = loadMoreRef.current;
-
-    if (!target || !hasNextPage || isError) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && !isFetchingNextPage) {
-          void fetchNextPage();
-        }
-      },
-      { rootMargin: "200px 0px" },
-    );
-
-    observer.observe(target);
-
-    return () => observer.disconnect();
-  }, [fetchNextPage, hasNextPage, isFetchingNextPage, isError]);
 
   return {
     filter,

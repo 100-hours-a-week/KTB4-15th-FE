@@ -58,9 +58,7 @@ export function FittingWardrobeScreen({
   const showServerCards =
     initialCards != null &&
     filter === initialFilter &&
-    query.data?.pages.length === 1 &&
-    query.data.pages[0] === initialCandidates &&
-    !query.isFetchedAfterMount;
+    query.data?.pages[0] === initialCandidates;
 
   return (
     <>
@@ -166,8 +164,11 @@ export function FittingWardrobeScreen({
               <p className={styles.stateMessage}>담아둔 상품이 아직 없어요.</p>
             )}
             {showServerCards && initialCards}
-            {!showServerCards &&
-              products.map((product) => (
+            {products
+              .slice(
+                showServerCards ? (initialCandidates?.items.length ?? 0) : 0,
+              )
+              .map((product) => (
                 <CandidateCard
                   key={product.fittingCandidateId}
                   product={product}
@@ -178,6 +179,16 @@ export function FittingWardrobeScreen({
               ))}
             <div className={styles.loadMore} ref={loadMoreRef}>
               {query.isFetchingNextPage && "상품을 더 불러오고 있어요."}
+              {query.hasNextPage && !query.isFetchNextPageError && (
+                <Button
+                  isLoading={query.isFetchingNextPage}
+                  onClick={() => void query.fetchNextPage()}
+                  size="small"
+                  variant="secondary"
+                >
+                  더 불러오기
+                </Button>
+              )}
               {query.isFetchNextPageError && (
                 <div role="alert">
                   <p>상품을 더 불러오지 못했어요.</p>

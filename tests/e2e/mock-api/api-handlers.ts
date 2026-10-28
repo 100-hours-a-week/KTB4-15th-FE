@@ -268,21 +268,30 @@ export const testHandlers = [
       return failure("찜한 상품이 없습니다.", 404);
     return new HttpResponse(null, { status: 204 });
   }),
-  http.get("*/wishlists", () => {
-    const items = products
-      .filter((item) => wishlistProductIds.has(item.productId))
-      .map((product) => ({
-        ...product,
-        wishlistId: product.productId + 1000,
-        wishedPrice: product.currentPrice,
-        priceChangeRate: 0,
-        wishedAt: createdAt,
-      }));
+  http.get("*/wishlists", ({ request }) => {
+    const params = new URL(request.url).searchParams;
+    const size = Number(params.get("size") ?? 20);
+    const cursor = Number(params.get("cursor"));
+    const items = (
+      scenario.wishlistProducts ??
+      products.filter((item) => wishlistProductIds.has(item.productId))
+    ).map((product) => ({
+      ...product,
+      wishlistId: product.productId + 1000,
+      wishedPrice: product.currentPrice,
+      priceChangeRate: 0,
+      wishedAt: createdAt,
+    }));
+    const start = cursor
+      ? items.findIndex((item) => item.wishlistId === cursor) + 1
+      : 0;
+    const page = items.slice(start, start + size);
+    const hasNext = start + page.length < items.length;
     return success({
-      items,
+      items: page,
       totalCount: items.length,
-      nextCursor: null,
-      hasNext: false,
+      nextCursor: hasNext ? page.at(-1)!.wishlistId : null,
+      hasNext,
     });
   }),
   http.post("*/fitting-candidates", async ({ request }) => {

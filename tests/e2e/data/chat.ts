@@ -74,6 +74,7 @@ export function makeRoom(chatRoomId: number): MockChatRoom {
 
 export type Scenario = {
   fittingCandidates?: FittingCandidate[];
+  wishlistProducts?: RecommendedProductResponse[];
   hasUnreadNotifications?: boolean;
   notificationUnreadDelayMs?: number;
   failNotificationUnread?: boolean;

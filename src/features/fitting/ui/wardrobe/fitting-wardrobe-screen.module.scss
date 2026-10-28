@@ -130,12 +130,14 @@
 .loadMore {
   @include type.caption;
 
+  overflow-anchor: none;
   min-height: 24px;
   color: var(--color-text-secondary);
   text-align: center;
 }
 
 .bottomAction {
+  overflow-anchor: none;
   position: sticky;
   bottom: 0;
   padding-top: var(--space-sm);

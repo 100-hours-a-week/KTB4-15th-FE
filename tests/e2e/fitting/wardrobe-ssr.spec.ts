@@ -139,6 +139,7 @@ test("추가 페이지 카드도 선택·편집을 지원한다", async ({ page,
   );
   await page.goto("/fitting/wardrobe?itemType=TOP");
   await page.getByRole("tab", { name: "하의", exact: true }).click();
+  await page.getByRole("button", { name: "더 불러오기", exact: true }).click();
   const card = page.getByRole("button", { name: /추가 하의/ });
   await expect(card).toBeVisible();
   await card.click();
@@ -188,7 +189,10 @@ test("API·초기 HTML을 10개로 맞추고 다음 페이지와 전체 선택�
   await expect(
     page.getByRole("button", { name: "10개 삭제하기" }),
   ).toBeEnabled();
-  await page.locator('[class*="__loadMore"]').scrollIntoViewIfNeeded();
+  await page.locator('[class*="loadMore"]').scrollIntoViewIfNeeded();
+  await expect(cards).toHaveCount(20);
+  await page.waitForTimeout(250);
+  await page.locator('[class*="loadMore"]').scrollIntoViewIfNeeded();
   await expect(cards).toHaveCount(25);
   await selectAll.click();
   await expect(
@@ -241,7 +245,7 @@ test("추가 조회 실패 후 자동 요청을 멈추고 수동 재시도로 �
     route.fulfill({ status: 404, body: "unavailable" }),
   );
   await page.goto("/fitting/wardrobe?itemType=TOP");
-  await page.locator('[class*="__loadMore"]').scrollIntoViewIfNeeded();
+  await page.getByRole("button", { name: "더 불러오기", exact: true }).click();
   const retry = page.getByRole("button", { name: "더 불러오기 다시 시도" });
   await expect(retry).toBeVisible({ timeout: 20000 });
   const failedAttempts = attempts;
@@ -294,4 +298,55 @@ test("삭제 실패 시 선택을 유지하고 처리되지 않은 오류 없이
   await expect(
     page.getByRole("button", { name: "선택 완료 (0/2)" }),
   ).toBeVisible();
+});
+
+test("추가 목록을 붙여도 스크롤 위치를 유지하고 다시 내려야 다음 페이지를 조회한다", async ({
+  page,
+  request,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await request.post(`${apiURL}/__test/scenario`, {
+    data: {
+      fittingCandidates: Array.from({ length: 50 }, (_, index) => ({
+        ...products[0],
+        fittingCandidateId: index + 1000,
+        productId: index + 1000,
+        productName: `스크롤 상품 ${index + 1}`,
+      })),
+    },
+  });
+  let release: () => void = () => {};
+  const responseGate = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  let requests = 0;
+  await page.route(`${apiURL}/fitting-candidates?**`, async (route) => {
+    if (new URL(route.request().url()).searchParams.has("cursor")) {
+      requests += 1;
+      await responseGate;
+    }
+    await route.continue();
+  });
+  await page.route("**/_next/image?**", (route) =>
+    route.fulfill({ status: 404, body: "unavailable" }),
+  );
+  await page.goto("/fitting/wardrobe?itemType=TOP");
+  await page.locator('[class*="loadMore"]').scrollIntoViewIfNeeded();
+  await expect.poll(() => requests).toBe(1);
+  const scrollBefore = await page.evaluate(() => window.scrollY);
+  release();
+  await expect(page.getByRole("button", { name: /스크롤 상품/ })).toHaveCount(
+    20,
+  );
+  await page.waitForTimeout(1500);
+  expect(requests).toBe(1);
+  expect(
+    Math.abs((await page.evaluate(() => window.scrollY)) - scrollBefore),
+  ).toBeLessThan(5);
+  await page.locator('[class*="loadMore"]').scrollIntoViewIfNeeded();
+  await expect(page.getByRole("button", { name: /스크롤 상품/ })).toHaveCount(
+    30,
+  );
+  await page.waitForTimeout(1500);
+  expect(requests).toBe(2);
 });
