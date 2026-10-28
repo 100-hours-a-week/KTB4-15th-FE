@@ -189,8 +189,6 @@ test("API·초기 HTML을 10개로 맞추고 다음 페이지와 전체 선택�
     page.getByRole("button", { name: "10개 삭제하기" }),
   ).toBeEnabled();
   await page.locator('[class*="__loadMore"]').scrollIntoViewIfNeeded();
-  await expect(cards).toHaveCount(20);
-  await page.locator('[class*="__loadMore"]').scrollIntoViewIfNeeded();
   await expect(cards).toHaveCount(25);
   await selectAll.click();
   await expect(
@@ -206,6 +204,94 @@ test("API·초기 HTML을 10개로 맞추고 다음 페이지와 전체 선택�
   await page.getByRole("button", { name: "완료", exact: true }).click();
   await page.getByRole("tab", { name: "하의", exact: true }).click();
   await expect(cards).toHaveCount(0);
+  await expect(page).toHaveURL(/itemType=BOTTOM/);
   await page.getByRole("tab", { name: "상의", exact: true }).click();
+  await expect(page).toHaveURL(/itemType=TOP/);
   await expect(cards).toHaveCount(25);
+});
+
+test("추가 조회 실패 후 자동 요청을 멈추고 수동 재시도로 복구한다", async ({
+  page,
+  request,
+}) => {
+  await request.post(`${apiURL}/__test/scenario`, {
+    data: {
+      fittingCandidates: Array.from({ length: 11 }, (_, index) => ({
+        ...products[0],
+        fittingCandidateId: index + 1000,
+        productId: index + 1000,
+        productName: `복구 상품 ${index + 1}`,
+      })),
+    },
+  });
+  let fail = true;
+  let attempts = 0;
+  await page.route(`${apiURL}/fitting-candidates?**`, (route) => {
+    if (new URL(route.request().url()).searchParams.has("cursor")) {
+      attempts += 1;
+      if (fail)
+        return route.fulfill({
+          status: 400,
+          json: { code: "ERROR", message: "조회 실패", data: null },
+        });
+    }
+    return route.continue();
+  });
+  await page.route("**/_next/image?**", (route) =>
+    route.fulfill({ status: 404, body: "unavailable" }),
+  );
+  await page.goto("/fitting/wardrobe?itemType=TOP");
+  await page.locator('[class*="__loadMore"]').scrollIntoViewIfNeeded();
+  const retry = page.getByRole("button", { name: "더 불러오기 다시 시도" });
+  await expect(retry).toBeVisible({ timeout: 20000 });
+  const failedAttempts = attempts;
+  await page.waitForTimeout(1500);
+  expect(attempts).toBe(failedAttempts);
+  await expect(page.getByRole("button", { name: /복구 상품/ })).toHaveCount(10);
+  fail = false;
+  await retry.click();
+  await expect(page.getByRole("button", { name: /복구 상품/ })).toHaveCount(11);
+});
+
+test("삭제 실패 시 선택을 유지하고 처리되지 않은 오류 없이 재시도한다", async ({
+  page,
+  request,
+}) => {
+  await request.post(`${apiURL}/fitting-candidates`, {
+    data: { productId: products[0].productId },
+  });
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  let fail = true;
+  await page.route(`${apiURL}/fitting-candidates`, (route) => {
+    if (route.request().method() === "DELETE" && fail) {
+      return route.fulfill({
+        status: 400,
+        json: { code: "ERROR", message: "삭제 실패", data: null },
+      });
+    }
+    return route.continue();
+  });
+  await page.route("**/_next/image?**", (route) =>
+    route.fulfill({ status: 404, body: "unavailable" }),
+  );
+  await page.goto("/fitting/wardrobe?itemType=TOP");
+  const card = page.getByRole("button", {
+    name: new RegExp(products[0].productName),
+  });
+  await card.click();
+  await page.getByRole("button", { name: "편집", exact: true }).click();
+  await card.click();
+  const remove = page.getByRole("button", { name: "1개 삭제하기" });
+  await remove.click();
+  await expect(page.getByText("상품을 삭제하지 못했어요.")).toBeVisible();
+  await expect(card).toHaveAttribute("aria-pressed", "true");
+  expect(errors).toEqual([]);
+  fail = false;
+  await remove.click();
+  await expect(card).toHaveCount(0);
+  await page.getByRole("button", { name: "완료", exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "선택 완료 (0/2)" }),
+  ).toBeVisible();
 });

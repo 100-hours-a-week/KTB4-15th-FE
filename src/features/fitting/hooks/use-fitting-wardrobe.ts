@@ -94,26 +94,27 @@ export function useFittingWardrobe(
     });
   };
 
-  const deleteSelectedCandidates = async () => {
+  const deleteSelectedCandidates = () => {
     const candidateIds = [...selectedForDelete];
     if (candidateIds.length === 0) return;
 
-    await deleteMutation.mutateAsync(candidateIds);
-
-    if (top && candidateIds.includes(top.fittingCandidateId)) {
-      clearProduct("TOP");
-    }
-    if (bottom && candidateIds.includes(bottom.fittingCandidateId)) {
-      clearProduct("BOTTOM");
-    }
-
-    setSelectedForDelete(new Set());
+    deleteMutation.mutate(candidateIds, {
+      onSuccess: () => {
+        if (top && candidateIds.includes(top.fittingCandidateId)) {
+          clearProduct("TOP");
+        }
+        if (bottom && candidateIds.includes(bottom.fittingCandidateId)) {
+          clearProduct("BOTTOM");
+        }
+        setSelectedForDelete(new Set());
+      },
+    });
   };
 
   useEffect(() => {
     const target = loadMoreRef.current;
 
-    if (!target || !hasNextPage) return;
+    if (!target || !hasNextPage || isError) return;
 
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -127,7 +128,7 @@ export function useFittingWardrobe(
     observer.observe(target);
 
     return () => observer.disconnect();
-  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage, isError]);
 
   return {
     filter,
