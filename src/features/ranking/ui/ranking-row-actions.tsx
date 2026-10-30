@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useState, type ReactNode } from "react";
 import { recordPurchaseLinkClick } from "@/features/product";
-import styles from "./ranking-row.module.scss";
+import styles from "./ranking-row-actions.module.scss";
 
 const ImageViewerDialog = dynamic(() =>
   import("@/shared/ui/dialog").then((module) => module.ImageViewerDialog),
