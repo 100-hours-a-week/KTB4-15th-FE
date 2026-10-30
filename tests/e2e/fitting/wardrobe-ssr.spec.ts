@@ -331,6 +331,15 @@ test("추가 목록을 붙여도 스크롤 위치를 유지하고 다시 내려�
     route.fulfill({ status: 404, body: "unavailable" }),
   );
   await page.goto("/fitting/wardrobe?itemType=TOP");
+  // SSR HTML 표시만으로는 스크롤 이벤트 등록이 끝났다고 볼 수 없다.
+  await page.getByRole("button", { name: "편집", exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "완료", exact: true }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "완료", exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "편집", exact: true }),
+  ).toBeVisible();
   await page.locator('[class*="loadMore"]').scrollIntoViewIfNeeded();
   await expect.poll(() => requests).toBe(1);
   const scrollBefore = await page.evaluate(() => window.scrollY);
