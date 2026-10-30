@@ -330,17 +330,19 @@ test("추가 목록을 붙여도 스크롤 위치를 유지하고 다시 내려�
   await page.route("**/_next/image?**", (route) =>
     route.fulfill({ status: 404, body: "unavailable" }),
   );
-  await page.goto("/fitting/wardrobe?itemType=TOP");
-  // SSR HTML 표시만으로는 스크롤 이벤트 등록이 끝났다고 볼 수 없다.
-  await page.getByRole("button", { name: "편집", exact: true }).click();
-  await expect(
-    page.getByRole("button", { name: "완료", exact: true }),
-  ).toBeVisible();
-  await page.getByRole("button", { name: "완료", exact: true }).click();
-  await expect(
-    page.getByRole("button", { name: "편집", exact: true }),
-  ).toBeVisible();
+  let hydrate: () => void = () => {};
+  const hydrationGate = new Promise<void>((resolve) => {
+    hydrate = resolve;
+  });
+  await page.route(/\/_next\/static\/.*\.js(?:\?|$)/, async (route) => {
+    await hydrationGate;
+    await route.continue();
+  });
+  await page.goto("/fitting/wardrobe?itemType=TOP", { waitUntil: "commit" });
   await page.locator('[class*="loadMore"]').scrollIntoViewIfNeeded();
+  expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
+  expect(requests).toBe(0);
+  hydrate();
   await expect.poll(() => requests).toBe(1);
   const scrollBefore = await page.evaluate(() => window.scrollY);
   release();
