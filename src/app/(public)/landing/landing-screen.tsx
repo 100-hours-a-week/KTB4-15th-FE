@@ -24,6 +24,10 @@ export function LandingScreen() {
     const originalTheme = theme?.content;
     const originalHtml = document.documentElement.style.backgroundColor;
     const originalBody = document.body.style.backgroundColor;
+    const backgroundState = {
+      color: getComputedStyle(document.body).backgroundColor,
+    };
+    let targetColor = "";
     let colorFrame = 0;
     const updateBackground = () => {
       colorFrame = 0;
@@ -39,9 +43,22 @@ export function LandingScreen() {
         background && background !== "rgba(0, 0, 0, 0)"
           ? background
           : getComputedStyle(landing).backgroundColor;
-      document.documentElement.style.backgroundColor = color;
-      document.body.style.backgroundColor = color;
-      if (theme) theme.content = color;
+      if (targetColor === color) return;
+      targetColor = color;
+      gsap.to(backgroundState, {
+        color,
+        duration: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+          ? 0
+          : 0.4,
+        ease: "none",
+        overwrite: true,
+        onUpdate: () => {
+          document.documentElement.style.backgroundColor =
+            backgroundState.color;
+          document.body.style.backgroundColor = backgroundState.color;
+          if (theme) theme.content = backgroundState.color;
+        },
+      });
     };
     const scheduleBackground = () => {
       if (!colorFrame) colorFrame = requestAnimationFrame(updateBackground);
@@ -234,6 +251,9 @@ export function LandingScreen() {
               trigger: section,
               start: "top top",
               end: "+=4050",
+              onToggle: ({ isActive }) => {
+                section.toggleAttribute("data-pinned", isActive);
+              },
               onUpdate: ({ progress }) => {
                 const slide =
                   progress <= 0
@@ -264,6 +284,7 @@ export function LandingScreen() {
           .to(track, { x: () => -viewport.clientWidth * 2, duration: 900 })
           .to({}, { duration: 750 });
         return () => {
+          section.removeAttribute("data-pinned");
           phoneResize.disconnect();
           phone.style.removeProperty("--phone-scale");
         };
@@ -276,6 +297,7 @@ export function LandingScreen() {
       window.removeEventListener("scroll", scheduleBackground);
       window.removeEventListener("resize", scheduleBackground);
       cancelAnimationFrame(colorFrame);
+      gsap.killTweensOf(backgroundState);
       document.documentElement.style.backgroundColor = originalHtml;
       document.body.style.backgroundColor = originalBody;
       if (theme && originalTheme !== undefined) theme.content = originalTheme;
