@@ -4,6 +4,10 @@
   padding-inline: var(--screen-padding);
 }
 
+.shell:has(> [data-landing]) {
+  padding-inline: 0;
+}
+
 .page {
   background: var(--color-background-page);
 }

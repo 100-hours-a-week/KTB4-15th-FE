@@ -17,7 +17,7 @@ App Router의 최상위 라우트 그룹은 `(public)`과 `(service)`로 구분�
 
 ```text
 src/app/
-├── (public)/                  # 온보딩과 인증 화면
+├── (public)/                  # 랜딩과 인증 화면
 │   └── (auth)/               # 로그인 사용자를 서비스로 돌려보내는 인증 화면
 ├── (service)/                # 인증 및 프로필 확인이 필요한 화면
 │   ├── chat/                  # 채팅 도메인 화면
@@ -27,11 +27,10 @@ src/app/
 └── health/                    # 외부 의존성이 없는 상태 확인 Route
 ```
 
-- `/`는 온보딩 완료 쿠키가 없으면 `/onboarding`, 있으면 `/login`으로 이동합니다. `/onboarding`은 첫 방문자에게 3단계 소개를 보여주며, 완료하거나 건너뛰면 쿠키를 저장하고 `/login`으로 이동합니다.
+- `/`는 로그인 상태와 관계없이 공개 랜딩을 표시합니다. 이전 `/landing`·`/onboarding` 주소는 `/`로 영구 리다이렉트합니다. 온보딩 완료 쿠키는 읽거나 저장하지 않습니다.
 - 로그인 완료 후 기본 진입 화면은 `/chat`입니다.
 - 회원가입 직후 기본 정보 입력 화면은 `/profile/setup`입니다.
-- `/onboarding`은 정적으로 생성하며, 슬라이드 전환은 Client Component에서 처리합니다. 완료 쿠키가 `true`인 요청은 Proxy에서 `/login`으로 보냅니다.
-- `/onboarding`은 회원 상태를 조회하지 않습니다. `/login`과 `/signup`은 화면을 바로 표시한 뒤 로그인 상태가 확인되면 프로필 상태에 맞는 서비스 화면으로 이동합니다.
+- 랜딩은 회원 상태를 조회하지 않습니다. `/login`과 `/signup`은 화면을 바로 표시한 뒤 로그인 상태가 확인되면 프로필 상태에 맞는 서비스 화면으로 이동합니다.
 - 서비스 공통 `ServiceShell`에서 현재 경로에 따라 하단 Navigation, 페이지 표면과 Tab 전환을 적용합니다.
 - 하단 Navigation은 `/chat`과 하위 대화방, `/fitting`, `/wishlists`, `/ranking`, `/mypage`, `/notifications`에서 표시합니다. `/fitting/wardrobe`, `/fitting/jobs/...`, `/fitting-results/...`, `/profile/setup`에서는 표시하지 않습니다.
 - 하단 Navigation은 아래로 스크롤하면 숨고 위로 스크롤하면 다시 표시하며, 모바일 키보드가 열린 동안에는 숨깁니다. 채팅 입력창은 키보드 바로 위에 유지합니다.
@@ -91,3 +90,9 @@ Query option은 재사용할 설정과 key를 한곳에 모으고, `useQuery`는
 ## 도메인
 
 사용자 흐름, 상태 전이와 도메인 간 연동은 [도메인 문서](./domains/README.md)에서 관리합니다.
+
+## 랜딩
+
+`/`는 인증 없이 접근하는 랜딩이며 시작 버튼 클릭 시 브라우저의 기존 getMemberMe·apiClient로 인증 조회와 세션 갱신 후 채팅·프로필 설정·회원가입으로 분기합니다. 기존 서비스 가드는 유지합니다. 이 경로만 공통 레이아웃의 480px 너비 제한과 좌우 패딩을 해제합니다.
+
+라우트 전용 컴포넌트와 SCSS Modules는 `app/(public)/landing`에 둡니다. 전체 GSAP ScrollTrigger 초기화와 정리는 `landing-screen.tsx`에서 관리하고 히어로·기능 소개·FAQ는 별도 컴포넌트로 구성합니다. 화면 연출과 반응형 기준은 [랜딩 화면](./screens/landing.md)을 참고합니다.

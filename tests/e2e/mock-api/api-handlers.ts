@@ -64,11 +64,31 @@ function currentProducts() {
 }
 
 export const testHandlers = [
+  http.get("*/members/me", ({ request }) => {
+    if (!scenario.memberStatus) return;
+    if (scenario.memberStatus === "unavailable")
+      return failure("인증 서버 오류");
+    return scenario.memberStatus === "unauthenticated" ||
+      (scenario.memberStatus === "refreshable" &&
+        !request.headers.get("cookie")?.includes("accessToken=refreshed"))
+      ? failure("로그인 필요", 401, "UNAUTHORIZED")
+      : success({ profileCompleted: scenario.memberStatus !== "incomplete" });
+  }),
   http.get("*/health", () => new HttpResponse("OK")),
   http.post("*/auth/refresh", () =>
     scenario.expiredRefresh
       ? failure("세션 만료", 401, "UNAUTHORIZED")
-      : success(null),
+      : scenario.memberStatus === "refreshable"
+        ? HttpResponse.json(
+            { code: "SUCCESS", data: null, message: "성공" },
+            {
+              headers: {
+                "Set-Cookie":
+                  "accessToken=refreshed; Path=/; HttpOnly; SameSite=Lax",
+              },
+            },
+          )
+        : success(null),
   ),
   http.post("*/__test/reset", async ({ request }) => {
     finishStream?.();
