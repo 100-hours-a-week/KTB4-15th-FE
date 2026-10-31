@@ -1,5 +1,5 @@
 import Image from "next/image";
-import styles from "./landing-screen.module.scss";
+import styles from "./landing-features.module.scss";
 
 const introductionSlides = [
   {

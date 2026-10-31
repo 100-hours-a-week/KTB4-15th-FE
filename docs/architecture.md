@@ -104,4 +104,8 @@ Query option은 재사용할 설정과 key를 한곳에 모으고, `useQuery`는
 
 추천 카드의 입어보기 강조 후 이미지 영역을 피팅 사진 크기로 확장하며, 처리 문구를 거쳐 착장 사진으로 전환합니다. 빈 피팅룸에서 니트만 이동하던 구간은 사용하지 않습니다.
 
-화면은 `landing-hero.tsx`와 `landing-features.tsx`로 분리하고 전체 GSAP 초기화는 `landing-screen.tsx`에서 관리합니다. 왕관과 벨은 최초 진입 시에만 움직이며 찜 이미지는 정적으로 표시합니다. 랜딩에서는 공통 PageShell의 좌우 패딩을 제거합니다.
+화면은 `landing-hero.tsx`와 `landing-features.tsx`로 분리하고 전체 GSAP 초기화는 `landing-screen.tsx`에서 관리합니다. 히어로·기능 소개·FAQ 스타일은 각 컴포넌트의 SCSS Module에 두고 페이지 배경·헤더·시작 영역·푸터 스타일은 `landing-screen.module.scss`에 둡니다. 왕관과 벨은 최초 진입 시에만 움직이며 찜 이미지는 정적으로 표시합니다. 랜딩에서는 공통 PageShell의 좌우 패딩을 제거합니다.
+
+`landing-faq.tsx`는 기능 소개와 시작 영역 사이에 네 가지 FAQ를 제공합니다. 기본 HTML details/summary로 키보드 조작을 지원하며 별도 상태나 스크롤 애니메이션을 사용하지 않습니다. 지원 브라우저에서는 `::details-content`의 높이와 투명도를 300ms 동안 전환하며 모션 감소 설정이나 미지원 브라우저에서는 즉시 열고 닫습니다.
+
+랜딩 푸터는 작은 브랜드명과 문의 이메일을 배치하고 AI 연출 이미지 안내를 아래 줄로 분리합니다. 모바일에서는 세로로 쌓습니다.

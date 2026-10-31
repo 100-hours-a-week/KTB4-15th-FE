@@ -1,6 +1,6 @@
 import Image from "next/image";
 import aiImage from "@/shared/assets/ai-avatar.webp";
-import styles from "./landing-screen.module.scss";
+import styles from "./landing-hero.module.scss";
 
 export function LandingHero() {
   return (

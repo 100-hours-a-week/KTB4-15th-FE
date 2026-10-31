@@ -4,6 +4,7 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Link from "next/link";
 import { useEffect, useRef } from "react";
+import { LandingFaq } from "./landing-faq";
 import { LandingFeatures } from "./landing-features";
 import { LandingHero } from "./landing-hero";
 import styles from "./landing-screen.module.scss";
@@ -197,31 +198,37 @@ export function LandingScreen() {
         >
           LOOK DDAK<span>®</span>
         </Link>
-        <Link className={styles.headerLink} href="/onboarding">
+        <Link className={styles.headerLink} href="/signup">
           룩딱 시작하기 <span aria-hidden="true">↗</span>
         </Link>
       </header>
 
       <LandingHero />
       <LandingFeatures />
+      <LandingFaq />
 
       <section className={styles.cta}>
-        <span aria-hidden="true" className={styles.asterisk}>
-          ✳
-        </span>
         <h2>
-          다음 피팅은,
+          찾는 것부터 입어보는 것까지,
           <br />
-          나에게 룩딱.
+          이제 <em>나에게 룩딱.</em>
         </h2>
-        <Link className={styles.startLink} href="/onboarding">
-          내 스타일 찾아보기 <span aria-hidden="true">↗</span>
+        <p className={styles.ctaDescription}>
+          취향을 말하고, 마음에 드는 옷을 내 모습으로 만나보세요.
+        </p>
+        <Link className={styles.startLink} href="/signup">
+          룩딱 시작하기 <span aria-hidden="true">↗</span>
         </Link>
-        <p>사진 속 인물과 착장은 AI로 제작한 서비스 연출 예시입니다.</p>
+        <p className={styles.loginPrompt}>
+          이미 계정이 있나요? <Link href="/login">로그인</Link>
+        </p>
       </section>
       <footer className={styles.footer}>
-        <span className={styles.logo}>LOOK DDAK</span>
-        <span>입어보기 전, 나에게 룩딱.</span>
+        <span className={styles.footerLogo}>LOOK DDAK</span>
+        <a className={styles.contactLink} href="mailto:ktb4.15th@gmail.com">
+          문의 · ktb4.15th@gmail.com
+        </a>
+        <p>사진 속 인물과 착장은 AI로 제작한 서비스 연출 예시입니다.</p>
       </footer>
     </main>
   );

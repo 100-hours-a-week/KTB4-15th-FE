@@ -31,8 +31,8 @@ for (const width of [390, 1440]) {
       ),
     ).toBe(true);
     await expect(
-      page.getByRole("link", { name: "내 스타일 찾아보기" }),
-    ).toHaveAttribute("href", "/onboarding");
+      page.locator("section").getByRole("link", { name: "룩딱 시작하기" }),
+    ).toHaveAttribute("href", "/signup");
     expect(
       await page
         .locator("[data-result] img")
@@ -127,10 +127,11 @@ test("introduction moves horizontally and releases to the start link", async ({
     "matrix(1, 0, 0, 1, 0, 0)",
   );
   await page
-    .getByRole("link", { name: "내 스타일 찾아보기" })
+    .locator("section")
+    .getByRole("link", { name: "룩딱 시작하기" })
     .scrollIntoViewIfNeeded();
   await expect(
-    page.getByRole("link", { name: "내 스타일 찾아보기" }),
+    page.locator("section").getByRole("link", { name: "룩딱 시작하기" }),
   ).toBeInViewport();
 });
 
@@ -210,4 +211,15 @@ test("introduction animations only play on the first visit", async ({
     "matrix(1, 0, 0, 1, 0, 0)",
   );
   await expect(page.locator("[data-heart]")).toHaveCount(0);
+});
+
+test("FAQ opens and closes with the keyboard", async ({ page }) => {
+  await page.goto("/landing");
+  const question = page
+    .locator("summary")
+    .filter({ hasText: "어떤 사진을 등록해야 하나요?" });
+  await question.press("Enter");
+  await expect(page.getByText(/혼자 정면을 바라보고/)).toBeVisible();
+  await question.press("Enter");
+  await expect(page.getByText(/혼자 정면을 바라보고/)).toBeHidden();
 });
