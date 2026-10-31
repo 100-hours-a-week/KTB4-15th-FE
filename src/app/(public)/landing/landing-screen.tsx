@@ -17,6 +17,48 @@ export function LandingScreen() {
 
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger);
+    const landing = root.current!;
+    const theme = document.querySelector<HTMLMetaElement>(
+      'meta[name="theme-color"]',
+    );
+    const originalTheme = theme?.content;
+    const originalHtml = document.documentElement.style.backgroundColor;
+    const originalBody = document.body.style.backgroundColor;
+    let colorFrame = 0;
+    const updateBackground = () => {
+      colorFrame = 0;
+      const middle = window.innerHeight / 2;
+      const section = Array.from(landing.querySelectorAll("section")).findLast(
+        (element) => {
+          const bounds = element.getBoundingClientRect();
+          return bounds.top <= middle && bounds.bottom > middle;
+        },
+      );
+      const background = section && getComputedStyle(section).backgroundColor;
+      const color =
+        background && background !== "rgba(0, 0, 0, 0)"
+          ? background
+          : getComputedStyle(landing).backgroundColor;
+      document.documentElement.style.backgroundColor = color;
+      document.body.style.backgroundColor = color;
+      if (theme) theme.content = color;
+    };
+    const scheduleBackground = () => {
+      if (!colorFrame) colorFrame = requestAnimationFrame(updateBackground);
+    };
+    window.addEventListener("scroll", scheduleBackground, { passive: true });
+    window.addEventListener("resize", scheduleBackground);
+    const details = root.current!.querySelector<HTMLElement>("[data-details]")!;
+    const imagePreload = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((entry) => entry.isIntersecting)) return;
+        details.querySelectorAll("img").forEach((image) => {
+          image.loading = "eager";
+        });
+        imagePreload.disconnect();
+      },
+      { rootMargin: "600px 0px" },
+    );
     const media = gsap.matchMedia();
     media.add(
       "(prefers-reduced-motion: no-preference)",
@@ -26,7 +68,8 @@ export function LandingScreen() {
         const stage = phone.parentElement!;
         const fitPhone = () => {
           const scale = Math.min(
-            1,
+            1.2,
+            (stage.clientWidth - 8) / phone.offsetWidth,
             Math.max(0, stage.clientHeight - phone.offsetTop) /
               phone.offsetHeight,
           );
@@ -227,7 +270,18 @@ export function LandingScreen() {
       },
       root,
     );
-    return () => media.revert();
+    imagePreload.observe(details);
+    updateBackground();
+    return () => {
+      window.removeEventListener("scroll", scheduleBackground);
+      window.removeEventListener("resize", scheduleBackground);
+      cancelAnimationFrame(colorFrame);
+      document.documentElement.style.backgroundColor = originalHtml;
+      document.body.style.backgroundColor = originalBody;
+      if (theme && originalTheme !== undefined) theme.content = originalTheme;
+      imagePreload.disconnect();
+      media.revert();
+    };
   }, []);
 
   return (

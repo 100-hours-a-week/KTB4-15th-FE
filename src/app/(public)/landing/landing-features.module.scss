@@ -20,7 +20,9 @@
   flex-direction: column;
   justify-content: center;
   min-height: 650px;
-  height: 100svh;
+
+  // ScrollTrigger의 고정 높이보다 Safari 주소창 변화에 따른 화면 높이를 우선합니다.
+  height: 100dvh !important;
   padding: 40px 0 24px;
   background: #f0f3ec;
 }

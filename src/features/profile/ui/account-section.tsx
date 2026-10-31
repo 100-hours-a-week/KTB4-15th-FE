@@ -12,7 +12,7 @@ export function AccountSection() {
   const logoutMutation = useLogoutMutation();
 
   const handleLogoutSuccess = () => {
-    router.replace("/login");
+    router.replace("/");
     router.refresh();
   };
 
