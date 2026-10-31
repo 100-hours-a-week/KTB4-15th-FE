@@ -244,13 +244,31 @@ export function LandingScreen() {
           .to(crown, { y: 0, duration: 0.6, ease: "sine.inOut" });
         const playedSlides = new Set<number>();
 
-        gsap
+        const featuresTimeline = gsap
           .timeline({
             defaults: { ease: "none" },
             scrollTrigger: {
               trigger: section,
               start: "top top",
-              end: "+=4050",
+              end: "+=2200",
+              snap: {
+                snapTo: (progress) => {
+                  const position = progress * 2200;
+                  for (const start of [400, 1300]) {
+                    if (position > start && position < start + 500) {
+                      return (
+                        (position < start + 250 ? start : start + 500) / 2200
+                      );
+                    }
+                  }
+                  return progress;
+                },
+                inertia: false,
+                directional: false,
+                delay: 0.15,
+                duration: 0.3,
+                ease: "power1.inOut",
+              },
               onToggle: ({ isActive }) => {
                 section.toggleAttribute("data-pinned", isActive);
               },
@@ -258,9 +276,9 @@ export function LandingScreen() {
                 const slide =
                   progress <= 0
                     ? -1
-                    : progress < 1650 / 4050
+                    : progress < 900 / 2200
                       ? 0
-                      : progress < 3300 / 4050
+                      : progress < 1800 / 2200
                         ? 1
                         : 2;
                 if (slide === 1 && !playedSlides.has(slide)) {
@@ -278,12 +296,61 @@ export function LandingScreen() {
               invalidateOnRefresh: true,
             },
           })
-          .to({}, { duration: 750 })
-          .to(track, { x: () => -viewport.clientWidth, duration: 900 })
-          .to({}, { duration: 750 })
-          .to(track, { x: () => -viewport.clientWidth * 2, duration: 900 })
-          .to({}, { duration: 750 });
+          .to({}, { duration: 400 })
+          .to(track, { x: () => -viewport.clientWidth, duration: 500 })
+          .to({}, { duration: 400 })
+          .to(track, { x: () => -viewport.clientWidth * 2, duration: 500 })
+          .to({}, { duration: 400 });
+        let wheelLimit: number | undefined;
+        let wheelDirection = 0;
+        let wheelTimer: ReturnType<typeof setTimeout>;
+        const limitWheel = (event: WheelEvent) => {
+          if (event.ctrlKey || !event.cancelable || !event.deltaY) return;
+          const trigger = featuresTimeline.scrollTrigger!;
+          if (!trigger.isActive) return;
+          const direction = Math.sign(event.deltaY);
+          const position = window.scrollY - trigger.start;
+          if (wheelLimit === undefined || direction !== wheelDirection) {
+            wheelDirection = direction;
+            wheelLimit =
+              direction > 0
+                ? position < 900
+                  ? 900
+                  : position < 1800
+                    ? 1800
+                    : Infinity
+                : position > 1300
+                  ? 1300
+                  : position > 400
+                    ? 400
+                    : -Infinity;
+          }
+          clearTimeout(wheelTimer);
+          // shortcut: 250ms gaps separate wheel gestures; tune with real trackpads if needed.
+          wheelTimer = setTimeout(() => {
+            wheelLimit = undefined;
+          }, 250);
+          const delta =
+            event.deltaY *
+            (event.deltaMode === 1
+              ? 16
+              : event.deltaMode === 2
+                ? window.innerHeight
+                : 1);
+          const destination = position + delta;
+          if (
+            direction > 0
+              ? destination >= wheelLimit
+              : destination <= wheelLimit
+          ) {
+            event.preventDefault();
+            window.scrollTo(0, trigger.start + wheelLimit);
+          }
+        };
+        window.addEventListener("wheel", limitWheel, { passive: false });
         return () => {
+          window.removeEventListener("wheel", limitWheel);
+          clearTimeout(wheelTimer);
           section.removeAttribute("data-pinned");
           phoneResize.disconnect();
           phone.style.removeProperty("--phone-scale");
