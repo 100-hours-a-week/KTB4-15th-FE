@@ -4,6 +4,8 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Link from "next/link";
 import { useEffect, useRef } from "react";
+import { LandingCta } from "./landing-cta";
+import { LandingFooter } from "./landing-footer";
 import { LandingFaq } from "./landing-faq";
 import { LandingFeatures } from "./landing-features";
 import { LandingHero } from "./landing-hero";
@@ -237,29 +239,8 @@ export function LandingScreen() {
       <LandingFaq />
 
       <div className={styles.closing}>
-        <section className={styles.cta}>
-          <h2>
-            찾는 것부터 입어보는 것까지,
-            <br />
-            이제 <em>나에게 룩딱.</em>
-          </h2>
-          <p className={styles.ctaDescription}>
-            취향을 말하고, 마음에 드는 옷을 내 모습으로 만나보세요.
-          </p>
-          <Link className={styles.startLink} href="/signup">
-            룩딱 시작하기
-          </Link>
-          <p className={styles.loginPrompt}>
-            이미 계정이 있나요? <Link href="/login">로그인</Link>
-          </p>
-        </section>
-        <footer className={styles.footer}>
-          <span className={styles.footerLogo}>LOOK DDAK</span>
-          <a className={styles.contactLink} href="mailto:ktb4.15th@gmail.com">
-            문의 · ktb4.15th@gmail.com
-          </a>
-          <p>사진 속 인물과 착장은 AI로 제작한 서비스 연출 예시입니다.</p>
-        </footer>
+        <LandingCta />
+        <LandingFooter />
       </div>
     </main>
   );

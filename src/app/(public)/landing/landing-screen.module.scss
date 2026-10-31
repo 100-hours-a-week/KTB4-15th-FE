@@ -35,104 +35,11 @@
   }
 }
 
-.cta h2 {
-  margin: 0;
-  font-size: 58px;
-  font-weight: 700;
-  line-height: 1.18;
-  letter-spacing: -3px;
-  word-break: keep-all;
-}
-
 .closing {
   display: flex;
   flex-direction: column;
   min-height: 100svh;
-}
-
-.cta {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 90px 24px;
   background: #e8eee5;
-  text-align: center;
-}
-
-.cta h2 {
-  font-size: 42px;
-  letter-spacing: -1.8px;
-  line-height: 1.4;
-}
-
-.cta h2 em {
-  color: var(--color-action-primary-default);
-  font-style: normal;
-}
-
-.ctaDescription {
-  margin: 20px 0 0;
-  color: var(--color-text-secondary);
-  font-size: 14px;
-  word-break: keep-all;
-}
-
-.loginPrompt {
-  margin: 20px 0 0;
-  color: var(--color-text-secondary);
-  font-size: 12px;
-}
-
-.loginPrompt a {
-  margin-left: 6px;
-  color: var(--color-action-primary-default);
-  font-weight: 600;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-
-.startLink {
-  display: inline-flex;
-  gap: 32px;
-  align-items: center;
-  min-height: 52px;
-  margin-top: 32px;
-  padding: 0 26px;
-  border-radius: var(--radius-full);
-  background: var(--color-action-primary-default);
-  color: #fff;
-  font-size: 15px;
-  font-weight: 600;
-}
-
-.startLink:hover {
-  background: #1e6047;
-}
-
-.footer {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px 24px;
-  padding: 36px 6% 28px;
-}
-
-.footerLogo {
-  font-size: 16px;
-  font-weight: 800;
-  letter-spacing: -0.6px;
-}
-
-.footer > p {
-  width: 100%;
-  margin: 8px 0 0;
-  padding-top: 18px;
-  border-top: 1px solid #e3e7df;
-  color: var(--color-text-secondary);
-  font-size: 10px;
 }
 
 @media (width <= 700px) {
@@ -147,27 +54,5 @@
 
   .headerLink {
     font-size: 12px;
-  }
-
-  .cta h2 {
-    font-size: 28px;
-    letter-spacing: -1px;
-  }
-
-  .footer {
-    align-items: flex-start;
-    flex-direction: column;
-    padding: 32px 24px;
-  }
-}
-
-.contactLink {
-  color: var(--color-text-secondary);
-  font-size: 12px;
-  text-underline-offset: 3px;
-
-  &:hover {
-    color: var(--color-action-primary-default);
-    text-decoration: underline;
   }
 }

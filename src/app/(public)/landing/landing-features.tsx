@@ -12,9 +12,9 @@ const introductionSlides = [
   {
     image: "style-ranking",
     label: "02 / TRENDING",
-    title: "요즘 눈길이 가는 옷,\n랭킹에서 한눈에.",
+    title: "요즘 많이 찾는 옷,\n랭킹에서 한눈에.",
     description:
-      "많이 찜한 옷부터 자주 살펴본 옷까지,\n사람들이 주목하는 스타일을 만나보세요.",
+      "많이 찜한 옷부터 자주 살펴본 옷까지,\n지금 인기 있는 스타일을 만나보세요.",
   },
   {
     image: "notification",
