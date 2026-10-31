@@ -1,5 +1,56 @@
 import { expect, test } from "@playwright/test";
 
+test("landing background and height follow the pinned feature", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await expect(page.locator("[data-details]").locator("xpath=..")).toHaveClass(
+    /pin-spacer/,
+  );
+  await page.locator("[data-details]").evaluate((element) => {
+    window.scrollTo(
+      0,
+      element.getBoundingClientRect().top + window.scrollY + 200,
+    );
+  });
+  await expect(page.locator("body")).toHaveCSS(
+    "background-color",
+    "rgb(240, 243, 236)",
+  );
+  await expect(page.locator('meta[name="theme-color"]')).toHaveAttribute(
+    "content",
+    "rgb(240, 243, 236)",
+  );
+  await page.setViewportSize({ width: 390, height: 900 });
+  await expect
+    .poll(() =>
+      page
+        .locator("[data-details]")
+        .evaluate((element) => element.getBoundingClientRect().height),
+    )
+    .toBe(900);
+});
+
+test("feature images become eager near the introduction", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.locator("[data-scene]").locator("xpath=..")).toHaveClass(
+    /pin-spacer/,
+  );
+  const section = page.locator("[data-details]");
+  const images = section.locator("img");
+  await expect(images.first()).toHaveAttribute("loading", "lazy");
+  const top = await section.evaluate(
+    (element) => element.getBoundingClientRect().top + window.scrollY,
+  );
+  await page.evaluate(
+    (top) => window.scrollTo(0, top - window.innerHeight - 300),
+    top,
+  );
+  await expect(section.locator('img[loading="eager"]')).toHaveCount(
+    await images.count(),
+  );
+});
+
 for (const width of [390, 1440]) {
   test(`landing scroll reveal at ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 800 });
@@ -143,6 +194,13 @@ test("chat recommendation leads into the same garment fitting", async ({
   await expect(page.getByText("주말 데이트 때 뭐 입을까?")).toBeVisible();
   await page.evaluate(() => window.scrollTo(0, 800));
   await expect(page.locator("[data-recommendation]")).toHaveCSS("opacity", "1");
+  const cardBottom = await page
+    .locator("[data-recommendation]")
+    .evaluate((element) => element.getBoundingClientRect().bottom);
+  const composerTop = await page
+    .locator("[data-chat] > div:last-child")
+    .evaluate((element) => element.getBoundingClientRect().top);
+  expect(cardBottom).toBeLessThanOrEqual(composerTop - 4);
   await expect(page.locator("[data-static-product]")).toBeVisible();
   const alignment = await page.locator("[data-garment]").evaluate((element) => {
     const garment = element.getBoundingClientRect();
@@ -250,8 +308,16 @@ for (const viewport of [
     await expect(page.locator("[data-scene]").locator("xpath=..")).toHaveClass(
       /pin-spacer/,
     );
+    const sceneTop = await page
+      .locator("[data-scene]")
+      .evaluate(
+        (element) => element.getBoundingClientRect().top + window.scrollY,
+      );
+    await page.evaluate((top) => window.scrollTo(0, top + 10), sceneTop);
+    await expect(page.locator("[data-scene]")).toHaveCSS("position", "fixed");
     const bounds = await phone.boundingBox();
     expect(bounds!.y + bounds!.height).toBeLessThanOrEqual(viewport.height);
+    expect(bounds!.width).toBeGreaterThan(190);
     await page.evaluate(() => window.scrollTo(0, 1900));
     await page.waitForTimeout(1200);
     const garment = await page.locator("[data-garment]").boundingBox();
