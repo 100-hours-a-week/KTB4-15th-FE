@@ -60,6 +60,7 @@ export function LandingScreen() {
             start: "top top",
             end: "+=2600",
             pin: true,
+            anticipatePin: 1,
             scrub: 0.6,
             invalidateOnRefresh: true,
             onRefreshInit: alignGarment,
@@ -85,9 +86,15 @@ export function LandingScreen() {
             1.9,
           )
           .to(
+            "[data-demo-cursor]",
+            { autoAlpha: 1, x: 0, y: 0, duration: 0.25 },
+            1.1,
+          )
+          .from("[data-demo-cursor]", { x: 16, y: 12, duration: 0.25 }, 1.1)
+          .to(
             "[data-try-on]",
             {
-              scale: 0.96,
+              scale: 0.92,
               backgroundColor: "#28664d",
               duration: 0.2,
               repeat: 1,
@@ -95,6 +102,9 @@ export function LandingScreen() {
             },
             1.35,
           )
+          .to("[data-try-on-label]", { autoAlpha: 0, duration: 0.1 }, 1.55)
+          .to("[data-try-on-pending]", { autoAlpha: 1, duration: 0.1 }, 1.55)
+          .to("[data-demo-cursor]", { autoAlpha: 0, duration: 0.15 }, 1.75)
           .fromTo(
             "[data-fitting]",
             { autoAlpha: 0 },

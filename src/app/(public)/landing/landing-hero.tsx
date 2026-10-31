@@ -94,6 +94,7 @@ export function LandingHero() {
                       alt=""
                       data-static-product
                       fill
+                      loading="eager"
                       sizes="150px"
                       src="/images/landing/green-knit.webp"
                     />
@@ -112,17 +113,30 @@ export function LandingHero() {
                     <div className={styles.productActions}>
                       <span>상품 보기 ↗</span>
                       <span className={styles.tryOnHint} data-try-on>
-                        피팅룸에서 입어보기 →
+                        <span data-try-on-label>피팅룸에서 입어보기 →</span>
+                        <span
+                          className={styles.tryOnPending}
+                          data-try-on-pending
+                        >
+                          피팅룸으로 이동 중
+                        </span>
+                        <svg
+                          aria-hidden="true"
+                          className={styles.demoCursor}
+                          data-demo-cursor
+                          viewBox="0 0 24 28"
+                        >
+                          <path
+                            d="M4 2v21l5.5-5.5 4 9 4-1.8-4-8.7H21Z"
+                            fill="#111"
+                            stroke="white"
+                            strokeWidth="1.5"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
                       </span>
                     </div>
                   </div>
-                </div>
-                <div aria-hidden="true" className={styles.recommendationDots}>
-                  <i />
-                  <i />
-                  <i />
-                  <i />
-                  <i />
                 </div>
                 <div className={styles.chatInput}>
                   이 옷, 나에게 어울릴까?<span>↑</span>
@@ -130,7 +144,7 @@ export function LandingHero() {
               </div>
               <div className={styles.fittingScreen} data-fitting>
                 <div className={styles.screenHeader}>
-                  <span>가상 피팅</span>
+                  <span>내 모습으로 입어봤어요</span>
                 </div>
                 <div className={styles.fittingCard}>
                   <div className={styles.photo} data-photo>
@@ -147,7 +161,8 @@ export function LandingHero() {
                   </div>
                   <div className={styles.phoneFooter} data-result-details>
                     <span>
-                      포레스트 그린 니트<small>오늘의 새로운 나</small>
+                      추천받은 니트, 나에게도 이렇게.
+                      <small>포레스트 그린 니트</small>
                     </span>
                   </div>
                 </div>

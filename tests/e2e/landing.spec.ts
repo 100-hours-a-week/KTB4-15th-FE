@@ -163,6 +163,18 @@ test("chat recommendation leads into the same garment fitting", async ({
   await expect(page.locator("[data-recommendation]")).toContainText(
     "포레스트 그린 니트",
   );
+  await page.evaluate(() => window.scrollTo(0, 1000));
+  await expect(page.locator("[data-try-on-pending]")).toHaveCSS("opacity", "1");
+  await expect(page.locator("[data-try-on-label]")).toHaveCSS(
+    "visibility",
+    "hidden",
+  );
+  await page.evaluate(() => window.scrollTo(0, 800));
+  await expect(page.locator("[data-try-on-label]")).toHaveCSS("opacity", "1");
+  await expect(page.locator("[data-try-on-pending]")).toHaveCSS(
+    "visibility",
+    "hidden",
+  );
   await page.evaluate(() => window.scrollTo(0, 1700));
   await expect(page.locator("[data-processing]")).toHaveCSS("opacity", "1");
   await expect(page.locator("[data-result]")).toHaveCSS("opacity", "0");

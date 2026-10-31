@@ -154,6 +154,14 @@
   font-weight: 500;
 }
 
+@media (prefers-reduced-motion: no-preference) {
+  .aiMessage,
+  .productRecommendation {
+    visibility: hidden;
+    opacity: 0;
+  }
+}
+
 .productRecommendation {
   overflow: hidden;
   margin-left: 34px;
@@ -233,36 +241,42 @@
 }
 
 .productActions .tryOnHint {
+  position: relative;
   flex: 1;
   background: var(--color-action-primary-default);
   color: #fff;
 }
 
-.recommendationDots {
-  display: flex;
-  justify-content: center;
-  gap: 5px;
-  margin: 9px 0 9px 34px;
+.tryOnPending {
+  position: absolute;
+  visibility: hidden;
+  opacity: 0;
 }
 
-.recommendationDots i {
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: #e0e4e8;
-}
-
-.recommendationDots i:first-child {
-  background: var(--color-action-primary-default);
+.demoCursor {
+  position: absolute;
+  right: 10px;
+  bottom: 5px;
+  width: 16px;
+  height: 19px;
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .chatInput {
+  position: absolute;
+  right: 10px;
+  bottom: 6px;
+  left: 10px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 5px 6px 5px 12px;
-  border: 1px solid #d5dae1;
-  border-radius: 16px;
+  margin-top: 6px;
+  min-height: 36px;
+  padding: 5px 5px 5px 12px;
+  border: 1px solid #e2e5e9;
+  border-radius: 999px;
   background: #fff;
   color: #89939f;
   font-size: 10px;
@@ -270,13 +284,13 @@
 
 .chatInput span {
   display: grid;
-  width: 26px;
-  height: 26px;
+  width: 24px;
+  height: 24px;
   place-items: center;
   border-radius: 50%;
   background: #191f28;
   color: #fff;
-  font-size: 19px;
+  font-size: 16px;
 }
 
 .phone {
@@ -391,7 +405,7 @@
 .photo {
   flex: none;
   position: relative;
-  aspect-ratio: 2 / 3;
+  aspect-ratio: 13 / 20;
   overflow: hidden;
   border-radius: 18px;
   background: #eeeae2;
@@ -415,7 +429,7 @@
   line-height: 1.4;
   display: flex;
   justify-content: space-between;
-  padding: 12px 2px;
+  padding: 8px 2px;
   font-size: 11px;
   font-weight: 600;
 }
@@ -615,6 +629,10 @@
   .chatDemo,
   .fittingScreen {
     position: relative;
+  }
+
+  .chatInput {
+    position: static;
   }
 
   .fittingScreen {
