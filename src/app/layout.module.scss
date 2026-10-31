@@ -5,3 +5,7 @@
   margin-inline: auto;
   overflow-x: clip;
 }
+
+.appFrame:has([data-landing]) {
+  max-width: none;
+}
