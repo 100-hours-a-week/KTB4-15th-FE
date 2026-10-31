@@ -99,9 +99,7 @@ export default function ChatSearchPage() {
           ) : (
             <>
               <p className={styles.summary}>
-                <span aria-hidden="true" /> 대화 내역{" "}
-                <strong>{groups.length}곳</strong>
-                에서 찾았어요
+                검색 결과 <strong>{groups.length}개의 대화</strong>
               </p>
               <ul className={styles.results}>
                 {groups.map((group) => (
@@ -109,12 +107,14 @@ export default function ChatSearchPage() {
                     <Link href={`/chat/${group.chatRoomId}`}>
                       <div className={styles.cardTitle}>
                         <strong>{group.title}</strong>
-                        <ChevronRightIcon />
+                        <ChevronRightIcon aria-hidden="true" />
                       </div>
+                      <span className={styles.matchCount}>
+                        일치하는 메시지 {group.messages.length}개
+                      </span>
                       <div className={styles.matches}>
                         {group.messages.map((item) => (
                           <p key={item.messageId}>
-                            &quot;
                             {splitByKeyword(
                               item.message,
                               searchMutation.variables,
@@ -125,7 +125,6 @@ export default function ChatSearchPage() {
                                 part.text
                               ),
                             )}
-                            &quot;
                           </p>
                         ))}
                       </div>
