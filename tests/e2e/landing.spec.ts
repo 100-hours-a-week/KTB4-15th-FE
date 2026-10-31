@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 
 for (const width of [390, 1440]) {
   test(`landing scroll reveal at ${width}px`, async ({ page }) => {
-    await page.setViewportSize({ width, height: 200 });
+    await page.setViewportSize({ width, height: 800 });
     await page.goto("/landing");
     await expect(page.getByRole("heading", { level: 1 })).toContainText(
       "말하면 찾아주고",
@@ -223,3 +223,29 @@ test("FAQ opens and closes with the keyboard", async ({ page }) => {
   await question.press("Enter");
   await expect(page.getByText(/혼자 정면을 바라보고/)).toBeHidden();
 });
+
+for (const viewport of [
+  { width: 375, height: 667 },
+  { width: 975, height: 800 },
+  { width: 1440, height: 700 },
+]) {
+  test(`hero fits phone at ${viewport.width}x${viewport.height} and keeps fitting alignment`, async ({
+    page,
+  }) => {
+    await page.setViewportSize(viewport);
+    await page.goto("/landing");
+    const phone = page.locator("[data-phone]");
+    await expect(page.locator("[data-scene]").locator("xpath=..")).toHaveClass(
+      /pin-spacer/,
+    );
+    const bounds = await phone.boundingBox();
+    expect(bounds!.y + bounds!.height).toBeLessThanOrEqual(viewport.height);
+    await page.evaluate(() => window.scrollTo(0, 1900));
+    await page.waitForTimeout(1200);
+    const garment = await page.locator("[data-garment]").boundingBox();
+    const photo = await page.locator("[data-photo]").boundingBox();
+    expect(Math.abs(garment!.x - photo!.x)).toBeLessThan(2);
+    expect(Math.abs(garment!.y - photo!.y)).toBeLessThan(2);
+    expect(Math.abs(garment!.width - photo!.width)).toBeLessThan(2);
+  });
+}

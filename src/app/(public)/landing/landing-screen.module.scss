@@ -44,7 +44,18 @@
   word-break: keep-all;
 }
 
+.closing {
+  display: flex;
+  flex-direction: column;
+  min-height: 100svh;
+}
+
 .cta {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   padding: 90px 24px;
   background: #e8eee5;
   text-align: center;

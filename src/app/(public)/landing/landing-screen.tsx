@@ -19,6 +19,20 @@ export function LandingScreen() {
       "(prefers-reduced-motion: no-preference)",
       () => {
         const scene = root.current!.querySelector<HTMLElement>("[data-scene]")!;
+        const phone = scene.querySelector<HTMLElement>("[data-phone]")!;
+        const stage = phone.parentElement!;
+        const fitPhone = () => {
+          const scale = Math.min(
+            1,
+            Math.max(0, stage.clientHeight - phone.offsetTop) /
+              phone.offsetHeight,
+          );
+          phone.style.setProperty("--phone-scale", String(scale));
+        };
+        fitPhone();
+        const phoneResize = new ResizeObserver(fitPhone);
+        phoneResize.observe(stage);
+        phoneResize.observe(phone);
         const garment = scene.querySelector<HTMLElement>("[data-garment]")!;
         const photo = scene.querySelector<HTMLElement>("[data-photo]")!;
         const productVisual = scene.querySelector<HTMLElement>(
@@ -27,11 +41,12 @@ export function LandingScreen() {
         const alignGarment = () => {
           const stageBounds = garment.parentElement!.getBoundingClientRect();
           const productBounds = productVisual.getBoundingClientRect();
+          const scale = stageBounds.width / garment.parentElement!.offsetWidth;
           gsap.set(garment, {
-            left: productBounds.left - stageBounds.left + 0,
-            top: productBounds.top - stageBounds.top + 0,
-            width: productBounds.width,
-            height: productBounds.height,
+            left: (productBounds.left - stageBounds.left) / scale,
+            top: (productBounds.top - stageBounds.top) / scale,
+            width: productBounds.width / scale,
+            height: productBounds.height / scale,
           });
         };
         alignGarment();
@@ -87,12 +102,22 @@ export function LandingScreen() {
           .to(
             garment,
             {
-              left: () =>
-                photo.getBoundingClientRect().left -
-                garment.parentElement!.getBoundingClientRect().left,
-              top: () =>
-                photo.getBoundingClientRect().top -
-                garment.parentElement!.getBoundingClientRect().top,
+              left: () => {
+                const parent = garment.parentElement!;
+                const bounds = parent.getBoundingClientRect();
+                return (
+                  (photo.getBoundingClientRect().left - bounds.left) /
+                  (bounds.width / parent.offsetWidth)
+                );
+              },
+              top: () => {
+                const parent = garment.parentElement!;
+                const bounds = parent.getBoundingClientRect();
+                return (
+                  (photo.getBoundingClientRect().top - bounds.top) /
+                  (bounds.height / parent.offsetHeight)
+                );
+              },
               width: () => photo.offsetWidth,
               height: () => photo.offsetHeight,
               borderRadius: 18,
@@ -182,6 +207,10 @@ export function LandingScreen() {
           .to({}, { duration: 750 })
           .to(track, { x: () => -viewport.clientWidth * 2, duration: 900 })
           .to({}, { duration: 750 });
+        return () => {
+          phoneResize.disconnect();
+          phone.style.removeProperty("--phone-scale");
+        };
       },
       root,
     );
@@ -196,10 +225,10 @@ export function LandingScreen() {
           className={styles.logo}
           href="/landing"
         >
-          LOOK DDAK<span>®</span>
+          LOOK DDAK
         </Link>
         <Link className={styles.headerLink} href="/signup">
-          룩딱 시작하기 <span aria-hidden="true">↗</span>
+          룩딱 시작하기
         </Link>
       </header>
 
@@ -207,29 +236,31 @@ export function LandingScreen() {
       <LandingFeatures />
       <LandingFaq />
 
-      <section className={styles.cta}>
-        <h2>
-          찾는 것부터 입어보는 것까지,
-          <br />
-          이제 <em>나에게 룩딱.</em>
-        </h2>
-        <p className={styles.ctaDescription}>
-          취향을 말하고, 마음에 드는 옷을 내 모습으로 만나보세요.
-        </p>
-        <Link className={styles.startLink} href="/signup">
-          룩딱 시작하기 <span aria-hidden="true">↗</span>
-        </Link>
-        <p className={styles.loginPrompt}>
-          이미 계정이 있나요? <Link href="/login">로그인</Link>
-        </p>
-      </section>
-      <footer className={styles.footer}>
-        <span className={styles.footerLogo}>LOOK DDAK</span>
-        <a className={styles.contactLink} href="mailto:ktb4.15th@gmail.com">
-          문의 · ktb4.15th@gmail.com
-        </a>
-        <p>사진 속 인물과 착장은 AI로 제작한 서비스 연출 예시입니다.</p>
-      </footer>
+      <div className={styles.closing}>
+        <section className={styles.cta}>
+          <h2>
+            찾는 것부터 입어보는 것까지,
+            <br />
+            이제 <em>나에게 룩딱.</em>
+          </h2>
+          <p className={styles.ctaDescription}>
+            취향을 말하고, 마음에 드는 옷을 내 모습으로 만나보세요.
+          </p>
+          <Link className={styles.startLink} href="/signup">
+            룩딱 시작하기
+          </Link>
+          <p className={styles.loginPrompt}>
+            이미 계정이 있나요? <Link href="/login">로그인</Link>
+          </p>
+        </section>
+        <footer className={styles.footer}>
+          <span className={styles.footerLogo}>LOOK DDAK</span>
+          <a className={styles.contactLink} href="mailto:ktb4.15th@gmail.com">
+            문의 · ktb4.15th@gmail.com
+          </a>
+          <p>사진 속 인물과 착장은 AI로 제작한 서비스 연출 예시입니다.</p>
+        </footer>
+      </div>
     </main>
   );
 }

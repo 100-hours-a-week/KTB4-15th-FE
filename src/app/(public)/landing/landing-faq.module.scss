@@ -1,4 +1,9 @@
 .faq {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 100%;
+  min-height: 100svh;
   max-width: 1080px;
   margin-inline: auto;
   padding: 110px 40px 120px;

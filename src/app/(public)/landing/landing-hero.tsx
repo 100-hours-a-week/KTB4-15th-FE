@@ -130,21 +130,6 @@ export function LandingHero() {
               </div>
               <div className={styles.fittingScreen} data-fitting>
                 <div className={styles.screenHeader}>
-                  <svg
-                    aria-hidden="true"
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                  >
-                    <path
-                      d="m14 6-6 6 6 6"
-                      stroke="currentColor"
-                      strokeWidth="1.7"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
                   <span>가상 피팅</span>
                 </div>
                 <div className={styles.fittingCard}>
