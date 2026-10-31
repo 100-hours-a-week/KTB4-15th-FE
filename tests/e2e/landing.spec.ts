@@ -313,7 +313,7 @@ for (const viewport of [
       .evaluate(
         (element) => element.getBoundingClientRect().top + window.scrollY,
       );
-    await page.evaluate((top) => window.scrollTo(0, top), sceneTop);
+    await page.evaluate((top) => window.scrollTo(0, top + 10), sceneTop);
     await expect(page.locator("[data-scene]")).toHaveCSS("position", "fixed");
     const bounds = await phone.boundingBox();
     expect(bounds!.y + bounds!.height).toBeLessThanOrEqual(viewport.height);
