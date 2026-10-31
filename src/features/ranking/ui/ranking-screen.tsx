@@ -1,11 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/shared/ui/button";
 import { LoadingMessage } from "@/shared/ui/loading-message";
 import { productRankingQueryOptions } from "../model/ranking-query";
-import type { RankingType } from "../schema/ranking";
+import {
+  RANKING_RENDER_BATCH_SIZE,
+  type ProductRanking,
+  type RankingType,
+} from "../schema/ranking";
 import { RankingRow } from "./ranking-row";
 import styles from "./ranking-screen.module.scss";
 
@@ -14,12 +18,51 @@ const RANKING_TABS: { label: string; type: RankingType }[] = [
   { label: "조회순", type: "CLICK" },
 ];
 
-export function RankingScreen() {
+export function RankingScreen({
+  initialRanking,
+  initialRows,
+}: {
+  initialRanking?: ProductRanking;
+  initialRows?: ReactNode;
+}) {
   const [rankingType, setRankingType] = useState<RankingType>("WISH");
-  const { data, isError, isFetching, isPending, refetch } = useQuery(
-    productRankingQueryOptions(rankingType),
-  );
+  const [visibleCount, setVisibleCount] = useState(RANKING_RENDER_BATCH_SIZE);
+  const loadMoreRef = useRef<HTMLDivElement>(null);
+  const { data, isError, isFetchedAfterMount, isFetching, isPending, refetch } =
+    useQuery({
+      ...productRankingQueryOptions(rankingType),
+      initialData:
+        initialRanking?.type === rankingType ? initialRanking : undefined,
+      staleTime: initialRanking?.type === rankingType ? 30_000 : undefined,
+    });
   const products = data?.items;
+  const showServerRows =
+    initialRows != null &&
+    initialRanking?.type === rankingType &&
+    !isFetchedAfterMount;
+  const firstImageProductId = products?.find(
+    (product) => product.productImageUrl,
+  )?.productId;
+  const totalCount = products?.length ?? 0;
+  const hasMore = visibleCount < totalCount;
+
+  useEffect(() => {
+    const target = loadMoreRef.current;
+    if (!target || !hasMore) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisibleCount((count) =>
+            Math.min(count + RANKING_RENDER_BATCH_SIZE, totalCount),
+          );
+        }
+      },
+      { rootMargin: "200px 0px" },
+    );
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, [hasMore, totalCount, visibleCount, rankingType]);
 
   return (
     <>
@@ -37,7 +80,12 @@ export function RankingScreen() {
               aria-pressed={selected}
               className={styles.tab}
               key={tab.type}
-              onClick={() => setRankingType(tab.type)}
+              onClick={() => {
+                if (!selected) {
+                  setVisibleCount(RANKING_RENDER_BATCH_SIZE);
+                  setRankingType(tab.type);
+                }
+              }}
               type="button"
             >
               {tab.label}
@@ -69,14 +117,36 @@ export function RankingScreen() {
         )}
         {products && products.length > 0 && (
           <div className={styles.list}>
-            {products.map((product) => (
-              <RankingRow
-                key={product.productId}
-                product={product}
-                rank={product.rank}
-                rankingType={rankingType}
-              />
-            ))}
+            {showServerRows && initialRows}
+            {products
+              .slice(
+                showServerRows ? RANKING_RENDER_BATCH_SIZE : 0,
+                visibleCount,
+              )
+              .map((product) => (
+                <RankingRow
+                  key={product.productId}
+                  preload={product.productId === firstImageProductId}
+                  product={product}
+                  rank={product.rank}
+                  rankingType={rankingType}
+                />
+              ))}
+            {hasMore && (
+              <div className={styles.loadMore} ref={loadMoreRef}>
+                <Button
+                  onClick={() =>
+                    setVisibleCount((count) =>
+                      Math.min(count + RANKING_RENDER_BATCH_SIZE, totalCount),
+                    )
+                  }
+                  size="small"
+                  variant="secondary"
+                >
+                  상품 더 보기
+                </Button>
+              </div>
+            )}
           </div>
         )}
       </div>

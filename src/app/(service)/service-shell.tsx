@@ -2,6 +2,8 @@
 
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
+import { NotificationProvider } from "@/features/notification/notification-provider";
+import type { NotificationUnreadStatus } from "@/features/notification/schema/notification";
 import {
   NavigationBar,
   NavigationVisibilityProvider,
@@ -16,11 +18,18 @@ function hasNavigation(pathname: string) {
     pathname === "/fitting" ||
     pathname === "/wishlists" ||
     pathname === "/ranking" ||
-    pathname === "/mypage"
+    pathname === "/mypage" ||
+    pathname === "/notifications"
   );
 }
 
-export function ServiceShell({ children }: { children: ReactNode }) {
+export function ServiceShell({
+  children,
+  initialUnreadStatus,
+}: {
+  children: ReactNode;
+  initialUnreadStatus?: NotificationUnreadStatus;
+}) {
   const pathname = usePathname();
   const showNavigation = hasNavigation(pathname);
   const content = (
@@ -30,15 +39,17 @@ export function ServiceShell({ children }: { children: ReactNode }) {
   );
 
   return (
-    <NavigationVisibilityProvider>
-      {showNavigation ? (
-        <>
-          <TabPageTransition>{content}</TabPageTransition>
-          <NavigationBar />
-        </>
-      ) : (
-        content
-      )}
-    </NavigationVisibilityProvider>
+    <NotificationProvider initialUnreadStatus={initialUnreadStatus}>
+      <NavigationVisibilityProvider>
+        {showNavigation ? (
+          <>
+            <TabPageTransition>{content}</TabPageTransition>
+            <NavigationBar />
+          </>
+        ) : (
+          content
+        )}
+      </NavigationVisibilityProvider>
+    </NotificationProvider>
   );
 }

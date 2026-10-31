@@ -60,12 +60,12 @@ type NavigationBarProps = {
 
 export function NavigationBar({ className }: NavigationBarProps) {
   const pathname = usePathname();
-  const { isNavigationVisible, setIsNavigationVisible } =
+  const { isNavigationVisible, keyboardInset, setIsNavigationVisible } =
     useNavigationVisibility();
   const lastScrollY = useRef(0);
   const classNames = [
     styles.bar,
-    !isNavigationVisible && styles.hidden,
+    (!isNavigationVisible || keyboardInset > 0) && styles.hidden,
     className,
   ]
     .filter(Boolean)
@@ -80,6 +80,10 @@ export function NavigationBar({ className }: NavigationBarProps) {
     lastScrollY.current = window.scrollY;
 
     const handleScroll = () => {
+      if (keyboardInset > 0) {
+        return;
+      }
+
       const currentScrollY = window.scrollY;
       const scrollDelta = currentScrollY - lastScrollY.current;
 
@@ -100,7 +104,7 @@ export function NavigationBar({ className }: NavigationBarProps) {
     window.addEventListener("scroll", handleScroll, { passive: true });
 
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [setIsNavigationVisible]);
+  }, [keyboardInset, setIsNavigationVisible]);
 
   return (
     <nav aria-label="주요 메뉴" className={classNames}>

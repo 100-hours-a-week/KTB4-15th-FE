@@ -26,6 +26,7 @@ pnpm dev
 pnpm dev          # 개발 서버
 pnpm build        # 프로덕션 빌드
 pnpm test         # Unit 테스트
+pnpm test:e2e     # Playwright 브라우저 테스트
 pnpm lint         # ESLint와 Stylelint 검사
 pnpm lint:fix     # 수정 가능한 lint 오류 자동 수정
 pnpm format       # Prettier 포맷 적용
@@ -49,9 +50,10 @@ pnpm check        # 포맷, lint, 타입 검사 일괄 실행
 ```text
 src/
 ├── app/                         # Route, Layout, Page
-│   ├── (public)/                # 온보딩과 인증 화면
+│   ├── (public)/                # 랜딩과 인증 화면
 │   │   ├── (auth)/            # 로그인, 회원가입 화면
-│   │   └── onboarding/        # 최초 진입 온보딩
+│   │   ├── page.tsx           # 공개 랜딩 /
+│   │   └── landing/            # 랜딩 전용 컴포넌트와 스타일
 │   └── (service)/
 │       ├── layout.tsx          # 서비스 인증 공통 적용
 │       ├── service-shell.tsx   # Navigation, PageShell, 화면 전환

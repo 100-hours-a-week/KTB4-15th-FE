@@ -1,0 +1,53 @@
+@use "@/styles/typography" as type;
+
+.state {
+  @include type.body-medium;
+
+  display: grid;
+  min-height: calc(100dvh - var(--header-height));
+  place-items: center;
+  color: var(--color-text-secondary);
+  text-align: center;
+
+  p {
+    margin: 0 0 var(--space-lg);
+  }
+}
+
+.outfitName {
+  @include type.body-medium;
+
+  color: var(--color-text-primary);
+  cursor: text;
+  font-weight: var(--font-weight-medium);
+
+  &:read-only:not(:disabled) {
+    cursor: default;
+  }
+}
+
+.nameLength {
+  @include type.caption;
+
+  margin-right: var(--space-md);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.retryLink {
+  @include type.label;
+
+  display: flex;
+  min-height: var(--control-height-large);
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  border-radius: var(--radius-medium);
+  background: var(--color-gray-200);
+  font-weight: var(--font-weight-semibold);
+
+  svg {
+    width: 20px;
+    height: 20px;
+  }
+}

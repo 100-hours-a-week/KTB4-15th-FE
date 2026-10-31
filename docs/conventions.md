@@ -35,13 +35,14 @@ pnpm format:check # Prettier 검사
 pnpm lint         # ESLint와 Stylelint 검사
 pnpm type-check   # Next.js Type 생성과 TypeScript 검사
 pnpm test         # Unit 테스트
+pnpm test:e2e     # Playwright 브라우저 테스트
 pnpm check        # format, lint, type-check 일괄 실행
 ```
 
 - 모든 변경 후 `pnpm check`를 실행합니다.
 - 라우팅, 빌드 설정 또는 의존성을 변경했다면 `pnpm build`도 실행합니다.
 - 기존 테스트 대상의 동작을 변경했다면 관련 테스트를 실행합니다.
-- 테스트 도구와 범위가 확정되기 전까지 새로운 테스트 설정을 임의로 추가하지 않습니다.
+- 브라우저 핵심 사용자 흐름은 Chromium 기반 Playwright 테스트로 검증합니다.
 
 ## 문서 변경
 

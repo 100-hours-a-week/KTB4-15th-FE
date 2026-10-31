@@ -1,16 +1,17 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { getApiErrorMessage } from "@/shared/api/error";
 import { Button } from "@/shared/ui/button";
-import { Header, HeaderIconLink, HeaderTitle } from "@/shared/ui/header";
-import { BackIcon } from "@/shared/ui/icon";
-import { fittingJobQueryOptions } from "../../model/fitting-query";
-import { clearActiveFittingJobId } from "../../store/active-fitting-job-storage";
-import { clearFittingJobProgress } from "../../store/fitting-job-progress-storage";
+import { Header, HeaderTitle } from "@/shared/ui/header";
+import { showToast } from "@/shared/ui/toast";
+import {
+  fittingJobQueryOptions,
+  useMarkFittingResultViewedMutation,
+} from "../../model/fitting-query";
 import { FittingProgressView } from "./fitting-progress-view";
-import { FittingResultView } from "../result/fitting-result-view";
 import styles from "./fitting-job-screen.module.scss";
 
 type FittingJobScreenProps = {
@@ -28,40 +29,41 @@ export function FittingJobScreen({ fittingJobId }: FittingJobScreenProps) {
   const { data, isError, isPending } = useQuery(
     fittingJobQueryOptions(fittingJobId),
   );
-  const [isResultReady, setIsResultReady] = useState(false);
+  const markViewedMutation = useMarkFittingResultViewedMutation();
 
-  const handleReturnToFitting = () => {
-    clearActiveFittingJobId(fittingJobId);
-    clearFittingJobProgress(fittingJobId);
+  const handleReturnToFitting = async () => {
+    if (data?.fittingJobId === fittingJobId && data.status === "FAILED") {
+      try {
+        await markViewedMutation.mutateAsync(fittingJobId);
+      } catch (error) {
+        showToast.error(
+          getApiErrorMessage(error, "실패한 피팅 작업을 정리하지 못했어요."),
+          { id: "mark-failed-fitting-viewed" },
+        );
+        return;
+      }
+    }
+
     router.replace("/fitting");
   };
 
   useEffect(() => {
-    if (data?.status === "FAILED") {
-      clearActiveFittingJobId(fittingJobId);
-      clearFittingJobProgress(fittingJobId);
+    if (data?.fittingJobId !== fittingJobId || data.status !== "COMPLETED") {
+      return;
     }
-  }, [data?.status, fittingJobId]);
 
-  useEffect(() => {
-    if (data?.status !== "COMPLETED") return;
-
-    clearActiveFittingJobId(fittingJobId);
     const timer = window.setTimeout(() => {
-      setIsResultReady(true);
-      clearFittingJobProgress(fittingJobId);
+      router.replace(`/fitting/jobs/${fittingJobId}/result`);
     }, RESULT_REVEAL_DELAY);
 
     return () => window.clearTimeout(timer);
-  }, [data?.status, fittingJobId]);
+  }, [data, fittingJobId, router]);
 
   if (isPending) {
-    return (
-      <FittingProgressView completed={false} fittingJobId={fittingJobId} />
-    );
+    return <FittingProgressView fittingJobId={fittingJobId} />;
   }
 
-  if (isError) {
+  if (isError || !data || data.fittingJobId !== fittingJobId) {
     return (
       <>
         <ProgressHeader />
@@ -70,7 +72,7 @@ export function FittingJobScreen({ fittingJobId }: FittingJobScreenProps) {
           <p>잠시 후 다시 시도해 주세요.</p>
           <Button
             className={styles.recoveryButton}
-            onClick={handleReturnToFitting}
+            onClick={() => void handleReturnToFitting()}
           >
             피팅 홈으로 이동
           </Button>
@@ -88,7 +90,8 @@ export function FittingJobScreen({ fittingJobId }: FittingJobScreenProps) {
           <p>피팅 홈에서 다시 시도해 주세요.</p>
           <Button
             className={styles.recoveryButton}
-            onClick={handleReturnToFitting}
+            isLoading={markViewedMutation.isPending}
+            onClick={() => void handleReturnToFitting()}
           >
             피팅 홈으로 이동
           </Button>
@@ -97,25 +100,10 @@ export function FittingJobScreen({ fittingJobId }: FittingJobScreenProps) {
     );
   }
 
-  if (data.status === "COMPLETED" && data.result && isResultReady) {
-    return (
-      <>
-        <Header
-          center={<HeaderTitle>가상 피팅 결과</HeaderTitle>}
-          left={
-            <HeaderIconLink aria-label="피팅으로 돌아가기" href="/fitting">
-              <BackIcon />
-            </HeaderIconLink>
-          }
-        />
-        <FittingResultView fittingJobId={fittingJobId} result={data.result} />
-      </>
-    );
-  }
-
   return (
     <FittingProgressView
       completed={data.status === "COMPLETED"}
+      createdAt={data.createdAt}
       fittingJobId={fittingJobId}
     />
   );

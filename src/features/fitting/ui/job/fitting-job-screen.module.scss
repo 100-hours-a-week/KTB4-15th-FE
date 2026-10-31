@@ -1,6 +1,6 @@
 @use "@/styles/typography" as type;
 
-.main {
+.errorMain {
   display: grid;
   min-height: calc(100dvh - var(--header-height) - var(--navigation-height));
   place-content: center;

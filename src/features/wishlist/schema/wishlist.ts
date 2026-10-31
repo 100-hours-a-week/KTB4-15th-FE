@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod";
 import { productItemTypeSchema } from "@/shared/schema/product";
 
 export const wishlistCreateResponse = z.object({
@@ -31,3 +31,4 @@ export const wishlistListResponse = z.object({
 });
 
 export type WishlistItem = z.infer<typeof wishlistItemSchema>;
+export type WishlistList = z.infer<typeof wishlistListResponse>;

@@ -1,10 +1,5 @@
 @use "@/styles/typography" as type;
 
-.screen {
-  min-height: calc(100dvh - var(--header-height) - var(--navigation-height));
-  padding-block: var(--space-xl) var(--space-2xl);
-}
-
 .count {
   @include type.body-medium;
 

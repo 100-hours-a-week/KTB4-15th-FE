@@ -1,6 +1,5 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
-import { overlay } from "overlay-kit";
 import { BottomSheet } from "@/shared/ui/bottom-sheet";
 import { Button } from "@/shared/ui/button";
 import { InfoIcon } from "@/shared/ui/icon";
@@ -19,6 +18,7 @@ export function ProfilePhotoSection({
   onValidationChange,
   validationId,
 }: ProfilePhotoSectionProps) {
+  const [isGuideOpen, setIsGuideOpen] = useState(false);
   const {
     displayedErrorMessage,
     fileInputRef,
@@ -31,28 +31,6 @@ export function ProfilePhotoSection({
   useEffect(() => {
     onPendingChange(isPending);
   }, [isPending, onPendingChange]);
-
-  const openFullBodyImageGuide = () => {
-    overlay.open(({ close, isOpen, unmount }) => (
-      <BottomSheet
-        description="더 자연스러운 가상 피팅을 위해 아래 내용을 확인해주세요."
-        eyebrow="PHOTO GUIDE"
-        onExit={unmount}
-        onOpenChange={(nextOpen) => {
-          if (!nextOpen) close();
-        }}
-        open={isOpen}
-        title="전신 사진 촬영 가이드"
-      >
-        <FullBodyImageGuide
-          onStartShooting={() => {
-            close();
-            openPhotoPicker();
-          }}
-        />
-      </BottomSheet>
-    ));
-  };
 
   return (
     <section className={styles.photoSection}>
@@ -126,7 +104,7 @@ export function ProfilePhotoSection({
             </Button>
             <button
               className={styles.guideButton}
-              onClick={openFullBodyImageGuide}
+              onClick={() => setIsGuideOpen(true)}
               type="button"
             >
               <InfoIcon /> 촬영 가이드
@@ -137,6 +115,20 @@ export function ProfilePhotoSection({
           * JPG·PNG / 최대 10MB / 짧은 변 480px 이상 / 전체 2,500만 픽셀 이하
         </p>
       </div>
+      <BottomSheet
+        description="더 자연스러운 가상 피팅을 위해 아래 내용을 확인해주세요."
+        eyebrow="PHOTO GUIDE"
+        onOpenChange={setIsGuideOpen}
+        open={isGuideOpen}
+        title="전신 사진 촬영 가이드"
+      >
+        <FullBodyImageGuide
+          onStartShooting={() => {
+            setIsGuideOpen(false);
+            openPhotoPicker();
+          }}
+        />
+      </BottomSheet>
     </section>
   );
 }

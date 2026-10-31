@@ -38,7 +38,7 @@
   color: var(--color-text-secondary);
 }
 
-.photoAction {
+.card .photoAction {
   @include type.caption;
 
   --button-icon-size: 14px;
@@ -89,6 +89,24 @@
   margin: 0;
   color: var(--color-action-danger-default);
   text-align: left;
+}
+
+.processingDialog {
+  padding: var(--space-xl);
+  text-align: center;
+}
+
+.processingTitle {
+  @include type.heading-small;
+
+  margin: 0;
+}
+
+.processingDescription {
+  @include type.body-medium;
+
+  margin: var(--space-sm) 0 0;
+  color: var(--color-text-secondary);
 }
 
 @media (width <= 359px) {

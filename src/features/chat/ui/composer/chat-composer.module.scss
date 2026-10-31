@@ -10,8 +10,8 @@
   align-items: center;
   gap: var(--space-sm);
   border: 1px solid var(--color-border-default);
-  border-radius: var(--radius-full);
-  padding: 5px;
+  border-radius: var(--radius-large);
+  padding: 8px;
   background: var(--color-background-surface);
 
   &:focus-within {
@@ -50,14 +50,28 @@
 
   width: 100%;
   min-height: 24px;
-  max-height: 104px;
+  max-height: 96px;
   resize: none;
   overflow-y: auto;
+  scrollbar-gutter: stable;
   border: 0;
-  padding: 0;
+  padding: 0 8px 0 0;
   background: transparent;
   color: var(--color-text-primary);
   outline: none;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    border-radius: var(--radius-full);
+    background: var(--color-text-placeholder);
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
 
   &::placeholder {
     color: var(--color-text-placeholder);
@@ -85,11 +99,12 @@
   gap: var(--space-sm);
 }
 
-.submitButton {
+.composer .submitButton {
   align-self: flex-end;
   flex: 0 0 44px;
   background: var(--color-gray-900);
   color: var(--color-white);
+  border-radius: var(--radius-large);
 
   > span {
     width: 24px;

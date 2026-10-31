@@ -31,6 +31,9 @@
   --color-red-700: #b42318;
   --color-red-800: #912018;
 
+  // Informative palette
+  --color-blue-600: #2563eb;
+
   // Background
   --color-background-outer: var(--color-green-50);
   --color-background-page: var(--color-gray-50);
@@ -48,6 +51,7 @@
   --color-text-disabled: var(--color-gray-400);
   --color-text-inverse: var(--color-white);
   --color-text-brand: var(--color-green-700);
+  --color-text-info: var(--color-blue-600);
 
   // Border and focus
   --color-border-default: var(--color-gray-200);

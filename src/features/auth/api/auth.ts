@@ -1,4 +1,4 @@
-import { apiClient } from "@/shared/api/client";
+import { apiClient, authBffClient } from "@/shared/api/client";
 import { parseResponse } from "@/shared/api/response";
 import {
   signupResponse,
@@ -24,5 +24,5 @@ export async function login(payload: LoginRequest) {
 }
 
 export async function logout() {
-  await apiClient.post("auth/logout");
+  await authBffClient.post("logout");
 }

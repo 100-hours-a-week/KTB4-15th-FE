@@ -2,5 +2,7 @@
 node_modules
 out
 coverage
+test-results
+playwright-report
 pnpm-lock.yaml
 public

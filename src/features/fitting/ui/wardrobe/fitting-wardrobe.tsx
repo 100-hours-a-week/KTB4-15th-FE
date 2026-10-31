@@ -130,7 +130,7 @@ function EmptyCandidateCard({ itemType }: { itemType: ProductItemType }) {
       <span className={styles.productDetails}>
         <small>{label}</small>
         <strong>선택 안 함</strong>
-        <span>기본 상품으로 피팅해요</span>
+        <span>피팅 상품을 선택하지 않아요</span>
       </span>
       <span aria-hidden="true" className={styles.selectionMark}>
         {isSelected && <CheckIcon />}
@@ -175,6 +175,16 @@ export function FittingWardrobe({ initialFilter }: FittingWardrobeProps) {
   const isAllVisibleSelected =
     visibleCandidateIds.length > 0 &&
     visibleCandidateIds.every((id) => selectedForDelete.has(id));
+
+  const changeFilter = (nextFilter: WardrobeFilter) => {
+    setFilter(nextFilter);
+    router.replace(
+      nextFilter === "ALL"
+        ? "/fitting/wardrobe"
+        : `/fitting/wardrobe?itemType=${nextFilter}`,
+      { scroll: false },
+    );
+  };
 
   const exitEditMode = () => {
     setIsEditing(false);
@@ -272,7 +282,7 @@ export function FittingWardrobe({ initialFilter }: FittingWardrobeProps) {
           <p>
             {isEditing
               ? "선택한 아이템을 옷장에서 비울 수 있어요."
-              : "대화방과 찜 목록에서 담아둔 상품이에요"}
+              : "채팅방에서 담아둔 상품이에요"}
           </p>
         </div>
 
@@ -284,7 +294,7 @@ export function FittingWardrobe({ initialFilter }: FittingWardrobeProps) {
                 filter === item.value ? styles.activeFilter : undefined
               }
               key={item.value}
-              onClick={() => setFilter(item.value)}
+              onClick={() => changeFilter(item.value)}
               role="tab"
               type="button"
             >
@@ -311,9 +321,15 @@ export function FittingWardrobe({ initialFilter }: FittingWardrobeProps) {
         )}
 
         <div className={styles.list}>
-          {!isEditing && filter !== "ALL" && (
-            <EmptyCandidateCard itemType={filter} />
-          )}
+          {!isEditing &&
+            !isPending &&
+            !isInitialError &&
+            products.length > 0 &&
+            (filter === "ALL" ? (["TOP", "BOTTOM"] as const) : [filter]).map(
+              (itemType) => (
+                <EmptyCandidateCard itemType={itemType} key={itemType} />
+              ),
+            )}
           {isPending && (
             <LoadingMessage className={styles.stateMessage}>
               옷장을 불러오고 있어요
@@ -355,9 +371,9 @@ export function FittingWardrobe({ initialFilter }: FittingWardrobeProps) {
           <div className={styles.deleteNotice}>
             <InfoIcon />
             <p>
-              현재 피팅 중인 아이템을 삭제하면?
+              피팅 선택한 상품을 삭제하면
               <br />
-              피팅 캔버스에서는 기본 상품으로 자동 교체됩니다.
+              선택 안함으로 자동 변경됩니다.
             </p>
           </div>
         )}

@@ -7,14 +7,25 @@ const apiOptions = {
   timeout: 10000,
 };
 
-function throwIfOffline() {
+async function throwIfOffline() {
   if (typeof navigator !== "undefined" && !navigator.onLine) {
     throw new OfflineError();
   }
+
+  if (
+    typeof window !== "undefined" &&
+    process.env.NODE_ENV === "development" &&
+    process.env.NEXT_PUBLIC_API_MOCKING === "enabled"
+  ) {
+    const { startBrowserMocks } = await import("@/mocks/browser");
+    await startBrowserMocks();
+  }
 }
 
-const refreshClient = ky.create({
-  ...apiOptions,
+export const authBffClient = ky.create({
+  prefix: "/bff/auth/",
+  credentials: "include",
+  timeout: 10000,
   hooks: {
     beforeRequest: [throwIfOffline],
   },
@@ -24,8 +35,8 @@ const refreshExcludedPaths = ["/auth/login", "/auth/signup", "/auth/refresh"];
 let refreshPromise: Promise<void> | undefined;
 
 function refreshAccessToken() {
-  refreshPromise ??= refreshClient
-    .post("auth/refresh")
+  refreshPromise ??= authBffClient
+    .post("refresh")
     .then(() => undefined)
     .finally(() => {
       refreshPromise = undefined;

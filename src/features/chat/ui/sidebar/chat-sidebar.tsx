@@ -3,8 +3,7 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { overlay } from "overlay-kit";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button, IconButton } from "@/shared/ui/button";
 import { ConfirmDialog, RenameDialog } from "@/shared/ui/dialog";
 import { Dropdown, DropdownItem } from "@/shared/ui/dropdown";
@@ -38,6 +37,12 @@ export function ChatSidebar({ open, onOpenChange }: ChatSidebarProps) {
   const router = useRouter();
   const chatRoomListRef = useRef<HTMLElement>(null);
   const loadMoreRef = useRef<HTMLDivElement>(null);
+  const returnFocusRef = useRef<HTMLElement | null>(null);
+  const [renameTarget, setRenameTarget] = useState<{
+    id: number;
+    title: string;
+  } | null>(null);
+  const [deleteTargetId, setDeleteTargetId] = useState<number | null>(null);
 
   const chatRoomQuery = useInfiniteQuery({
     ...chatRoomListQueryOptions,
@@ -96,79 +101,6 @@ export function ChatSidebar({ open, onOpenChange }: ChatSidebarProps) {
     router.push("/chat/search");
   };
 
-  const openRenameDialog = (chatRoomId: number, currentTitle: string) => {
-    overlay.open(({ close, isOpen, unmount }) => (
-      <RenameDialog
-        description="나중에 쉽게 찾을 수 있는 이름을 지어주세요."
-        initialValue={currentTitle}
-        isLoading={renameChatRoomMutation.isPending}
-        label="채팅 이름"
-        maxLength={CHAT_ROOM_TITLE_MAX_LENGTH}
-        onConfirm={(title) => {
-          renameChatRoomMutation.mutate(
-            { chatRoomId, title },
-            {
-              onSuccess: () => {
-                close();
-                showToast.success("채팅방 이름을 수정했어요.", {
-                  id: "rename-chat-room",
-                });
-              },
-              onError: (error) => {
-                showToast.error(
-                  getApiErrorMessage(error, "채팅방 이름을 수정하지 못했어요."),
-                  { id: "rename-chat-room" },
-                );
-              },
-            },
-          );
-        }}
-        onExit={unmount}
-        onOpenChange={(nextOpen) => {
-          if (!nextOpen) close();
-        }}
-        open={isOpen}
-        title="채팅 이름 변경"
-      />
-    ));
-  };
-
-  const openDeleteDialog = (chatRoomId: number) => {
-    overlay.open(({ close, isOpen, unmount }) => (
-      <ConfirmDialog
-        confirmLabel="삭제하기"
-        description="삭제된 대화 내역은 복구할 수 없습니다."
-        isLoading={deleteChatRoomMutation.isPending}
-        onConfirm={() => {
-          deleteChatRoomMutation.mutate(chatRoomId, {
-            onSuccess: () => {
-              close();
-              showToast.success("채팅방을 삭제했어요.", {
-                id: "delete-chat-room",
-              });
-
-              if (pathname === `/chat/${chatRoomId}`) {
-                router.push("/chat");
-              }
-            },
-            onError: (error) => {
-              showToast.error(
-                getApiErrorMessage(error, "채팅방을 삭제하지 못했어요."),
-                { id: "delete-chat-room" },
-              );
-            },
-          });
-        }}
-        onExit={unmount}
-        onOpenChange={(nextOpen) => {
-          if (!nextOpen) close();
-        }}
-        open={isOpen}
-        title="채팅을 삭제하시겠습니까?"
-      />
-    ));
-  };
-
   return (
     <Dialog.Root onOpenChange={onOpenChange} open={open}>
       <Dialog.Portal>
@@ -177,11 +109,20 @@ export function ChatSidebar({ open, onOpenChange }: ChatSidebarProps) {
           <Dialog.Content
             aria-describedby={undefined}
             className={styles.sidebar}
+            onOpenAutoFocus={() => {
+              returnFocusRef.current =
+                document.activeElement instanceof HTMLElement
+                  ? document.activeElement
+                  : null;
+            }}
+            onCloseAutoFocus={(event) => {
+              event.preventDefault();
+              returnFocusRef.current?.focus();
+            }}
           >
             <header className={styles.sidebarHeader}>
               <div className={styles.heading}>
                 <Dialog.Title className={styles.title}>채팅</Dialog.Title>
-                <span className={styles.badge}>AI 룩딱</span>
               </div>
               <div className={styles.headerActions}>
                 <IconButton
@@ -201,7 +142,6 @@ export function ChatSidebar({ open, onOpenChange }: ChatSidebarProps) {
 
             <Button
               className={styles.newChatButton}
-              fullWidth
               leadingIcon={<PlusIcon />}
               onClick={startNewChat}
               size="small"
@@ -282,7 +222,10 @@ export function ChatSidebar({ open, onOpenChange }: ChatSidebarProps) {
                       <DropdownItem
                         icon={<EditIcon />}
                         onSelect={() =>
-                          openRenameDialog(chatRoom.chatRoomId, chatRoom.title)
+                          setRenameTarget({
+                            id: chatRoom.chatRoomId,
+                            title: chatRoom.title,
+                          })
                         }
                       >
                         이름 수정
@@ -290,7 +233,7 @@ export function ChatSidebar({ open, onOpenChange }: ChatSidebarProps) {
                       <DropdownItem
                         destructive
                         icon={<DeleteIcon />}
-                        onSelect={() => openDeleteDialog(chatRoom.chatRoomId)}
+                        onSelect={() => setDeleteTargetId(chatRoom.chatRoomId)}
                       >
                         삭제하기
                       </DropdownItem>
@@ -322,6 +265,73 @@ export function ChatSidebar({ open, onOpenChange }: ChatSidebarProps) {
           </Dialog.Content>
         </div>
       </Dialog.Portal>
+
+      <RenameDialog
+        description="나중에 쉽게 찾을 수 있는 이름을 지어주세요."
+        initialValue={renameTarget?.title ?? ""}
+        isLoading={renameChatRoomMutation.isPending}
+        key={renameTarget?.id ?? "closed"}
+        label="채팅 이름"
+        maxLength={CHAT_ROOM_TITLE_MAX_LENGTH}
+        onConfirm={(title) => {
+          if (!renameTarget) return;
+
+          renameChatRoomMutation.mutate(
+            { chatRoomId: renameTarget.id, title },
+            {
+              onSuccess: () => {
+                setRenameTarget(null);
+                showToast.success("채팅방 이름을 수정했어요.", {
+                  id: "rename-chat-room",
+                });
+              },
+              onError: (error) => {
+                showToast.error(
+                  getApiErrorMessage(error, "채팅방 이름을 수정하지 못했어요."),
+                  { id: "rename-chat-room" },
+                );
+              },
+            },
+          );
+        }}
+        onOpenChange={(nextOpen) => {
+          if (!nextOpen) setRenameTarget(null);
+        }}
+        open={renameTarget !== null}
+        title="채팅 이름 변경"
+      />
+      <ConfirmDialog
+        confirmLabel="삭제하기"
+        description="삭제된 대화 내역은 복구할 수 없습니다."
+        isLoading={deleteChatRoomMutation.isPending}
+        onConfirm={() => {
+          if (deleteTargetId === null) return;
+
+          deleteChatRoomMutation.mutate(deleteTargetId, {
+            onSuccess: () => {
+              setDeleteTargetId(null);
+              showToast.success("채팅방을 삭제했어요.", {
+                id: "delete-chat-room",
+              });
+
+              if (pathname === `/chat/${deleteTargetId}`) {
+                router.push("/chat");
+              }
+            },
+            onError: (error) => {
+              showToast.error(
+                getApiErrorMessage(error, "채팅방을 삭제하지 못했어요."),
+                { id: "delete-chat-room" },
+              );
+            },
+          });
+        }}
+        onOpenChange={(nextOpen) => {
+          if (!nextOpen) setDeleteTargetId(null);
+        }}
+        open={deleteTargetId !== null}
+        title="채팅을 삭제하시겠습니까?"
+      />
     </Dialog.Root>
   );
 }

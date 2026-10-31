@@ -12,6 +12,7 @@
 ## 색상과 타이포그래피
 
 - 브랜드 기본 색상은 `#114b36`이며 10단계 초록 팔레트를 사용합니다.
+- 가격 하락처럼 유용한 정보 변화는 파란색 정보 텍스트로 표시합니다.
 - UI 중립색은 gray 50부터 900까지 관리하며 white와 black은 별도 토큰입니다.
 - 기본 페이지 배경은 `#f8f9fb`, 기본 콘텐츠 표면은 `#ffffff`입니다.
 - 원시 팔레트 이름은 `color-색상-단계`, 시맨틱 토큰 이름은 `color-용도-역할-상태` 순서를 따릅니다.
@@ -58,7 +59,7 @@
 ### Overlay와 Toast
 
 - BottomSheet와 Dialog는 Radix Dialog를 기반으로 구현합니다.
-- Overlay의 열고 닫는 Lifecycle은 OverlayKit이 관리합니다.
+- BottomSheet와 Dialog의 열림 상태는 사용하는 화면이 소유합니다.
 - Dropdown은 Radix DropdownMenu를 사용하며 도메인 상태나 API 요청을 내부에서 처리하지 않습니다.
 - Toast Lifecycle은 Sonner가 담당하며 화면에서는 `showToast` 공통 API를 사용합니다.
 - Toast는 success와 error를 제공하고 각각 기본 3초와 4초 동안, 최대 3개까지 동시에 노출합니다.
@@ -75,6 +76,7 @@
 - 기본 모션 시간은 `120ms`, `200ms`, `300ms`이며 `prefers-reduced-motion`을 지원합니다.
 - Loading Spinner의 회전 시간은 `800ms`입니다.
 - 주요 하단 Tab 사이를 이동할 때 본문에 짧은 좌우 방향 전환을 적용하고 하단 Navigation은 고정합니다. 같은 Tab의 하위 경로 사이에는 적용하지 않습니다.
+- 전환 애니메이션이 끝나면 효과를 해제하여 채팅 Header와 입력창의 화면 고정 기준을 유지합니다.
 - Layer 순서는 sticky 5, dropdown 10, overlay 15, modal 20, toast 25입니다.
 
 ## 컴포넌트 추가 기준

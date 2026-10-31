@@ -54,3 +54,30 @@
     animation: none;
   }
 }
+
+.reply {
+  scroll-margin-top: calc(var(--header-height) + var(--space-lg));
+}
+
+.newReply {
+  position: fixed;
+  z-index: var(--z-sticky);
+  right: 50%;
+  bottom: calc(var(--chat-composer-height) + var(--space-sm));
+  display: flex;
+  width: min(100%, var(--app-max-width));
+  justify-content: center;
+  padding-inline: var(--screen-padding);
+  pointer-events: none;
+  transform: translateX(50%);
+}
+
+.newReplyButton {
+  white-space: nowrap;
+  border: 1px solid var(--color-green-200);
+  border-radius: var(--radius-large);
+  background: var(--color-green-100);
+  color: var(--color-text-brand);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 12%);
+  pointer-events: auto;
+}
