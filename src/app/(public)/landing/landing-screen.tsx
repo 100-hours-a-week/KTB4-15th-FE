@@ -17,6 +17,65 @@ export function LandingScreen() {
 
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger);
+    const landing = root.current!;
+    const theme = document.querySelector<HTMLMetaElement>(
+      'meta[name="theme-color"]',
+    );
+    const originalTheme = theme?.content;
+    const originalHtml = document.documentElement.style.backgroundColor;
+    const originalBody = document.body.style.backgroundColor;
+    const backgroundState = {
+      color: getComputedStyle(document.body).backgroundColor,
+    };
+    let targetColor = "";
+    let colorFrame = 0;
+    const updateBackground = () => {
+      colorFrame = 0;
+      const middle = window.innerHeight / 2;
+      const section = Array.from(landing.querySelectorAll("section")).findLast(
+        (element) => {
+          const bounds = element.getBoundingClientRect();
+          return bounds.top <= middle && bounds.bottom > middle;
+        },
+      );
+      const background = section && getComputedStyle(section).backgroundColor;
+      const color =
+        background && background !== "rgba(0, 0, 0, 0)"
+          ? background
+          : getComputedStyle(landing).backgroundColor;
+      if (targetColor === color) return;
+      targetColor = color;
+      gsap.to(backgroundState, {
+        color,
+        duration: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+          ? 0
+          : 0.4,
+        ease: "none",
+        overwrite: true,
+        onUpdate: () => {
+          document.documentElement.style.backgroundColor =
+            backgroundState.color;
+          document.body.style.backgroundColor = backgroundState.color;
+          if (theme) theme.content = backgroundState.color;
+        },
+      });
+    };
+    const scheduleBackground = () => {
+      if (!colorFrame) colorFrame = requestAnimationFrame(updateBackground);
+    };
+    window.addEventListener("scroll", scheduleBackground, { passive: true });
+    window.addEventListener("resize", scheduleBackground);
+    const details = root.current!.querySelector<HTMLElement>("[data-details]")!;
+    const imagePreload = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((entry) => entry.isIntersecting)) return;
+        details.querySelectorAll("img").forEach((image) => {
+          image.loading = "eager";
+        });
+        imagePreload.disconnect();
+      },
+      { rootMargin: "600px 0px" },
+    );
     const media = gsap.matchMedia();
     media.add(
       "(prefers-reduced-motion: no-preference)",
@@ -26,7 +85,8 @@ export function LandingScreen() {
         const stage = phone.parentElement!;
         const fitPhone = () => {
           const scale = Math.min(
-            1,
+            1.2,
+            (stage.clientWidth - 8) / phone.offsetWidth,
             Math.max(0, stage.clientHeight - phone.offsetTop) /
               phone.offsetHeight,
           );
@@ -191,6 +251,9 @@ export function LandingScreen() {
               trigger: section,
               start: "top top",
               end: "+=4050",
+              onToggle: ({ isActive }) => {
+                section.toggleAttribute("data-pinned", isActive);
+              },
               onUpdate: ({ progress }) => {
                 const slide =
                   progress <= 0
@@ -221,13 +284,26 @@ export function LandingScreen() {
           .to(track, { x: () => -viewport.clientWidth * 2, duration: 900 })
           .to({}, { duration: 750 });
         return () => {
+          section.removeAttribute("data-pinned");
           phoneResize.disconnect();
           phone.style.removeProperty("--phone-scale");
         };
       },
       root,
     );
-    return () => media.revert();
+    imagePreload.observe(details);
+    updateBackground();
+    return () => {
+      window.removeEventListener("scroll", scheduleBackground);
+      window.removeEventListener("resize", scheduleBackground);
+      cancelAnimationFrame(colorFrame);
+      gsap.killTweensOf(backgroundState);
+      document.documentElement.style.backgroundColor = originalHtml;
+      document.body.style.backgroundColor = originalBody;
+      if (theme && originalTheme !== undefined) theme.content = originalTheme;
+      imagePreload.disconnect();
+      media.revert();
+    };
   }, []);
 
   return (

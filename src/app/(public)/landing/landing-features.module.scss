@@ -16,13 +16,47 @@
 }
 
 .details {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   justify-content: center;
   min-height: 650px;
-  height: 100svh;
+
+  // ScrollTrigger의 고정 높이보다 Safari 주소창 변화에 따른 화면 높이를 우선합니다.
+  height: 100dvh !important;
   padding: 40px 0 24px;
   background: #f0f3ec;
+
+  &::before,
+  &::after {
+    position: absolute;
+    right: 0;
+    left: 0;
+    height: 80px;
+    content: "";
+    pointer-events: none;
+  }
+
+  &::before {
+    top: 0;
+    z-index: -1;
+    background: linear-gradient(to bottom, #faf9f6, #f0f3ec);
+  }
+
+  &::after {
+    top: 100%;
+    background: linear-gradient(to bottom, #f0f3ec, #faf9f6);
+  }
+}
+
+.details[data-pinned] {
+  z-index: 1;
+
+  &::after {
+    height: 100lvh;
+    background: inherit;
+  }
 }
 
 .detailsHeading {
