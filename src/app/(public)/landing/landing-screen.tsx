@@ -307,9 +307,24 @@ export function LandingScreen() {
         const limitWheel = (event: WheelEvent) => {
           if (event.ctrlKey || !event.cancelable || !event.deltaY) return;
           const trigger = featuresTimeline.scrollTrigger!;
-          if (!trigger.isActive) return;
           const direction = Math.sign(event.deltaY);
           const position = window.scrollY - trigger.start;
+          const delta =
+            event.deltaY *
+            (event.deltaMode === 1
+              ? 16
+              : event.deltaMode === 2
+                ? window.innerHeight
+                : 1);
+          const destination = position + delta;
+          const entering =
+            direction > 0
+              ? position <= 0 && destination > 0
+              : position >= 2200 && destination < 2200;
+          if (!trigger.isActive && !entering) {
+            wheelLimit = undefined;
+            return;
+          }
           if (wheelLimit === undefined || direction !== wheelDirection) {
             wheelDirection = direction;
             wheelLimit =
@@ -330,14 +345,6 @@ export function LandingScreen() {
           wheelTimer = setTimeout(() => {
             wheelLimit = undefined;
           }, 250);
-          const delta =
-            event.deltaY *
-            (event.deltaMode === 1
-              ? 16
-              : event.deltaMode === 2
-                ? window.innerHeight
-                : 1);
-          const destination = position + delta;
           if (
             direction > 0
               ? destination >= wheelLimit

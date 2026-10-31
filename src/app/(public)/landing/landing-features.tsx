@@ -28,7 +28,7 @@ const introductionSlides = [
 export function LandingFeatures() {
   return (
     <section
-      aria-labelledby="introduction-title"
+      aria-label="룩딱 기능 소개"
       className={styles.details}
       data-details
     >

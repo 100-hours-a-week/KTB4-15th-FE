@@ -101,6 +101,25 @@ test("reduced motion shows the result without pinning", async ({ page }) => {
   await expect(page.locator("[data-outro]")).toBeVisible();
   await expect(page.locator("[data-result]")).toBeVisible();
   await expect(page.locator(".pin-spacer")).toHaveCount(0);
+  const section = page.getByRole("region", {
+    name: "룩딱 기능 소개",
+    exact: true,
+  });
+  await expect(section).toHaveAttribute("data-details", "true");
+  const layout = await section.evaluate((element) => {
+    const sectionBounds = element.getBoundingClientRect();
+    const lastSlide = element
+      .querySelector("article:last-child")!
+      .getBoundingClientRect();
+    const faq = element.nextElementSibling!.getBoundingClientRect();
+    return {
+      bottom: sectionBounds.bottom,
+      contentBottom: lastSlide.bottom,
+      faqTop: faq.top,
+    };
+  });
+  expect(layout.contentBottom).toBeLessThanOrEqual(layout.bottom);
+  expect(layout.faqTop).toBeGreaterThanOrEqual(layout.bottom);
 });
 
 test("introduction moves horizontally and releases to the start link", async ({
@@ -540,3 +559,34 @@ test("large wheel gestures advance one feature at a time", async ({ page }) => {
   await page.mouse.wheel(0, -5000);
   await expect.poll(() => page.evaluate(() => scrollY)).toBeLessThan(top);
 });
+
+for (const direction of [1, -1]) {
+  test(`large wheel entering features from ${direction > 0 ? "above" : "below"} cannot skip slides`, async ({
+    page,
+  }) => {
+    await page.emulateMedia({ reducedMotion: "no-preference" });
+    await page.goto("/");
+    const section = page.getByRole("region", {
+      name: "룩딱 기능 소개",
+      exact: true,
+    });
+    await expect(section.locator("xpath=..")).toHaveClass(/pin-spacer/);
+    const top = await section.evaluate(
+      (element) => element.getBoundingClientRect().top + scrollY,
+    );
+    await page.evaluate(
+      (y) => scrollTo(0, y),
+      top + (direction > 0 ? -100 : 2300),
+    );
+    await expect(section).not.toHaveAttribute("data-pinned");
+    await page.mouse.wheel(0, direction * 5000);
+    const target = top + (direction > 0 ? 900 : 1300);
+    await expect
+      .poll(() => page.evaluate(() => scrollY))
+      .toBeCloseTo(target, 0);
+    await page.mouse.wheel(0, direction * 5000);
+    await expect
+      .poll(() => page.evaluate(() => scrollY))
+      .toBeCloseTo(target, 0);
+  });
+}
