@@ -26,6 +26,11 @@
 }
 
 .headerLink {
+  border: 0;
+  cursor: pointer;
+  font-family: inherit;
+  background: transparent;
+  color: inherit;
   padding: 10px 0;
   font-size: 14px;
   font-weight: 600;
@@ -55,4 +60,9 @@
   .headerLink {
     font-size: 12px;
   }
+}
+
+.headerLink:disabled {
+  cursor: wait;
+  opacity: 0.7;
 }

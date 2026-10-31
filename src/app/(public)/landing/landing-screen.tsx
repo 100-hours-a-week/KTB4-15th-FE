@@ -4,6 +4,7 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Link from "next/link";
 import { useEffect, useRef } from "react";
+import { LandingStartButton } from "./landing-start-button";
 import { LandingCta } from "./landing-cta";
 import { LandingFooter } from "./landing-footer";
 import { LandingFaq } from "./landing-faq";
@@ -222,16 +223,10 @@ export function LandingScreen() {
   return (
     <main className={styles.landing} data-landing ref={root}>
       <header className={styles.header}>
-        <Link
-          aria-label="룩딱 랜딩 처음으로"
-          className={styles.logo}
-          href="/landing"
-        >
+        <Link aria-label="룩딱 랜딩 처음으로" className={styles.logo} href="/">
           LOOK DDAK
         </Link>
-        <Link className={styles.headerLink} href="/signup">
-          룩딱 시작하기
-        </Link>
+        <LandingStartButton className={styles.headerLink} />
       </header>
 
       <LandingHero />

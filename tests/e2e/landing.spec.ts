@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 for (const width of [390, 1440]) {
   test(`landing scroll reveal at ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 800 });
-    await page.goto("/landing");
+    await page.goto("/");
     await expect(page.getByRole("heading", { level: 1 })).toContainText(
       "말하면 찾아주고",
     );
@@ -31,8 +31,8 @@ for (const width of [390, 1440]) {
       ),
     ).toBe(true);
     await expect(
-      page.locator("section").getByRole("link", { name: "룩딱 시작하기" }),
-    ).toHaveAttribute("href", "/signup");
+      page.locator("section").getByRole("button", { name: "룩딱 시작하기" }),
+    ).toBeEnabled();
     expect(
       await page
         .locator("[data-result] img")
@@ -45,7 +45,7 @@ for (const width of [390, 1440]) {
 
 test("reduced motion shows the result without pinning", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto("/landing");
+  await page.goto("/");
   await expect(page.locator("[data-chat]")).toBeVisible();
   await expect(page.locator("[data-outro]")).toBeVisible();
   await expect(page.locator("[data-result]")).toBeVisible();
@@ -56,7 +56,7 @@ test("introduction moves horizontally and releases to the start link", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 390, height: 600 });
-  await page.goto("/landing");
+  await page.goto("/");
   await expect(page.locator("[data-details]").locator("xpath=..")).toHaveClass(
     /pin-spacer/,
   );
@@ -128,10 +128,10 @@ test("introduction moves horizontally and releases to the start link", async ({
   );
   await page
     .locator("section")
-    .getByRole("link", { name: "룩딱 시작하기" })
+    .getByRole("button", { name: "룩딱 시작하기" })
     .scrollIntoViewIfNeeded();
   await expect(
-    page.locator("section").getByRole("link", { name: "룩딱 시작하기" }),
+    page.locator("section").getByRole("button", { name: "룩딱 시작하기" }),
   ).toBeInViewport();
 });
 
@@ -139,7 +139,7 @@ test("chat recommendation leads into the same garment fitting", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto("/landing");
+  await page.goto("/");
   await expect(page.getByText("주말 데이트 때 뭐 입을까?")).toBeVisible();
   await page.evaluate(() => window.scrollTo(0, 800));
   await expect(page.locator("[data-recommendation]")).toHaveCSS("opacity", "1");
@@ -178,7 +178,7 @@ test("introduction animations only play on the first visit", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto("/landing");
+  await page.goto("/");
   const section = page.locator("[data-details]");
   await expect(section.locator("xpath=..")).toHaveClass(/pin-spacer/);
   const top = await section.evaluate(
@@ -214,7 +214,7 @@ test("introduction animations only play on the first visit", async ({
 });
 
 test("FAQ opens and closes with the keyboard", async ({ page }) => {
-  await page.goto("/landing");
+  await page.goto("/");
   const question = page
     .locator("summary")
     .filter({ hasText: "어떤 사진을 등록해야 하나요?" });
@@ -233,7 +233,7 @@ for (const viewport of [
     page,
   }) => {
     await page.setViewportSize(viewport);
-    await page.goto("/landing");
+    await page.goto("/");
     const phone = page.locator("[data-phone]");
     await expect(page.locator("[data-scene]").locator("xpath=..")).toHaveClass(
       /pin-spacer/,
@@ -249,3 +249,147 @@ for (const viewport of [
     expect(Math.abs(garment!.width - photo!.width)).toBeLessThan(2);
   });
 }
+
+for (const value of [undefined, "false", "true"]) {
+  test(`home shows landing regardless of old onboarding cookie ${value}`, async ({
+    request,
+  }) => {
+    const response = await request.get("/", {
+      headers: value
+        ? { Cookie: `look-ddak-onboarding-completed=${value}` }
+        : {},
+      maxRedirects: 0,
+    });
+    expect(response.status()).toBe(200);
+    expect(await response.text()).toContain("말하면 찾아주고");
+  });
+}
+
+for (const path of ["/landing", "/onboarding"]) {
+  test(`legacy ${path} redirects to home`, async ({ request }) => {
+    const response = await request.get(path, { maxRedirects: 0 });
+    expect(response.status()).toBe(308);
+    expect(new URL(response.headers().location, response.url()).pathname).toBe(
+      "/",
+    );
+  });
+}
+
+for (const [memberStatus, destination] of [
+  ["unauthenticated", "/signup"],
+  ["incomplete", "/profile/setup"],
+  ["complete", "/chat"],
+] as const) {
+  test(`landing start routes ${memberStatus} visitors to ${destination}`, async ({
+    page,
+    request,
+  }) => {
+    await request.post("http://127.0.0.1:3101/__test/reset", {
+      data: {
+        memberStatus,
+        expiredRefresh: memberStatus === "unauthenticated",
+      },
+    });
+    await page.goto("/");
+    await expect(page.getByRole("heading", { level: 1 })).toContainText(
+      "말하면 찾아주고",
+    );
+    await page
+      .locator("header")
+      .getByRole("button", { name: "룩딱 시작하기" })
+      .click();
+    await expect(page).toHaveURL(new RegExp(`${destination}(?:\\?|$)`));
+  });
+}
+
+test("start refreshes an expired session before entering chat", async ({
+  page,
+  request,
+}) => {
+  await request.post("http://127.0.0.1:3101/__test/reset", {
+    data: { memberStatus: "refreshable" },
+  });
+  await page.goto("/");
+  await page
+    .locator("header")
+    .getByRole("button", { name: "룩딱 시작하기" })
+    .click();
+  await expect(page).toHaveURL(/\/chat$/);
+});
+
+test("start stops after one refresh when membership stays unauthorized", async ({
+  page,
+  request,
+}) => {
+  await request.post("http://127.0.0.1:3101/__test/reset", {
+    data: { memberStatus: "unauthenticated" },
+  });
+  await page.goto("/");
+  await page
+    .locator("header")
+    .getByRole("button", { name: "룩딱 시작하기" })
+    .click();
+  await expect(page).toHaveURL(/\/signup$/);
+  const { data } = await (
+    await request.get("http://127.0.0.1:3101/__test/requests")
+  ).json();
+  expect(
+    data.requests.filter(
+      (item: { path: string }) => item.path === "/auth/refresh",
+    ),
+  ).toHaveLength(1);
+});
+
+for (const failure of [400, 403, 500, "network"] as const) {
+  test(`start falls back to login on ${failure}`, async ({ page }) => {
+    await page.route("http://127.0.0.1:3101/members/me", (route) =>
+      failure === "network"
+        ? route.abort("failed")
+        : route.fulfill({
+            status: failure,
+            json: { code: "TEST_FAILURE", data: null },
+          }),
+    );
+    await page.goto("/");
+    await page
+      .locator("header")
+      .getByRole("button", { name: "룩딱 시작하기" })
+      .click();
+    await expect(page).toHaveURL(/\/login$/);
+  });
+}
+
+test("start only checks membership on click and blocks duplicate clicks", async ({
+  page,
+}) => {
+  let calls = 0;
+  let release!: () => void;
+  const pending = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  await page.route("http://127.0.0.1:3101/members/me", async (route) => {
+    calls++;
+    await pending;
+    await route.fulfill({
+      status: 401,
+      json: { code: "UNAUTHORIZED", data: null },
+    });
+  });
+  await page.route("**/bff/auth/refresh", (route) =>
+    route.fulfill({ status: 401, json: { code: "UNAUTHORIZED", data: null } }),
+  );
+  await page.goto("/");
+  await expect(page.locator("[data-scene]").locator("xpath=..")).toHaveClass(
+    /pin-spacer/,
+  );
+  expect(calls).toBe(0);
+  const button = page.locator("header").getByRole("button");
+  await button.click();
+  await expect(button).toBeDisabled();
+  await expect(button).toHaveText("확인 중…");
+  await expect.poll(() => calls).toBe(1);
+  await button.evaluate((element: HTMLButtonElement) => element.click());
+  expect(calls).toBe(1);
+  release();
+  await expect(page).toHaveURL(/\/signup$/);
+});

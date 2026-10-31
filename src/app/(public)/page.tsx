@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { LandingScreen } from "./landing-screen";
+import { LandingScreen } from "./landing/landing-screen";
 
 export const metadata: Metadata = {
   title: "LOOK DDAK | 입어보기 전, 나에게 룩딱",

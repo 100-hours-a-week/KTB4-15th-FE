@@ -1,18 +1,10 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { ONBOARDING_COOKIE_NAME } from "@/features/onboarding/model/onboarding-cookie";
 
 const REQUEST_PATH_HEADER = "x-lookddak-request-path";
 const REFRESH_ATTEMPT_HEADER = "x-lookddak-refresh-attempted";
 const REFRESH_ATTEMPT_COOKIE = "lookddakRefreshAttempted";
 
 export function proxy(request: NextRequest) {
-  if (
-    request.nextUrl.pathname === "/onboarding" &&
-    request.cookies.get(ONBOARDING_COOKIE_NAME)?.value === "true"
-  ) {
-    return NextResponse.redirect(new URL("/login", request.url));
-  }
-
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set(
     REQUEST_PATH_HEADER,
@@ -38,8 +30,6 @@ export function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/",
-    "/onboarding",
     "/chat/:path*",
     "/fitting/:path*",
     "/fitting-results/:path*",
