@@ -1,9 +1,7 @@
 import { redirect } from "next/navigation";
 import { getCurrentFittingJobServer } from "@/features/fitting/api/fitting-job-server";
-import {
-  FittingFullBodyPhotoSection,
-  FittingOutfitSection,
-} from "@/features/fitting";
+import { FittingFullBodyPhotoSection } from "@/features/fitting/ui/entry/fitting-full-body-photo-section";
+import { FittingOutfitSection } from "@/features/fitting/ui/entry/fitting-outfit-section";
 import { getMemberProfileServer } from "@/features/profile/api/member-profile-server";
 import {
   isServerUnauthorizedError,

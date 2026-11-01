@@ -4,10 +4,8 @@ import Image, { type ImageLoaderProps } from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useIsMutating, useMutation, useQuery } from "@tanstack/react-query";
-import {
-  fullBodyImageMutationKey,
-  memberProfileQueryOptions,
-} from "@/features/profile";
+import { fullBodyImageMutationKey } from "@/features/profile/model/full-body-image-query";
+import { memberProfileQueryOptions } from "@/features/profile/model/member-profile-query";
 import { ApiError } from "@/shared/api/error";
 import type { ProductItemType } from "@/shared/schema/product";
 import { Button } from "@/shared/ui/button";

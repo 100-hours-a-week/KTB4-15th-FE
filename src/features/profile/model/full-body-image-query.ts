@@ -1,5 +1,4 @@
 import { useMutation } from "@tanstack/react-query";
-import { validateFullBodyImage } from "../api/full-body-image";
 
 export const fullBodyImageMutationKey = [
   "member",
@@ -10,6 +9,9 @@ export const fullBodyImageMutationKey = [
 export function useValidateFullBodyImageMutation() {
   return useMutation({
     mutationKey: [...fullBodyImageMutationKey, "validate"],
-    mutationFn: validateFullBodyImage,
+    mutationFn: async (file: File) => {
+      const { validateFullBodyImage } = await import("../api/full-body-image");
+      return validateFullBodyImage(file);
+    },
   });
 }

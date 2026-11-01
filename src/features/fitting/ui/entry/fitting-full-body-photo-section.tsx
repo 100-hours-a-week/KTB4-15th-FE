@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -11,11 +12,15 @@ import {
 import type { MemberProfile } from "@/features/profile/schema/member-profile";
 import { getApiErrorMessage } from "@/shared/api/error";
 import { Button } from "@/shared/ui/button";
-import { Dialog, DialogDescription, DialogTitle } from "@/shared/ui/dialog";
 import { RefreshIcon } from "@/shared/ui/icon";
-import { LoadingDots } from "@/shared/ui/loading-message";
 import { showToast } from "@/shared/ui/toast";
 import styles from "./fitting-full-body-photo-section.module.scss";
+
+const FittingPhotoProcessingDialog = dynamic(() =>
+  import("./fitting-photo-processing-dialog").then(
+    (module) => module.FittingPhotoProcessingDialog,
+  ),
+);
 
 export function FittingFullBodyPhotoSection({
   initialProfile,
@@ -117,22 +122,7 @@ export function FittingFullBodyPhotoSection({
       >
         {displayedErrorMessage}
       </p>
-      <Dialog
-        aria-busy="true"
-        className={styles.processingDialog}
-        onEscapeKeyDown={(event) => event.preventDefault()}
-        onOpenChange={() => undefined}
-        onPointerDownOutside={(event) => event.preventDefault()}
-        open={isPhotoPending}
-      >
-        <DialogTitle className={styles.processingTitle}>
-          사진을 확인하고 있어요
-          <LoadingDots />
-        </DialogTitle>
-        <DialogDescription className={styles.processingDescription}>
-          처리가 끝날 때까지 잠시만 기다려 주세요.
-        </DialogDescription>
-      </Dialog>
+      {isPhotoPending && <FittingPhotoProcessingDialog />}
     </section>
   );
 }
