@@ -1,6 +1,8 @@
 import * as z from "zod";
 import { productItemTypeSchema } from "@/shared/schema/product";
 
+export const WARDROBE_PAGE_SIZE = 10;
+
 export const fittingCandidateCreateResponse = z.object({
   fittingCandidateId: z.number().int().positive(),
   productId: z.number().int().positive(),

@@ -1,8 +1,8 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useEffect, useRef } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
+import { useScrollPagination } from "@/shared/hooks/use-scroll-pagination";
 import { Button } from "@/shared/ui/button";
 import { LoadingMessage } from "@/shared/ui/loading-message";
 import { wishlistListQueryOptions } from "../model/wishlist-query";
@@ -22,7 +22,6 @@ export function WishlistScreen({
     fetchNextPage,
     hasNextPage,
     isError,
-    isFetchedAfterMount,
     isFetching,
     isFetchingNextPage,
     isPending,
@@ -37,8 +36,15 @@ export function WishlistScreen({
       : undefined,
     staleTime: initialPage ? 30_000 : undefined,
   });
-  const loadMoreRef = useRef<HTMLDivElement>(null);
-  const showServerCards = Boolean(initialPage) && !isFetchedAfterMount;
+  const loadMoreRef = useScrollPagination({
+    enabled: Boolean(hasNextPage) && !isError,
+    isFetching,
+    fetchNextPage,
+  });
+  const showServerCards =
+    initialCards != null &&
+    initialPage != null &&
+    data?.pages[0] === initialPage;
   const products =
     data?.pages.slice(showServerCards ? 1 : 0).flatMap((page) => page.items) ??
     [];
@@ -47,20 +53,6 @@ export function WishlistScreen({
   const hasInitialProducts =
     showServerCards && Boolean(initialPage?.items.length);
   const hasProducts = hasInitialProducts || products.length > 0;
-
-  useEffect(() => {
-    const target = loadMoreRef.current;
-    if (!target || !hasNextPage) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && !isFetchingNextPage) void fetchNextPage();
-      },
-      { rootMargin: "200px 0px" },
-    );
-    observer.observe(target);
-    return () => observer.disconnect();
-  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
   return (
     <>
@@ -101,6 +93,16 @@ export function WishlistScreen({
             ))}
             <div className={styles.loadMore} ref={loadMoreRef}>
               {isFetchingNextPage && "찜 목록을 더 불러오고 있어요."}
+              {hasNextPage && !isError && (
+                <Button
+                  isLoading={isFetchingNextPage}
+                  onClick={() => void fetchNextPage()}
+                  size="small"
+                  variant="secondary"
+                >
+                  더 불러오기
+                </Button>
+              )}
               {isError && data && (
                 <Button
                   isLoading={isFetchingNextPage}
