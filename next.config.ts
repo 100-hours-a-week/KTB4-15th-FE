@@ -3,6 +3,12 @@ import { withSentryConfig } from "@sentry/nextjs/config";
 
 const nextConfig: NextConfig = {
   devIndicators: false,
+  async redirects() {
+    return [
+      { source: "/landing", destination: "/", permanent: true },
+      { source: "/onboarding", destination: "/", permanent: true },
+    ];
+  },
   images: {
     remotePatterns: [
       {
