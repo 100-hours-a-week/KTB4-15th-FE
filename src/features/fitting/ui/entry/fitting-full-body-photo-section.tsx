@@ -105,7 +105,7 @@ export function FittingFullBodyPhotoSection({
         />
         <Button
           className={`${styles.photoAction} ${styles.changePhotoButton}`}
-          isLoading={isPhotoPending}
+          disabled={isPhotoPending}
           leadingIcon={<RefreshIcon />}
           onClick={openPhotoPicker}
           size="small"

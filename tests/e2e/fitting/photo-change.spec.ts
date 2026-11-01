@@ -70,6 +70,16 @@ test("첫 클릭으로 파일을 선택하고 지연 로딩 후 검증·저장·
   const dialog = page.getByRole("dialog", { name: /사진을 확인하고 있어요/ });
   try {
     await expect(dialog).toBeVisible();
+    const spinner = dialog.locator('span[aria-hidden="true"]').first();
+    await expect(spinner).toHaveCSS("width", "24px");
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await expect(spinner).toHaveCSS("animation-name", "none");
+    const photoButton = page.getByRole("button", {
+      name: /사진 (변경|등록)/,
+      includeHidden: true,
+    });
+    await expect(photoButton).toBeDisabled();
+    await expect(photoButton).not.toHaveAttribute("aria-busy", "true");
     await page.keyboard.press("Escape");
     await expect(dialog).toBeVisible();
   } finally {

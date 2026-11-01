@@ -10,6 +10,7 @@ import {
 import styles from "./chat-message-list.module.scss";
 import type { ChatMessageResponse } from "../../schema/chat";
 import { Button } from "@/shared/ui/button";
+import { Spinner } from "@/shared/ui/spinner";
 import { formatKoreanDate } from "@/shared/utils/date-format";
 
 type ChatMessageListProps = {
@@ -191,7 +192,7 @@ export function ChatMessageList({
           className={styles.previousMessagesLoading}
           role="status"
         >
-          <span className={styles.spinner} />
+          <Spinner className={styles.spinner} />
         </div>
       )}
       {messageGroups.map((group) => (
