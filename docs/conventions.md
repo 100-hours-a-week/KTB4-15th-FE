@@ -60,3 +60,18 @@ pnpm check        # format, lint, type-check 일괄 실행
 - 현재 동작을 설명하는 상세 내용은 주제별 문서에 기록합니다.
 - 결정의 결과와 보류 항목은 [프로젝트 결정 사항](./project-decisions.md)에 기록합니다.
 - 날짜는 `YYYY-MM-DD` 형식으로 작성합니다.
+
+## TanStack Query 규칙
+
+- Query key는 도메인부터 시작하는 배열로 작성합니다. 고정 segment는 소문자 단일 단어를 사용하고, 목록은 복수형, 단일 리소스는 단수형으로 구분합니다.
+- 목록·상세·필터처럼 같은 리소스의 key가 반복되면 model의 key 정의나 factory를 재사용합니다. Query와 invalidation에서 같은 정의를 사용합니다.
+- Query variable은 해당 Query key에 포함합니다.
+- 재사용할 Query 설정은 `queryOptions` 또는 `infiniteQueryOptions`로 만들고, 컴포넌트에서는 `useQuery`나 `useInfiniteQuery`로 실행합니다.
+- `staleTime`은 데이터의 기본 freshness 정책입니다. mutation으로 서버 데이터가 변경되면 관련 Query를 명시적으로 무효화합니다.
+- Query 무효화는 캐시를 즉시 삭제하는 것이 아니라 stale 상태로 표시하는 동작입니다. 비활성 Query는 다음 활성화 시 최신 데이터를 가져옵니다.
+
+## 번들에 영향을 주는 import
+
+- 공통 레이아웃의 인증 가드와 알림 Provider는 구현 파일에서 직접 import해 다른 화면 코드가 초기 번들에 포함되지 않도록 합니다.
+- Zod는 `import * as z from "zod"`로 가져옵니다. 응답 스키마와 런타임 검증은 유지합니다.
+- 선택 근거와 비교 결과는 [랭킹 성능 개선 기록](./performance/ranking.md)을 참고합니다.

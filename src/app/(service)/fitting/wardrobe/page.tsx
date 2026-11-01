@@ -1,4 +1,45 @@
-import { FittingWardrobe } from "@/features/fitting";
+import { Suspense } from "react";
+import { CandidateCard } from "@/features/fitting/ui/wardrobe/fitting-wardrobe-card";
+import { FittingWardrobeScreen } from "@/features/fitting/ui/wardrobe/fitting-wardrobe-screen";
+import { FittingWardrobePageSkeleton } from "@/features/fitting/ui/wardrobe/fitting-wardrobe-skeleton";
+import { getFittingCandidatesServer } from "@/features/fitting/api/fitting-candidate-server";
+import {
+  isServerUnauthorizedError,
+  redirectOnServerUnauthorized,
+} from "@/shared/api/server";
+import type { ProductItemType } from "@/shared/schema/product";
+
+async function Screen({
+  initialFilter,
+}: {
+  initialFilter: ProductItemType | "ALL";
+}) {
+  const initialCandidates = await getFittingCandidatesServer(
+    initialFilter === "ALL" ? undefined : initialFilter,
+  ).catch((error: unknown) => {
+    if (isServerUnauthorizedError(error)) {
+      return redirectOnServerUnauthorized(error);
+    }
+  });
+
+  const firstImageCandidateId = initialCandidates?.items.find(
+    (product) => product.productImageUrl,
+  )?.fittingCandidateId;
+
+  return (
+    <FittingWardrobeScreen
+      initialCards={initialCandidates?.items.map((product) => (
+        <CandidateCard
+          key={product.fittingCandidateId}
+          priority={product.fittingCandidateId === firstImageCandidateId}
+          product={product}
+        />
+      ))}
+      initialCandidates={initialCandidates}
+      initialFilter={initialFilter}
+    />
+  );
+}
 
 export default async function FittingWardrobePage({
   searchParams,
@@ -7,5 +48,9 @@ export default async function FittingWardrobePage({
   const initialFilter =
     itemType === "TOP" || itemType === "BOTTOM" ? itemType : "ALL";
 
-  return <FittingWardrobe initialFilter={initialFilter} />;
+  return (
+    <Suspense fallback={<FittingWardrobePageSkeleton />}>
+      <Screen initialFilter={initialFilter} />
+    </Suspense>
+  );
 }

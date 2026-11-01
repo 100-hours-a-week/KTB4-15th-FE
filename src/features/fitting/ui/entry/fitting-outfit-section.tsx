@@ -9,12 +9,7 @@ import { memberProfileQueryOptions } from "@/features/profile/model/member-profi
 import { ApiError } from "@/shared/api/error";
 import type { ProductItemType } from "@/shared/schema/product";
 import { Button } from "@/shared/ui/button";
-import {
-  AiFittingIcon,
-  BottomIcon,
-  ChevronRightIcon,
-  TopIcon,
-} from "@/shared/ui/icon";
+import { BottomIcon, ChevronRightIcon, TopIcon } from "@/shared/ui/icon";
 import { showToast } from "@/shared/ui/toast";
 import { formatPrice } from "@/shared/utils/price-format";
 import { createFittingJob } from "../../api/fitting-job";
@@ -176,7 +171,6 @@ export function FittingOutfitSection() {
           disabled={!canStart}
           fullWidth
           isLoading={createFittingJobMutation.isPending}
-          leadingIcon={<AiFittingIcon />}
           onClick={handleStartFitting}
           size="large"
           trailingIcon={<span aria-hidden="true">→</span>}

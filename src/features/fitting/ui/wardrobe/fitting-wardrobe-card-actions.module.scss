@@ -1,0 +1,41 @@
+.button {
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+
+.selected {
+  border-color: var(--color-border-brand);
+  background: var(--color-background-selected);
+}
+
+.selectedForDelete {
+  border-color: var(--color-red-300);
+  background: var(--color-red-50);
+}
+
+.selectionMark {
+  display: grid;
+  width: 22px;
+  height: 22px;
+  place-items: center;
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-full);
+  color: var(--color-white);
+  font-size: 12px;
+
+  svg {
+    width: 12px;
+    height: 10px;
+  }
+}
+
+.selected .selectionMark {
+  border-color: var(--color-action-primary-default);
+  background: var(--color-action-primary-default);
+}
+
+.selectedForDelete .selectionMark {
+  border-color: var(--color-red-600);
+  background: var(--color-red-600);
+}
