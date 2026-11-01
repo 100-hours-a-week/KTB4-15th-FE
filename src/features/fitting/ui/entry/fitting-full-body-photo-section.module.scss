@@ -21,13 +21,6 @@
   object-position: center;
 }
 
-.imageBackdrop {
-  transform: scale(1.08);
-  filter: blur(18px);
-  object-fit: cover;
-  opacity: 0.35;
-}
-
 .emptyPhoto {
   @include type.body-medium;
 

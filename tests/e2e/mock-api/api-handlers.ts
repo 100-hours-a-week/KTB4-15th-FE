@@ -64,6 +64,18 @@ function currentProducts() {
 }
 
 export const testHandlers = [
+  http.get("*/members/me/profile", () => {
+    if (!scenario.fullBodyImageUrl) return;
+    return success({
+      email: "mock@lookddak.com",
+      name: "테스트 사용자",
+      age: null,
+      height: null,
+      weight: null,
+      priceAlertEnabled: true,
+      fullBodyImageUrl: scenario.fullBodyImageUrl,
+    });
+  }),
   http.get("*/members/me", ({ request }) => {
     if (!scenario.memberStatus) return;
     if (scenario.memberStatus === "unavailable")

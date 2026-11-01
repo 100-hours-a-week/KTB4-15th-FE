@@ -72,6 +72,7 @@ export function makeRoom(chatRoomId: number): MockChatRoom {
 }
 
 export type Scenario = {
+  fullBodyImageUrl?: string;
   memberStatus?:
     | "unauthenticated"
     | "incomplete"

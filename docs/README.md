@@ -18,6 +18,7 @@ LOOK DDAK 프론트엔드의 구조와 개발 기준을 관리합니다.
 
 - [랜딩 화면](./screens/landing.md): 화면 구성, 스크롤 연출과 반응형 기준
 - [랭킹 성능 개선 기록](./performance/ranking.md): 단계별 측정 결과, 실험과 한계
+- [피팅 성능 개선 기록](./performance/fitting.md): 전신 사진 초기 로딩 기준과 검증 범위
 
 ## 관리 원칙
 
