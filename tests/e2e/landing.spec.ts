@@ -101,6 +101,25 @@ test("reduced motion shows the result without pinning", async ({ page }) => {
   await expect(page.locator("[data-outro]")).toBeVisible();
   await expect(page.locator("[data-result]")).toBeVisible();
   await expect(page.locator(".pin-spacer")).toHaveCount(0);
+  const section = page.getByRole("region", {
+    name: "룩딱 기능 소개",
+    exact: true,
+  });
+  await expect(section).toHaveAttribute("data-details", "true");
+  const layout = await section.evaluate((element) => {
+    const sectionBounds = element.getBoundingClientRect();
+    const lastSlide = element
+      .querySelector("article:last-child")!
+      .getBoundingClientRect();
+    const faq = element.nextElementSibling!.getBoundingClientRect();
+    return {
+      bottom: sectionBounds.bottom,
+      contentBottom: lastSlide.bottom,
+      faqTop: faq.top,
+    };
+  });
+  expect(layout.contentBottom).toBeLessThanOrEqual(layout.bottom);
+  expect(layout.faqTop).toBeGreaterThanOrEqual(layout.bottom);
 });
 
 test("introduction moves horizontally and releases to the start link", async ({
@@ -122,7 +141,7 @@ test("introduction moves horizontally and releases to the start link", async ({
     "transform",
     "matrix(1, 0, 0, 1, 0, 0)",
   );
-  await page.mouse.wheel(0, 1500);
+  await page.mouse.wheel(0, 800);
   await expect(section).toHaveCSS("position", "fixed");
   const slides = page.locator("[data-track] article");
   await expect
@@ -147,16 +166,17 @@ test("introduction moves horizontally and releases to the start link", async ({
   const centeredX = await slides
     .nth(1)
     .evaluate((element) => element.getBoundingClientRect().left);
-  await page.mouse.wheel(0, 200);
+  await page.waitForTimeout(300);
+  await page.mouse.wheel(0, 100);
   await expect
     .poll(() => page.evaluate(() => window.scrollY))
-    .toBeGreaterThan(top + 1850);
+    .toBeGreaterThan(top + 950);
   await expect
     .poll(() =>
       slides.nth(1).evaluate((element) => element.getBoundingClientRect().left),
     )
     .toBeCloseTo(centeredX, 0);
-  await page.evaluate((y) => window.scrollTo(0, y), top + 3400);
+  await page.evaluate((y) => window.scrollTo(0, y), top + 1900);
   await expect
     .poll(() =>
       slides
@@ -255,8 +275,8 @@ test("introduction animations only play on the first visit", async ({
     (element) => element.getBoundingClientRect().top + scrollY,
   );
   for (const [selector, offset] of [
-    ["[data-crown]", 1700],
-    ["[data-bell]", 3400],
+    ["[data-crown]", 1000],
+    ["[data-bell]", 1900],
   ] as const) {
     await page.evaluate((y) => scrollTo(0, y), top + offset);
     await expect
@@ -274,7 +294,7 @@ test("introduction animations only play on the first visit", async ({
     );
   }
   await page.evaluate((y) => scrollTo(0, y), top - 100);
-  await page.evaluate((y) => scrollTo(0, y), top + 1700);
+  await page.evaluate((y) => scrollTo(0, y), top + 1000);
   await page.waitForTimeout(250);
   await expect(page.locator("[data-crown]")).toHaveCSS(
     "transform",
@@ -471,3 +491,102 @@ test("start only checks membership on click and blocks duplicate clicks", async 
   release();
   await expect(page).toHaveURL(/\/signup$/);
 });
+
+for (const width of [390, 1440]) {
+  test(`feature transitions snap at halfway at ${width}px`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height: 844 });
+    await page.goto("/");
+    const section = page.locator("[data-details]");
+    await expect(section.locator("xpath=..")).toHaveClass(/pin-spacer/);
+    const top = await section.evaluate(
+      (element) => element.getBoundingClientRect().top + scrollY,
+    );
+    for (const [offset, target] of [
+      [640, 400],
+      [650, 900],
+      [660, 900],
+      [1540, 1300],
+      [1550, 1800],
+      [1560, 1800],
+      [1540, 1300],
+      [640, 400],
+      [200, 200],
+      [2000, 2000],
+    ]) {
+      await page.evaluate((y) => scrollTo(0, y), top + offset);
+      await expect
+        .poll(() => page.evaluate(() => scrollY))
+        .toBeCloseTo(top + target, 0);
+      await expect
+        .poll(() =>
+          section.locator("[data-track]").evaluate((element) => {
+            const x = new DOMMatrixReadOnly(getComputedStyle(element).transform)
+              .m41;
+            return Math.abs(
+              x / element.parentElement!.clientWidth -
+                Math.round(x / element.parentElement!.clientWidth),
+            );
+          }),
+        )
+        .toBeLessThan(0.001);
+    }
+  });
+}
+
+test("large wheel gestures advance one feature at a time", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.goto("/");
+  const section = page.locator("[data-details]");
+  await expect(section.locator("xpath=..")).toHaveClass(/pin-spacer/);
+  const top = await section.evaluate(
+    (element) => element.getBoundingClientRect().top + scrollY,
+  );
+  await page.evaluate((y) => scrollTo(0, y), top + 200);
+  await expect(section).toHaveCSS("position", "fixed");
+  for (const target of [900, 1800, 1300, 400]) {
+    await page.mouse.wheel(0, target === 1300 || target === 400 ? -5000 : 5000);
+    await expect
+      .poll(() => page.evaluate(() => scrollY))
+      .toBeCloseTo(top + target, 0);
+    await page.mouse.wheel(0, target === 1300 || target === 400 ? -5000 : 5000);
+    await expect
+      .poll(() => page.evaluate(() => scrollY))
+      .toBeCloseTo(top + target, 0);
+    await page.waitForTimeout(300);
+  }
+  await page.mouse.wheel(0, -5000);
+  await expect.poll(() => page.evaluate(() => scrollY)).toBeLessThan(top);
+});
+
+for (const direction of [1, -1]) {
+  test(`large wheel entering features from ${direction > 0 ? "above" : "below"} cannot skip slides`, async ({
+    page,
+  }) => {
+    await page.emulateMedia({ reducedMotion: "no-preference" });
+    await page.goto("/");
+    const section = page.getByRole("region", {
+      name: "룩딱 기능 소개",
+      exact: true,
+    });
+    await expect(section.locator("xpath=..")).toHaveClass(/pin-spacer/);
+    const top = await section.evaluate(
+      (element) => element.getBoundingClientRect().top + scrollY,
+    );
+    await page.evaluate(
+      (y) => scrollTo(0, y),
+      top + (direction > 0 ? -100 : 2300),
+    );
+    await expect(section).not.toHaveAttribute("data-pinned");
+    await page.mouse.wheel(0, direction * 5000);
+    const target = top + (direction > 0 ? 900 : 1300);
+    await expect
+      .poll(() => page.evaluate(() => scrollY))
+      .toBeCloseTo(target, 0);
+    await page.mouse.wheel(0, direction * 5000);
+    await expect
+      .poll(() => page.evaluate(() => scrollY))
+      .toBeCloseTo(target, 0);
+  });
+}
