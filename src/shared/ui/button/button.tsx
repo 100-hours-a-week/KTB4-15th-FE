@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { Spinner } from "@/shared/ui/spinner";
 import { ButtonBase, type ButtonBaseProps } from "./button-base";
 import styles from "./button.module.scss";
 
@@ -58,7 +59,7 @@ export function Button({
           </span>
         )}
       </span>
-      {isLoading && <span aria-hidden="true" className={styles.spinner} />}
+      {isLoading && <Spinner className={styles.spinner} />}
     </ButtonBase>
   );
 }

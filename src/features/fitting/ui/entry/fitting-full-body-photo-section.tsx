@@ -1,6 +1,7 @@
 "use client";
 
-import Image, { type ImageLoaderProps } from "next/image";
+import dynamic from "next/dynamic";
+import Image from "next/image";
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useFullBodyPhoto } from "@/features/profile/hooks/use-full-body-photo";
@@ -8,20 +9,28 @@ import {
   memberProfileQueryOptions,
   useUpdateFullBodyImageMutation,
 } from "@/features/profile/model/member-profile-query";
+import type { MemberProfile } from "@/features/profile/schema/member-profile";
 import { getApiErrorMessage } from "@/shared/api/error";
 import { Button } from "@/shared/ui/button";
-import { Dialog, DialogDescription, DialogTitle } from "@/shared/ui/dialog";
 import { RefreshIcon } from "@/shared/ui/icon";
-import { LoadingDots } from "@/shared/ui/loading-message";
 import { showToast } from "@/shared/ui/toast";
 import styles from "./fitting-full-body-photo-section.module.scss";
 
-function passthroughImageLoader({ src }: ImageLoaderProps) {
-  return src;
-}
+const FittingPhotoProcessingDialog = dynamic(() =>
+  import("./fitting-photo-processing-dialog").then(
+    (module) => module.FittingPhotoProcessingDialog,
+  ),
+);
 
-export function FittingFullBodyPhotoSection() {
-  const { data: memberProfile } = useQuery(memberProfileQueryOptions);
+export function FittingFullBodyPhotoSection({
+  initialProfile,
+}: {
+  initialProfile?: MemberProfile;
+}) {
+  const { data: memberProfile } = useQuery({
+    ...memberProfileQueryOptions,
+    initialData: initialProfile,
+  });
   const updatePhotoMutation = useUpdateFullBodyImageMutation();
   const {
     displayedErrorMessage,
@@ -73,26 +82,15 @@ export function FittingFullBodyPhotoSection() {
     <section aria-label="내 전신 사진" className={styles.photoSection}>
       <div className={styles.card}>
         {fullBodyImageUrl ? (
-          <>
-            <Image
-              alt=""
-              aria-hidden="true"
-              className={styles.imageBackdrop}
-              fill
-              loader={passthroughImageLoader}
-              sizes="(max-width: 480px) calc(100vw - 40px), 320px"
-              src={fullBodyImageUrl}
-            />
-            <Image
-              alt="가상 피팅에 사용할 등록된 전신 사진"
-              className={styles.image}
-              fill
-              loader={passthroughImageLoader}
-              loading="eager"
-              sizes="(max-width: 480px) calc(100vw - 40px), 320px"
-              src={fullBodyImageUrl}
-            />
-          </>
+          <Image
+            alt="가상 피팅에 사용할 등록된 전신 사진"
+            className={styles.image}
+            fetchPriority="high"
+            fill
+            loading="eager"
+            sizes="320px"
+            src={fullBodyImageUrl}
+          />
         ) : (
           <p className={styles.emptyPhoto}>
             가상 피팅을 위한 전신 사진이 필요해요.
@@ -107,7 +105,7 @@ export function FittingFullBodyPhotoSection() {
         />
         <Button
           className={`${styles.photoAction} ${styles.changePhotoButton}`}
-          isLoading={isPhotoPending}
+          disabled={isPhotoPending}
           leadingIcon={<RefreshIcon />}
           onClick={openPhotoPicker}
           size="small"
@@ -124,22 +122,7 @@ export function FittingFullBodyPhotoSection() {
       >
         {displayedErrorMessage}
       </p>
-      <Dialog
-        aria-busy="true"
-        className={styles.processingDialog}
-        onEscapeKeyDown={(event) => event.preventDefault()}
-        onOpenChange={() => undefined}
-        onPointerDownOutside={(event) => event.preventDefault()}
-        open={isPhotoPending}
-      >
-        <DialogTitle className={styles.processingTitle}>
-          사진을 확인하고 있어요
-          <LoadingDots />
-        </DialogTitle>
-        <DialogDescription className={styles.processingDescription}>
-          처리가 끝날 때까지 잠시만 기다려 주세요.
-        </DialogDescription>
-      </Dialog>
+      {isPhotoPending && <FittingPhotoProcessingDialog />}
     </section>
   );
 }

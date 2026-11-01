@@ -1,10 +1,12 @@
 import { redirect } from "next/navigation";
 import { getCurrentFittingJobServer } from "@/features/fitting/api/fitting-job-server";
+import { FittingFullBodyPhotoSection } from "@/features/fitting/ui/entry/fitting-full-body-photo-section";
+import { FittingOutfitSection } from "@/features/fitting/ui/entry/fitting-outfit-section";
+import { getMemberProfileServer } from "@/features/profile/api/member-profile-server";
 import {
-  FittingFullBodyPhotoSection,
-  FittingOutfitSection,
-} from "@/features/fitting";
-import { redirectOnServerUnauthorized } from "@/shared/api/server";
+  isServerUnauthorizedError,
+  redirectOnServerUnauthorized,
+} from "@/shared/api/server";
 import { Header, HeaderTitle, NotificationLink } from "@/shared/ui/header";
 import styles from "./page.module.scss";
 
@@ -17,6 +19,14 @@ export default async function FittingPage() {
     redirect(`/fitting/jobs/${fittingJob.fittingJobId}`);
   }
 
+  const initialProfile = await getMemberProfileServer().catch(
+    (error: unknown) => {
+      if (isServerUnauthorizedError(error)) {
+        return redirectOnServerUnauthorized(error);
+      }
+    },
+  );
+
   return (
     <>
       <Header
@@ -24,7 +34,7 @@ export default async function FittingPage() {
         right={<NotificationLink />}
       />
       <main className={styles.main}>
-        <FittingFullBodyPhotoSection />
+        <FittingFullBodyPhotoSection initialProfile={initialProfile} />
         <FittingOutfitSection />
       </main>
     </>

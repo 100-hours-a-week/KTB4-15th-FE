@@ -10,7 +10,15 @@ const nextConfig: NextConfig = {
     ];
   },
   images: {
+    minimumCacheTTL: 60,
     remotePatterns: [
+      {
+        protocol: "https",
+        hostname:
+          "lookddak-dev-images-686496667254-ap-northeast-2.s3.ap-northeast-2.amazonaws.com",
+        pathname: "/body-images/**",
+        // Presigned URL마다 서명이 달라 search는 고정하지 않습니다.
+      },
       {
         hostname: "img.29cm.co.kr",
         protocol: "https",
