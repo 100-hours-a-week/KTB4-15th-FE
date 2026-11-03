@@ -12,7 +12,7 @@ import { Button } from "@/shared/ui/button";
 import { BottomIcon, ChevronRightIcon, TopIcon } from "@/shared/ui/icon";
 import { showToast } from "@/shared/ui/toast";
 import { formatPrice } from "@/shared/utils/price-format";
-import { createFittingJob } from "../../api/fitting-job";
+import type { FittingJobCreateRequest } from "../../schema/fitting-job";
 import { useFittingSelectionStore } from "../../store/fitting-selection-store";
 import { useRestoreFittingSelection } from "../../store/use-restore-fitting-selection";
 import type { FittingCandidate } from "../../schema/fitting-candidate";
@@ -103,7 +103,10 @@ export function FittingOutfitSection() {
     selectedCount > 0 && hasFullBodyImage && !isFullBodyImagePending;
 
   const createFittingJobMutation = useMutation({
-    mutationFn: createFittingJob,
+    mutationFn: async (request: FittingJobCreateRequest) => {
+      const { createFittingJob } = await import("../../api/fitting-job");
+      return createFittingJob(request);
+    },
     onSuccess: ({ fittingJobId }) => {
       clearSelection();
       router.push(`/fitting/jobs/${fittingJobId}`);

@@ -98,6 +98,7 @@ export type Scenario = {
   noProducts?: boolean;
   snapshot?: boolean;
   generatingFitting?: boolean;
+  holdMemberProfile?: boolean;
   failCurrentFitting?: boolean;
   wishlistLimit?: boolean;
   roomLimit?: boolean;

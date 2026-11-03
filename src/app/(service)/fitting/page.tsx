@@ -11,6 +11,8 @@ import { Header, HeaderTitle, NotificationLink } from "@/shared/ui/header";
 import styles from "./page.module.scss";
 
 export default async function FittingPage() {
+  // Handle profile rejection immediately, even when redirecting before it finishes.
+  const profileResultsPromise = Promise.allSettled([getMemberProfileServer()]);
   const fittingJob = await getCurrentFittingJobServer().catch(
     redirectOnServerUnauthorized,
   );
@@ -19,13 +21,15 @@ export default async function FittingPage() {
     redirect(`/fitting/jobs/${fittingJob.fittingJobId}`);
   }
 
-  const initialProfile = await getMemberProfileServer().catch(
-    (error: unknown) => {
-      if (isServerUnauthorizedError(error)) {
-        return redirectOnServerUnauthorized(error);
-      }
-    },
-  );
+  const [profileResult] = await profileResultsPromise;
+  if (
+    profileResult.status === "rejected" &&
+    isServerUnauthorizedError(profileResult.reason)
+  ) {
+    return redirectOnServerUnauthorized(profileResult.reason);
+  }
+  const initialProfile =
+    profileResult.status === "fulfilled" ? profileResult.value : undefined;
 
   return (
     <>

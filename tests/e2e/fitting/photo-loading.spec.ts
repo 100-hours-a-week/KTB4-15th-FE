@@ -51,3 +51,36 @@ test("전신 사진 최적화에 다른 S3 경로를 허용하지 않는다", as
   });
   expect(response.status()).toBe(400);
 });
+
+test.describe("진행 중인 피팅이 있는 경우", () => {
+  test.use({
+    scenario: {
+      generatingFitting: true,
+      holdMemberProfile: true,
+      fullBodyImageUrl: photoUrl,
+    },
+  });
+
+  test("프로필 응답을 기다리지 않고 피팅 작업 화면으로 이동한다", async ({
+    page,
+    request,
+  }) => {
+    await page.route("**/fitting/jobs/123", (route) =>
+      route.fulfill({ contentType: "text/html", body: "<p>피팅 작업</p>" }),
+    );
+    try {
+      await page.goto("/fitting", { timeout: 15_000 });
+      await expect(page).toHaveURL(/\/fitting\/jobs\/123$/);
+      const { data } = await (
+        await request.get(`${apiURL}/__test/requests`)
+      ).json();
+      expect(data.requests).toContainEqual({
+        method: "GET",
+        path: "/members/me/profile",
+        body: null,
+      });
+    } finally {
+      await request.post(`${apiURL}/__test/finish-profile`);
+    }
+  });
+});
