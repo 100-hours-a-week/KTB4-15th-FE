@@ -18,7 +18,7 @@ for (const fails of [false, true]) {
         }),
       );
     }, products[0]);
-    await page.route("**/_next/image?**", (route) =>
+    await page.route(photoUrl, (route) =>
       route.fulfill({
         contentType: "image/svg+xml",
         body: '<svg xmlns="http://www.w3.org/2000/svg"/>',

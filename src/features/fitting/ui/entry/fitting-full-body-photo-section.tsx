@@ -90,6 +90,7 @@ export function FittingFullBodyPhotoSection({
             loading="eager"
             sizes="320px"
             src={fullBodyImageUrl}
+            unoptimized
           />
         ) : (
           <p className={styles.emptyPhoto}>
