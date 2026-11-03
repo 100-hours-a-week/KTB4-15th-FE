@@ -4,17 +4,15 @@ import Image, { type ImageLoaderProps } from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useIsMutating, useMutation, useQuery } from "@tanstack/react-query";
-import {
-  fullBodyImageMutationKey,
-  memberProfileQueryOptions,
-} from "@/features/profile";
+import { fullBodyImageMutationKey } from "@/features/profile/model/full-body-image-query";
+import { memberProfileQueryOptions } from "@/features/profile/model/member-profile-query";
 import { ApiError } from "@/shared/api/error";
 import type { ProductItemType } from "@/shared/schema/product";
 import { Button } from "@/shared/ui/button";
 import { BottomIcon, ChevronRightIcon, TopIcon } from "@/shared/ui/icon";
 import { showToast } from "@/shared/ui/toast";
 import { formatPrice } from "@/shared/utils/price-format";
-import { createFittingJob } from "../../api/fitting-job";
+import type { FittingJobCreateRequest } from "../../schema/fitting-job";
 import { useFittingSelectionStore } from "../../store/fitting-selection-store";
 import { useRestoreFittingSelection } from "../../store/use-restore-fitting-selection";
 import type { FittingCandidate } from "../../schema/fitting-candidate";
@@ -105,7 +103,10 @@ export function FittingOutfitSection() {
     selectedCount > 0 && hasFullBodyImage && !isFullBodyImagePending;
 
   const createFittingJobMutation = useMutation({
-    mutationFn: createFittingJob,
+    mutationFn: async (request: FittingJobCreateRequest) => {
+      const { createFittingJob } = await import("../../api/fitting-job");
+      return createFittingJob(request);
+    },
     onSuccess: ({ fittingJobId }) => {
       clearSelection();
       router.push(`/fitting/jobs/${fittingJobId}`);

@@ -118,19 +118,11 @@
 }
 
 .spinner {
-  position: absolute;
-  width: var(--button-icon-size);
-  height: var(--button-icon-size);
-  border: 2px solid currentcolor;
-  border-right-color: transparent;
-  border-radius: var(--radius-full);
-  animation: button-spin var(--duration-spinner) linear infinite;
-}
+  --spinner-size: var(--button-icon-size);
+  --spinner-track-color: currentcolor;
+  --spinner-indicator-color: transparent;
 
-@keyframes button-spin {
-  to {
-    transform: rotate(360deg);
-  }
+  position: absolute;
 }
 
 @media (prefers-reduced-motion: reduce) {

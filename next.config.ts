@@ -10,6 +10,7 @@ const nextConfig: NextConfig = {
     ];
   },
   images: {
+    minimumCacheTTL: 60,
     remotePatterns: [
       {
         hostname: "img.29cm.co.kr",

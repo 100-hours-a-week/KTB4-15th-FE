@@ -14,6 +14,7 @@ let rooms = new Map<number, MockChatRoom>();
 let wishlistProductIds = new Set<number>();
 let fittingProductIds = new Set<number>();
 let finishStream: (() => void) | undefined;
+let finishProfile: (() => void) | undefined;
 export let requests: Array<{ method: string; path: string; body: unknown }> =
   [];
 export let unhandled: string[] = [];
@@ -64,6 +65,23 @@ function currentProducts() {
 }
 
 export const testHandlers = [
+  http.get("*/members/me/profile", async () => {
+    if (scenario.holdMemberProfile) {
+      await new Promise<void>((resolve) => {
+        finishProfile = resolve;
+      });
+    }
+    if (!scenario.fullBodyImageUrl) return;
+    return success({
+      email: "mock@lookddak.com",
+      name: "테스트 사용자",
+      age: null,
+      height: null,
+      weight: null,
+      priceAlertEnabled: true,
+      fullBodyImageUrl: scenario.fullBodyImageUrl,
+    });
+  }),
   http.get("*/members/me", ({ request }) => {
     if (!scenario.memberStatus) return;
     if (scenario.memberStatus === "unavailable")
@@ -92,6 +110,8 @@ export const testHandlers = [
   ),
   http.post("*/__test/reset", async ({ request }) => {
     finishStream?.();
+    finishProfile?.();
+    finishProfile = undefined;
     scenario = (await request.json()) as Scenario;
     rooms = new Map(scenario.rooms?.map((room) => [room.chatRoomId, room]));
     wishlistProductIds = new Set();
@@ -101,6 +121,11 @@ export const testHandlers = [
     return success(null);
   }),
   http.get("*/__test/requests", () => success({ requests, unhandled })),
+  http.post("*/__test/finish-profile", () => {
+    finishProfile?.();
+    finishProfile = undefined;
+    return success(null);
+  }),
   http.post("*/__test/finish-stream", () => {
     if (!finishStream) return failure("진행 중인 스트림이 없습니다.");
     finishStream();

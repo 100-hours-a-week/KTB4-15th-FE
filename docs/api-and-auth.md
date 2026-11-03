@@ -85,3 +85,7 @@ Server Component과 Route Handler에서는 `src/shared/api/server.ts`의 `server
 - Root Layout까지 렌더링할 수 없는 오류: `global-error.tsx`에서 최종 처리
 
 인증 Cookie 이름, 만료 시간, 갱신 주기와 CSRF 정책은 백엔드와 합의 후 이 문서에 반영합니다.
+
+## 전신 사진 제공 비교 실험
+
+인증 이미지 BFF 실험은 철회했습니다. 현재 `/fitting`은 프로필 API가 반환한 S3 presigned URL을 `unoptimized`로 직접 표시하고, 전신 사진의 S3 경로는 Next 이미지 최적화 허용 목록에서 제거했습니다. AI의 WebP 저장은 아직 확인하지 않았으므로 PNG URL이면 원본 PNG를 그대로 다운로드합니다. `/_next/image`는 소유자 인증을 하지 않으며 변환 캐시 만료는 S3 서명 만료와 연동되지 않습니다. 원본 서명 만료 뒤 변환본까지 접근 차단하는 보안 요구를 만족한 것으로 간주하지 않습니다. 기존 변환 캐시 파일을 삭제하거나 운영 배포한 것은 아닙니다. 측정 이력과 보류 사항은 [피팅 성능 기록](./performance/fitting.md)을 참고합니다.
