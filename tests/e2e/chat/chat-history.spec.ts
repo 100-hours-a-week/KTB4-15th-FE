@@ -66,7 +66,7 @@ test("이전 대화 조회 실패는 현재 대화를 유지하고 안내한 뒤
     { exact: true },
   );
   await expect(notice).toBeVisible();
-  expect(requests).toBe(2);
+  expect(requests).toBe(3);
   await expect(notice).toBeInViewport({ ratio: 1 });
   const screenshotPath = test
     .info()

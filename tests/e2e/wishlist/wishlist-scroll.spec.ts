@@ -114,3 +114,38 @@ for (const screen of ["wardrobe", "wishlist"] as const) {
     expect(requests).toBe(2);
   });
 }
+
+test("503 추가 조회는 총 세 번 시도한 뒤 수동 재시도를 표시한다", async ({
+  page,
+  request,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await request.post(`${apiURL}/__test/scenario`, {
+    data: {
+      wishlistProducts: Array.from({ length: 25 }, (_, index) => ({
+        ...products[0],
+        productId: index + 2000,
+      })),
+    },
+  });
+  let attempts = 0;
+  await page.route(`${apiURL}/wishlists?**`, async (route) => {
+    if (!new URL(route.request().url()).searchParams.has("cursor"))
+      return route.continue();
+    attempts += 1;
+    await route.fulfill({
+      status: 503,
+      json: { code: "ERROR", message: "일시적 오류", data: null },
+    });
+  });
+  await page.route("**/_next/image?**", (route) =>
+    route.fulfill({ status: 404, body: "unavailable" }),
+  );
+  await page.goto("/wishlists");
+  await page.locator('[class*="loadMore"]').scrollIntoViewIfNeeded();
+  await expect(
+    page.getByRole("button", { name: "다시 시도", exact: true }),
+  ).toBeVisible();
+  expect(attempts).toBe(3);
+});
+

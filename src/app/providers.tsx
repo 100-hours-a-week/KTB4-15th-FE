@@ -8,7 +8,11 @@ export function Providers({ children }: { children: ReactNode }) {
     () =>
       new QueryClient({
         defaultOptions: {
+          queries: {
+            retry: false,
+          },
           mutations: {
+            retry: false,
             networkMode: "always",
           },
         },
