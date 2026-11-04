@@ -6,7 +6,16 @@ import { handlers } from "../../src/mocks/handlers.ts";
 test("chat search matches message content rather than room titles", async () => {
   for (const [keyword, expectedIds] of [
     ["검정", [382]],
-    ["반바지", [381, 382, 383, 327]],
+    [
+      "반바지",
+      [
+        381,
+        382,
+        383,
+        327,
+        ...Array.from({ length: 16 }, (_, index) => 400 + index),
+      ],
+    ],
     ["출근", []],
   ] as const) {
     const response = await getResponse(

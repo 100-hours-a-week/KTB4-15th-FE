@@ -42,7 +42,7 @@ test("검색 결과를 응답 순서대로 메시지별로 표시하고 검색�
     items.map((item) => item.title),
   );
   await expect(results.locator("p")).toHaveText(
-    items.map((item) => `"${item.message}"`),
+    items.map((item) => item.message),
   );
   await expect(results.locator("mark")).toHaveText([
     "반바지",

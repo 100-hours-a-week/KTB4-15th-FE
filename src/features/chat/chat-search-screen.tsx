@@ -72,7 +72,6 @@ export function ChatSearchScreen() {
                       <ChevronRightIcon aria-hidden="true" />
                     </div>
                     <p className={styles.snippet}>
-                      &quot;
                       {splitByKeyword(item.message, debouncedKeyword).map(
                         (part, index) =>
                           part.highlighted ? (
@@ -81,7 +80,6 @@ export function ChatSearchScreen() {
                             part.text
                           ),
                       )}
-                      &quot;
                     </p>
                   </Link>
                 </li>
