@@ -6,6 +6,7 @@ import {
   type ChangeEvent,
 } from "react";
 import { getApiErrorMessage } from "@/shared/api/error";
+import { warmUpFullBodyImage } from "../api/full-body-image";
 import { getLocalPhotoErrorMessage } from "../lib/full-body-image-validation";
 import { useValidateFullBodyImageMutation } from "../model/full-body-image-query";
 
@@ -20,6 +21,7 @@ export function useFullBodyPhoto({
   const [errorMessage, setErrorMessage] = useState<string>();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const filePickerLockedRef = useRef(false);
+  const warmupRequestedRef = useRef(false);
   const validationMutation = useValidateFullBodyImageMutation();
 
   const validatePhoto = (file: File) => {
@@ -112,6 +114,11 @@ export function useFullBodyPhoto({
 
     const input = fileInputRef.current;
     if (!input) return;
+
+    if (!warmupRequestedRef.current) {
+      warmupRequestedRef.current = true;
+      void warmUpFullBodyImage();
+    }
 
     filePickerLockedRef.current = true;
     window.addEventListener(

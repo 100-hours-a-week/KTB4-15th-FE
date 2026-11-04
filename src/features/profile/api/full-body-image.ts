@@ -11,6 +11,16 @@ const fullBodyImageValidationResponseSchema = z.object({
   message: z.string(),
 });
 
+export async function warmUpFullBodyImage() {
+  try {
+    await apiClient.post("full-body-image/warmup", {
+      retry: { limit: 1, methods: [] },
+    });
+  } catch {
+    // Best-effort 요청이므로 실패해도 사진 선택·검증을 계속 진행한다.
+  }
+}
+
 export async function validateFullBodyImage(image: File) {
   const formData = new FormData();
   formData.append("image", image);

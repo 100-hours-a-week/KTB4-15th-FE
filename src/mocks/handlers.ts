@@ -333,6 +333,17 @@ export const handlers: RequestHandler[] = [
 
   http.get("*/members/me/profile", () => success(profile)),
 
+  http.post("*/full-body-image/warmup", () =>
+    HttpResponse.json(
+      {
+        code: "BODY_IMAGE_WARMUP_ACCEPTED",
+        data: null,
+        message: "전신 이미지 검증 사전 활성화 요청을 접수했습니다.",
+      },
+      { status: 202 },
+    ),
+  ),
+
   http.post("*/full-body-image/validate", () => {
     const appOrigin =
       typeof location === "undefined"
