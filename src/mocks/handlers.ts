@@ -159,10 +159,8 @@ export const handlers: RequestHandler[] = [
     }
 
     const normalizedKeyword = keyword.toLocaleLowerCase("ko-KR");
-    const items = chatSearchItems.filter(
-      ({ message, title }) =>
-        title.toLocaleLowerCase("ko-KR").includes(normalizedKeyword) ||
-        message.toLocaleLowerCase("ko-KR").includes(normalizedKeyword),
+    const items = chatSearchItems.filter(({ message }) =>
+      message.toLocaleLowerCase("ko-KR").includes(normalizedKeyword),
     );
 
     return HttpResponse.json({

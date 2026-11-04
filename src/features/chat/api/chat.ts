@@ -117,9 +117,10 @@ export async function getChatRooms(cursor: number | null = null) {
   return parseResponse(response, chatRoomListResponse);
 }
 
-export async function searchChatRooms(keyword: string) {
+export async function searchChatRooms(keyword: string, signal?: AbortSignal) {
   const response = await apiClient.get("chat-rooms", {
     searchParams: { keyword },
+    signal,
   });
 
   return parseResponse(response, chatSearchResponse);

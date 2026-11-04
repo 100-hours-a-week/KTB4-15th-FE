@@ -116,6 +116,11 @@ AI Message의 Recommendation은 하나 이상의 추천 상품을 포함할 수 
 - `src/features/chat/ui/product`: 추천 상품과 피팅 연동
 - `src/app/(service)/chat`: 채팅 Route
 
-## 보류 항목
+## 대화 내용 검색
 
-- 대화 내용 검색
+- `/chat/search`는 별도 제목 헤더와 검색창을 제공합니다.
+- 입력을 멈춘 뒤 300ms 후 검색하며 빈 검색어는 요청하지 않습니다.
+- API의 `items` 순서 그대로 메시지마다 카드를 표시합니다. 같은 대화도 합치지 않습니다.
+- MSW 검색은 제목이 아닌 메시지 내용에 검색어가 포함된 항목만 반환합니다.
+- 검색어는 URL의 `keyword`에 저장하여 뒤로 이동하거나 새로고침할 때 복원합니다.
+- Route는 Suspense 경계, Screen은 화면, `model/use-chat-search.ts`는 검색 상태와 조회를 담당합니다.

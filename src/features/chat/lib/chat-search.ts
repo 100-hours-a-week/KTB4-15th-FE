@@ -1,18 +1,3 @@
-import type { ChatSearchResponse } from "../schema/chat";
-
-type ChatSearchItem = ChatSearchResponse["items"][number];
-
-export function groupChatSearchItems(items: ChatSearchItem[]) {
-  return Array.from(
-    Map.groupBy(items, (item) => item.chatRoomId),
-    ([chatRoomId, messages]) => ({
-      chatRoomId,
-      title: messages[0].title,
-      messages,
-    }),
-  );
-}
-
 export function splitByKeyword(text: string, keyword: string) {
   if (!keyword) return [{ highlighted: false, text }];
 
