@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useScrollPagination } from "@/shared/hooks/use-scroll-pagination";
+import { PaginationStatus } from "@/shared/ui/pagination-status";
 import { Button } from "@/shared/ui/button";
 import { LoadingMessage } from "@/shared/ui/loading-message";
 import { wishlistListQueryOptions } from "../model/wishlist-query";
@@ -92,27 +93,13 @@ export function WishlistScreen({
               />
             ))}
             <div className={styles.loadMore} ref={loadMoreRef}>
-              {isFetchingNextPage && "찜 목록을 더 불러오고 있어요."}
-              {hasNextPage && !isError && (
-                <Button
-                  isLoading={isFetchingNextPage}
-                  onClick={() => void fetchNextPage()}
-                  size="small"
-                  variant="secondary"
-                >
-                  더 불러오기
-                </Button>
-              )}
-              {isError && data && (
-                <Button
-                  isLoading={isFetchingNextPage}
-                  onClick={() => void fetchNextPage()}
-                  size="small"
-                  variant="secondary"
-                >
-                  다시 시도
-                </Button>
-              )}
+              <PaginationStatus
+                isLoading={isFetchingNextPage}
+                isError={Boolean(isError && data)}
+                loadingLabel="찜 목록을 더 불러오고 있어요"
+                errorMessage="찜 목록을 더 불러오지 못했어요."
+                onRetry={() => void fetchNextPage()}
+              />
             </div>
           </div>
         </>

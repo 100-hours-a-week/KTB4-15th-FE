@@ -1,0 +1,23 @@
+.loading {
+  display: inline-flex;
+  visibility: hidden;
+  animation: reveal 0s 200ms forwards;
+}
+
+.error {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-md);
+  color: var(--color-text-secondary);
+  text-align: center;
+
+  p {
+    margin: 0;
+  }
+}
+
+@keyframes reveal {
+  to {
+    visibility: visible;
+  }
+}

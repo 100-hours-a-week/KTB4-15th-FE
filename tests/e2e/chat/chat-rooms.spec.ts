@@ -237,7 +237,25 @@ test.describe("대화 목록 추가 조회", () => {
       page.getByRole("button", { name: "대화 24 메뉴 열기", exact: true }),
     ).toHaveCount(1);
     await configure(request, { failRoomListPage: false });
+    let release: () => void = () => {};
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    await page.route(`${apiURL}/chat-rooms?**`, async (route) => {
+      await gate;
+      await route.continue();
+    });
     await page.getByRole("button", { name: "다시 시도", exact: true }).click();
+    await expect(
+      page.getByRole("status", { name: "대화를 더 불러오는 중" }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "다시 시도", exact: true }),
+    ).toHaveCount(0);
+    await expect(
+      page.getByText("추가 대화를 불러오지 못했어요", { exact: true }),
+    ).toHaveCount(0);
+    release();
     await expect(
       page.getByRole("button", { name: "대화 1 메뉴 열기", exact: true }),
     ).toHaveCount(1);

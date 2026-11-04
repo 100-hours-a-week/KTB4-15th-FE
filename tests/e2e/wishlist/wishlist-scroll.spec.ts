@@ -44,6 +44,12 @@ test("추가 목록을 붙여도 스크롤 위치를 유지하고 다시 내려�
   expect(requests).toBe(0);
   hydrate();
   await expect.poll(() => requests).toBe(1);
+  await expect(
+    page.getByRole("status", { name: "찜 목록을 더 불러오고 있어요" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "더 불러오기", exact: true }),
+  ).toHaveCount(0);
   const scrollBefore = await page.evaluate(() => window.scrollY);
   release();
   await expect(page.getByRole("article")).toHaveCount(40);
@@ -59,7 +65,7 @@ test("추가 목록을 붙여도 스크롤 위치를 유지하고 다시 내려�
 });
 
 for (const screen of ["wardrobe", "wishlist"] as const) {
-  test(`${screen}: 하단이 계속 보여도 멈추고 새 스크롤에서만 추가 조회한다`, async ({
+  test(`${screen}: 위로 되돌리지 않고 아래로 계속 스크롤해 추가 조회한다`, async ({
     page,
     request,
   }) => {
@@ -94,23 +100,109 @@ for (const screen of ["wardrobe", "wishlist"] as const) {
         page.getByRole("button", { name: "완료", exact: true }),
       ).toBeVisible();
     }
-    // 응답 뒤에도 감지 영역이 화면에 남는 조건을 고정한다.
-    await page.addStyleTag({
-      content:
-        '[class*="loadMore"] { position: fixed; bottom: 100px; height: 24px; }',
-    });
-    await page.mouse.wheel(0, 150);
-    await expect.poll(() => requests).toBe(1);
-    // 같은 스크롤 구간의 이동이 이어져도 추가 요청하지 않는다.
-    for (let step = 0; step < 6; step += 1) {
-      await page.mouse.wheel(0, 20);
-      await page.waitForTimeout(80);
+    await page.setViewportSize({ width: 390, height: 844 });
+    const cards =
+      screen === "wardrobe"
+        ? page.getByRole("button", { name: /연속 조회 상품/ })
+        : page.getByRole("article");
+    const pageSize = screen === "wardrobe" ? 10 : 20;
+    for (let nextPage = 1; nextPage <= 2; nextPage += 1) {
+      await page.mouse.wheel(0, 10000);
+      await expect(cards).toHaveCount(pageSize * (nextPage + 1));
+      expect(requests).toBe(nextPage);
     }
-    await page.waitForTimeout(1500);
-    expect(requests).toBe(1);
-    await page.mouse.wheel(0, 150);
-    await expect.poll(() => requests).toBe(2);
-    await page.waitForTimeout(1500);
-    expect(requests).toBe(2);
   });
 }
+
+test("503 추가 조회는 총 세 번 시도한 뒤 수동 재시도를 표시한다", async ({
+  page,
+  request,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await request.post(`${apiURL}/__test/scenario`, {
+    data: {
+      wishlistProducts: Array.from({ length: 25 }, (_, index) => ({
+        ...products[0],
+        productId: index + 2000,
+      })),
+    },
+  });
+  let attempts = 0;
+  await page.route(`${apiURL}/wishlists?**`, async (route) => {
+    if (!new URL(route.request().url()).searchParams.has("cursor"))
+      return route.continue();
+    attempts += 1;
+    await route.fulfill({
+      status: 503,
+      json: { code: "ERROR", message: "일시적 오류", data: null },
+    });
+  });
+  await page.route("**/_next/image?**", (route) =>
+    route.fulfill({ status: 404, body: "unavailable" }),
+  );
+  await page.goto("/wishlists");
+  await page.locator('[class*="loadMore"]').scrollIntoViewIfNeeded();
+  await expect(
+    page.getByRole("button", { name: "다시 시도", exact: true }),
+  ).toBeVisible();
+  expect(attempts).toBe(3);
+});
+
+test("스피너는 200ms 후 표시되며 빠른 완료에는 남지 않는다", async ({
+  page,
+  request,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await request.post(`${apiURL}/__test/scenario`, {
+    data: {
+      wishlistProducts: Array.from({ length: 60 }, (_, index) => ({
+        ...products[0],
+        productId: index + 3000,
+      })),
+    },
+  });
+  let release: () => void = () => {};
+  let gate = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  await page.route(`${apiURL}/wishlists?**`, async (route) => {
+    await gate;
+    await route.continue();
+  });
+  await page.route("**/_next/image?**", (route) =>
+    route.fulfill({ status: 404, body: "unavailable" }),
+  );
+  await page.goto("/wishlists");
+  const spinner = page.locator(
+    '[role="status"][aria-label="찜 목록을 더 불러오고 있어요"]',
+  );
+  await page.locator('[class*="loadMore"]').scrollIntoViewIfNeeded();
+  await spinner.waitFor({ state: "attached" });
+  await spinner.evaluate((element) => {
+    const animation = element.parentElement!.getAnimations()[0];
+    animation.pause();
+    animation.currentTime = 100;
+  });
+  await expect(spinner).toBeHidden();
+  release();
+  await expect(page.getByRole("article")).toHaveCount(40);
+  await expect(spinner).toHaveCount(0);
+  gate = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  await page.locator('[class*="loadMore"]').scrollIntoViewIfNeeded();
+  await spinner.waitFor({ state: "attached" });
+  await spinner.evaluate((element) => {
+    const animation = element.parentElement!.getAnimations()[0];
+    animation.pause();
+    animation.currentTime = 199;
+  });
+  await expect(spinner).toBeHidden();
+  await spinner.evaluate((element) => {
+    element.parentElement!.getAnimations()[0].currentTime = 200;
+  });
+  await expect(spinner).toBeVisible();
+  release();
+  await expect(page.getByRole("article")).toHaveCount(60);
+  await expect(spinner).toHaveCount(0);
+});
