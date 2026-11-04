@@ -139,7 +139,7 @@ test("추가 페이지 카드도 선택·편집을 지원한다", async ({ page,
   );
   await page.goto("/fitting/wardrobe?itemType=TOP");
   await page.getByRole("tab", { name: "하의", exact: true }).click();
-  await page.getByRole("button", { name: "더 불러오기", exact: true }).click();
+  await page.locator('[class*="loadMore"]').scrollIntoViewIfNeeded();
   const card = page.getByRole("button", { name: /추가 하의/ });
   await expect(card).toBeVisible();
   await card.click();
@@ -182,6 +182,9 @@ test("API·초기 HTML을 10개로 맞추고 다음 페이지와 전체 선택�
   ).toHaveLength(10);
   const cards = page.getByRole("button", { name: /실험 상품/ });
   await expect(cards).toHaveCount(10);
+  await expect(
+    page.getByRole("button", { name: "더 불러오기", exact: true }),
+  ).toHaveCount(0);
   expect(listRequests).toHaveLength(0);
   await page.getByRole("button", { name: "편집", exact: true }).click();
   const selectAll = page.getByRole("button", { name: /전체 선택/ });
@@ -218,6 +221,7 @@ test("추가 조회 실패 후 자동 요청을 멈추고 수동 재시도로 �
   page,
   request,
 }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
   await request.post(`${apiURL}/__test/scenario`, {
     data: {
       fittingCandidates: Array.from({ length: 11 }, (_, index) => ({
@@ -245,10 +249,12 @@ test("추가 조회 실패 후 자동 요청을 멈추고 수동 재시도로 �
     route.fulfill({ status: 404, body: "unavailable" }),
   );
   await page.goto("/fitting/wardrobe?itemType=TOP");
-  await page.getByRole("button", { name: "더 불러오기", exact: true }).click();
-  const retry = page.getByRole("button", { name: "더 불러오기 다시 시도" });
+  // 클릭을 위한 자동 스크롤도 추가 조회를 시작하므로 스크롤로 직접 진입한다.
+  await page.locator('[class*="loadMore"]').scrollIntoViewIfNeeded();
+  const retry = page.getByRole("button", { name: "다시 시도" });
   await expect(retry).toBeVisible({ timeout: 20000 });
   const failedAttempts = attempts;
+  expect(failedAttempts).toBe(1);
   await page.waitForTimeout(1500);
   expect(attempts).toBe(failedAttempts);
   await expect(page.getByRole("button", { name: /복구 상품/ })).toHaveCount(10);

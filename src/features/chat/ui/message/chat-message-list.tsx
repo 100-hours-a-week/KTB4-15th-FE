@@ -9,6 +9,7 @@ import {
 } from "./chat-message";
 import styles from "./chat-message-list.module.scss";
 import type { ChatMessageResponse } from "../../schema/chat";
+import { Spinner } from "@/shared/ui/spinner";
 import { Button } from "@/shared/ui/button";
 import { formatKoreanDate } from "@/shared/utils/date-format";
 
@@ -186,12 +187,8 @@ export function ChatMessageList({
         ref={loadMoreRef}
       />
       {isLoadingPreviousMessages && (
-        <div
-          aria-label="이전 메시지를 불러오는 중"
-          className={styles.previousMessagesLoading}
-          role="status"
-        >
-          <span className={styles.spinner} />
+        <div className={styles.previousMessagesLoading}>
+          <Spinner label="이전 메시지를 불러오는 중" />
         </div>
       )}
       {messageGroups.map((group) => (

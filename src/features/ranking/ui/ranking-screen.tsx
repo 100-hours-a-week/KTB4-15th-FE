@@ -133,19 +133,11 @@ export function RankingScreen({
                 />
               ))}
             {hasMore && (
-              <div className={styles.loadMore} ref={loadMoreRef}>
-                <Button
-                  onClick={() =>
-                    setVisibleCount((count) =>
-                      Math.min(count + RANKING_RENDER_BATCH_SIZE, totalCount),
-                    )
-                  }
-                  size="small"
-                  variant="secondary"
-                >
-                  상품 더 보기
-                </Button>
-              </div>
+              <div
+                aria-hidden="true"
+                className={styles.loadMore}
+                ref={loadMoreRef}
+              />
             )}
           </div>
         )}

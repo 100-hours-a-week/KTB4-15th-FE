@@ -2,7 +2,8 @@
 
 import Image, { type ImageLoaderProps } from "next/image";
 import Link from "next/link";
-import { useEffect, useRef } from "react";
+import { useScrollPagination } from "@/shared/hooks/use-scroll-pagination";
+import { PaginationStatus } from "@/shared/ui/pagination-status";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Button } from "@/shared/ui/button";
 import { LoadingMessage } from "@/shared/ui/loading-message";
@@ -25,23 +26,13 @@ export function FittingResultListScreen() {
     isPending,
     refetch,
   } = useInfiniteQuery(fittingResultListQueryOptions);
-  const loadMoreRef = useRef<HTMLDivElement>(null);
+  const loadMoreRef = useScrollPagination({
+    enabled: Boolean(hasNextPage) && !isError,
+    isFetching,
+    fetchNextPage,
+  });
   const results = data?.pages.flatMap((page) => page.items) ?? [];
   const isInitialError = isError && data == null;
-
-  useEffect(() => {
-    const target = loadMoreRef.current;
-    if (!target || !hasNextPage) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && !isFetchingNextPage) void fetchNextPage();
-      },
-      { rootMargin: "200px 0px" },
-    );
-    observer.observe(target);
-    return () => observer.disconnect();
-  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
   return (
     <main className={styles.screen}>
@@ -94,17 +85,13 @@ export function FittingResultListScreen() {
             </Link>
           ))}
           <div className={styles.loadMore} ref={loadMoreRef}>
-            {isFetchingNextPage && "저장 목록을 더 불러오고 있어요."}
-            {isError && data && (
-              <Button
-                isLoading={isFetchingNextPage}
-                onClick={() => void fetchNextPage()}
-                size="small"
-                variant="secondary"
-              >
-                다시 시도
-              </Button>
-            )}
+            <PaginationStatus
+              isLoading={isFetchingNextPage}
+              isError={Boolean(isError && data)}
+              loadingLabel="저장 목록을 더 불러오고 있어요"
+              errorMessage="저장 목록을 더 불러오지 못했어요."
+              onRetry={() => void fetchNextPage()}
+            />
           </div>
         </div>
       )}
