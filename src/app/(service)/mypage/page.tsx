@@ -7,6 +7,7 @@ import {
 } from "@/features/profile/ui/member-profile-section";
 import { Header, HeaderTitle, NotificationLink } from "@/shared/ui/header";
 import styles from "../page-layout.module.scss";
+import { AccountDeletion } from "./account-deletion";
 
 export default function MyPage() {
   return (
@@ -21,6 +22,7 @@ export default function MyPage() {
         </Suspense>
         <FittingResultSection />
         <AccountSection />
+        <AccountDeletion />
       </main>
     </>
   );
