@@ -28,8 +28,11 @@ for (const path of ["/fitting", "/profile/setup"]) {
         await button.click();
         await (await firstPicker).setFiles([]);
         await warmup;
-        // File Picker 복귀 시 적용되는 기존 300ms 중복 클릭 잠금이 풀리길 기다린다.
-        await page.waitForTimeout(350);
+        // setFiles([])는 네이티브 선택창의 cancel/focus 이벤트를 재현하지 않는다.
+        await page.locator('input[type="file"]').dispatchEvent("cancel");
+        await expect(
+          page.getByText("사진 등록이 취소되었습니다."),
+        ).toBeVisible();
         const secondPicker = page.waitForEvent("filechooser");
         await button.click();
         const validation = page.waitForRequest("**/full-body-image/validate");
