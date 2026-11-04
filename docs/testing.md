@@ -146,4 +146,20 @@ API 응답 고정 테스트는 프론트엔드 흐름을 검증합니다. 실제
 
 추가 조회 실패·복구 시나리오는 모바일 화면에서 하단 로딩 영역으로 스크롤해 시작합니다. `더 불러오기` 클릭을 위한 Playwright 자동 스크롤이 먼저 조회를 시작하면 버튼이 오류 상태로 교체되어 클릭이 대기할 수 있으므로, 스크롤 조회 후 재시도 버튼으로 복구를 검증합니다.
 
+## MSW 추가 조회 실패 UI 미리보기
+
+`NEXT_PUBLIC_API_MOCKING=enabled pnpm dev`로 개발 서버를 실행한 뒤 `/wishlists?mockPagination=fail` 또는 `/fitting/wardrobe?itemType=TOP&mockPagination=fail`을 엽니다. 초기 테스트 상품은 정상 표시되며 아래로 스크롤하면 추가 조회가 400으로 실패해 재시도 UI가 남습니다. 버튼을 눌러도 실패 상태를 유지하므로 화면을 확인할 수 있습니다. 일반 모드로 돌아가려면 `mockPagination=fail`을 URL에서 제거하고 새로고침합니다. 실제 API나 데이터는 변경하지 않습니다.
+
+채팅은 `/chat?mockPagination=fail`에서 대화 목록을 열고 아래로 스크롤하면 목록 추가 조회 실패·재시도 UI를 확인할 수 있습니다. `/chat/1?mockPagination=fail`에서 위로 스크롤하면 이전 메시지 조회 실패 토스트를 확인합니다.
+
+## 공통 무한 스크롤 MSW 모드
+
+`NEXT_PUBLIC_API_MOCKING=enabled pnpm dev` 실행 후 아래 페이지에 `mockPagination` 파라미터를 붙입니다.
+
+- `/wishlists`, `/fitting/wardrobe?itemType=TOP`, `/fitting-results`: 아래로 스크롤
+- `/chat`: 대화 목록을 열고 내부에서 아래로 스크롤
+- `/chat/1`: 위로 스크롤 (기존 토스트 방식)
+
+모드는 `fast`(즉시 성공), `slow`(추가 조회 1초 지연), `fail`(추가 조회 1초 후 계속 실패), `recover`(각 커서의 첫 조회 실패, 재시도 성공)입니다. 초기 목록은 성공하며 스피너는 공통 UI에서 200ms 후 표시됩니다. 모드를 바꾸거나 복구 시나리오를 초기화하려면 URL 변경 후 전체 새로고침합니다. 랭킹은 `/ranking`에서 자동 점진 표시를 확인하며 추가 API 조회가 없어 실패 모드는 적용하지 않습니다.
+
 무한 스크롤 목록(찜·옷장·피팅 저장 목록·대화 목록·이전 메시지)은 Query 자동 재시도를 끄고 ky의 `retry.limit: 2`만 사용합니다. 재시도 대상 오류는 최초 포함 최대 3회이며 400 등 비대상 오류는 1회 후 수동 재시도를 제공합니다. 401 토큰 갱신은 별도 인증 복구 흐름입니다.
