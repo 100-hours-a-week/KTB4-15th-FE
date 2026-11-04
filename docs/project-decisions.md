@@ -84,3 +84,7 @@
 - 로그인된 SSR과 5분 Next.js 데이터 캐시를 사용합니다. ECS별 갱신 시점 차이를 허용하며 페이지 전체 ISR은 보류합니다.
 - 현행 쿠키 인증과 공통 캐시 키를 유지하기 위해 `unstable_cache`를 사용합니다. `use cache` 전환은 Cache Components와 조회 인증 경계를 함께 검토하는 별도 작업으로 둡니다. 선택 근거와 대안은 [랭킹 캐시 문서](./domains/ranking.md#데이터-캐시)를 참고합니다.
 - 표시·이미지·점진 렌더링 규칙은 [랭킹 도메인](./domains/ranking.md), 측정 근거와 실험 이력은 [랭킹 성능 개선 기록](./performance/ranking.md)에서 관리합니다.
+
+## 회원 탈퇴 안내 (2026-11-04)
+
+- 탈퇴는 마이페이지의 공통 Dialog에서 이메일 문의로 안내합니다. 안내 주소와 랜딩 문의 주소는 `master@lookddak.com`을 사용합니다.
