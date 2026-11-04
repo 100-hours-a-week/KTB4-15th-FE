@@ -1,4 +1,4 @@
-import { http, HttpResponse, type RequestHandler } from "msw";
+import { delay, http, HttpResponse, type RequestHandler } from "msw";
 
 type MockProfile = {
   age: number | null;
@@ -95,7 +95,122 @@ const rankingItems = {
   ],
 } as const;
 
+function paginationMode(request: Request) {
+  return new URLSearchParams(
+    typeof window !== "undefined"
+      ? window.location.search
+      : new URL(request.url).search,
+  ).get("mockPagination");
+}
+
+const failedPaginationRequests = new Set<string>();
+
+async function paginationFailure(request: Request) {
+  const url = new URL(request.url);
+  if (!url.searchParams.has("cursor")) return;
+  const mode = paginationMode(request);
+  if (mode === "slow" || mode === "recover" || mode === "fail")
+    await delay(1000);
+  const key = `${url.pathname}:${url.searchParams.get("cursor")}`;
+  if (
+    mode === "fail" ||
+    (mode === "recover" && !failedPaginationRequests.has(key))
+  ) {
+    if (mode === "recover") failedPaginationRequests.add(key);
+    return HttpResponse.json(
+      { code: "MOCK_PAGINATION_ERROR", data: null, message: "추가 조회 실패" },
+      { status: 400 },
+    );
+  }
+}
+
 export const handlers: RequestHandler[] = [
+  http.get("*/chat-rooms", async ({ request }) => {
+    const failure = await paginationFailure(request);
+    if (failure) return failure;
+    const cursor =
+      Number(new URL(request.url).searchParams.get("cursor")) || 25;
+    const items = Array.from(
+      { length: Math.min(20, Math.max(0, cursor - 1)) },
+      (_, index) => ({
+        chatRoomId: cursor - index - 1,
+        title: `테스트 대화 ${cursor - index - 1}`,
+        lastMessageAt: "2026-11-04T00:00:00",
+      }),
+    );
+    return success({
+      items,
+      nextCursor: cursor > 21 ? items.at(-1)!.chatRoomId : null,
+      hasNext: cursor > 21,
+    });
+  }),
+  http.get("*/chat-rooms/:roomId", async ({ request, params }) => {
+    const failure = await paginationFailure(request);
+    if (failure) return failure;
+    const cursor =
+      Number(new URL(request.url).searchParams.get("cursor")) || 25;
+    const first = Math.max(1, cursor - 20);
+    const messages = Array.from({ length: cursor - first }, (_, index) => ({
+      messageId: first + index,
+      content: `이전 대화 ${first + index} — 추가 조회 실패 UI를 확인하는 테스트 메시지입니다.`,
+      createdAt: "2026-11-04T00:00:00",
+      senderType: "AI",
+      generationStatus: null,
+      recommendation: null,
+    }));
+    return success({
+      chatRoomId: Number(params.roomId),
+      title: `테스트 대화 ${params.roomId}`,
+      messages,
+      nextCursor: first > 1 ? first : null,
+      hasNext: first > 1,
+    });
+  }),
+  ...["fitting-candidates", "wishlists"].map((endpoint) =>
+    http.get(`*/${endpoint}`, async ({ request }) => {
+      const url = new URL(request.url);
+      const failure = await paginationFailure(request);
+      if (failure) return failure;
+      const size =
+        Number(url.searchParams.get("size")) ||
+        (endpoint === "wishlists" ? 20 : 10);
+      const cursor = Number(url.searchParams.get("cursor")) || 0;
+      const itemType = url.searchParams.get("itemType");
+      const allItems = Array.from({ length: 100 }, (_, index) => {
+        const id = index + 1;
+        return {
+          fittingCandidateId: id,
+          wishlistId: id,
+          productId: id,
+          productName: `테스트 상품 ${id}`,
+          productImageUrl: "/images/fixtures/virtual-fitting.png",
+          itemType: index % 2 === 0 ? "TOP" : "BOTTOM",
+          color: "네이비",
+          currentPrice: 42000,
+          wishedPrice: 42000,
+          priceChangeRate: 0,
+          purchaseUrl: "https://shop.example.com/products/101",
+          wishedAt: "2026-11-04T00:00:00",
+        };
+      }).filter(
+        (item) =>
+          endpoint !== "fitting-candidates" ||
+          !itemType ||
+          item.itemType === itemType,
+      );
+      const remaining = allItems.filter((item) => item.productId > cursor);
+      const items = remaining.slice(0, size);
+      const hasNext = remaining.length > items.length;
+      const nextCursor = hasNext ? items.at(-1)!.productId : null;
+      return success({
+        items,
+        totalCount: allItems.length,
+        hasNext,
+        nextCursor,
+      });
+    }),
+  ),
+
   http.get("*/notifications/stream", () => {
     const failed =
       typeof window !== "undefined" &&
@@ -487,7 +602,30 @@ export const handlers: RequestHandler[] = [
     });
   }),
 
-  http.get("*/fitting-results", () => {
+  http.get("*/fitting-results", async ({ request }) => {
+    if (paginationMode(request)) {
+      const failure = await paginationFailure(request);
+      if (failure) return failure;
+      const cursor =
+        Number(new URL(request.url).searchParams.get("cursor")) || 0;
+      const items = Array.from(
+        { length: Math.max(0, Math.min(10, 21 - cursor)) },
+        (_, index) => ({
+          fittingResultId: cursor + index + 1,
+          resultImageUrl: "/images/fixtures/virtual-fitting.png",
+          outfitName: `테스트 피팅 ${cursor + index + 1}`,
+          savedAt: "2026-11-04T00:00:00",
+        }),
+      );
+      const nextCursor = cursor + items.length;
+      return success({
+        items,
+        totalCount: 21,
+        hasNext: nextCursor < 21,
+        nextCursor: nextCursor < 21 ? nextCursor : null,
+      });
+    }
+
     const items = fittingResultSaved
       ? [
           {

@@ -40,7 +40,6 @@ export const chatRoomQueryOptions = (chatRoomId?: number) =>
     getNextPageParam: (lastPage) =>
       lastPage.hasNext ? lastPage.nextCursor : undefined,
     enabled: chatRoomId != null,
-    retry: false,
   });
 
 export function useCreateChatRoomMutation() {

@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { PaginationStatus } from "@/shared/ui/pagination-status";
 import { Button } from "@/shared/ui/button";
 import { Header, HeaderIconLink, HeaderTitle } from "@/shared/ui/header";
 import { BackIcon, CheckIcon, DeleteIcon, InfoIcon } from "@/shared/ui/icon";
@@ -178,30 +179,13 @@ export function FittingWardrobeScreen({
                 />
               ))}
             <div className={styles.loadMore} ref={loadMoreRef}>
-              {query.isFetchingNextPage && "상품을 더 불러오고 있어요."}
-              {query.hasNextPage && !query.isFetchNextPageError && (
-                <Button
-                  isLoading={query.isFetchingNextPage}
-                  onClick={() => void query.fetchNextPage()}
-                  size="small"
-                  variant="secondary"
-                >
-                  더 불러오기
-                </Button>
-              )}
-              {query.isFetchNextPageError && (
-                <div role="alert">
-                  <p>상품을 더 불러오지 못했어요.</p>
-                  <Button
-                    isLoading={query.isFetchingNextPage}
-                    onClick={() => void query.fetchNextPage()}
-                    size="small"
-                    variant="secondary"
-                  >
-                    더 불러오기 다시 시도
-                  </Button>
-                </div>
-              )}
+              <PaginationStatus
+                isLoading={query.isFetchingNextPage}
+                isError={query.isFetchNextPageError}
+                loadingLabel="상품을 더 불러오고 있어요"
+                errorMessage="상품을 더 불러오지 못했어요."
+                onRetry={() => void query.fetchNextPage()}
+              />
             </div>
           </div>
         </WardrobeSelectionContext>

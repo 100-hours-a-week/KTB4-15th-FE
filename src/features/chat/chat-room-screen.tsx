@@ -67,7 +67,7 @@ export function ChatRoomScreen({ chatRoomId }: { chatRoomId: number }) {
     const result = await fetchNextPage();
     if (result.isFetchNextPageError) {
       showToast.error(
-        "이전 메시지를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.",
+        "이전 메시지를 불러오지 못했어요.\n잠시 후 다시 시도해 주세요.",
         {
           id: "previous-chat-messages",
         },

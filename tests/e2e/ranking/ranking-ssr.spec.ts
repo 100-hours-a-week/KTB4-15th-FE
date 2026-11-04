@@ -127,7 +127,7 @@ test("랭킹을 12개씩 추가 표시하고 추가 API 조회 없이 끝까지 
   await expect(page.locator("article")).toHaveCount(24);
   await page.locator("article").last().scrollIntoViewIfNeeded();
   await expect(page.locator("article")).toHaveCount(36);
-  await page.getByRole("button", { name: "상품 더 보기" }).click();
+  await page.locator("article").last().scrollIntoViewIfNeeded();
   await expect(page.locator("article")).toHaveCount(48);
   await page.locator("article").last().scrollIntoViewIfNeeded();
   await expect(page.locator("article")).toHaveCount(55);
