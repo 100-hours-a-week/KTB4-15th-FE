@@ -1,6 +1,6 @@
 # 회원·프로필 도메인
 
-마지막 업데이트: 2026-10-10
+마지막 업데이트: 2026-11-04
 
 ## 목적
 
@@ -48,6 +48,12 @@
 
 ## 전신 사진 규칙
 
+### 검증 자원 사전 활성화
+
+`/fitting`의 사진 변경·등록과 `/profile/setup`의 사진 등록 버튼으로 File Picker를 열기 직전에 `POST /full-body-image/warmup`을 Body 없이 요청합니다. 사진 미리보기와 촬영 가이드의 사진 선택도 같은 흐름을 사용합니다. 화면 마운트당 첫 선택 시 한 번만 요청하며, 취소·실패 후 다시 선택해도 반복하지 않습니다.
+
+기존 Cookie 인증 Client를 사용하고 `401`은 공통 인증 갱신 흐름으로 처리합니다. 인증 갱신 후 재요청 외에는 자동 재시도하지 않습니다. `202`는 접수만 의미하며, 준비 상태를 폴링하지 않습니다. 응답을 기다리지 않고 File Picker를 열며, `429`, `5xx`, 네트워크 오류는 별도 로그나 사용자 알림 없이 무시하고 사진 선택·검증을 계속 진행합니다. AI 주소와 내부 키는 FE에서 사용하지 않습니다.
+
 ### 브라우저 검증
 
 - 확장자: JPG, JPEG, PNG
@@ -85,6 +91,7 @@
 | `GET`   | `/members/me/profile`       | 현재 Profile 조회     |
 | `POST`  | `/members/me/profile`       | 최초 Profile 등록     |
 | `PATCH` | `/members/me/profile`       | Profile 수정          |
+| `POST`  | `/full-body-image/warmup`   | 검증 자원 사전 활성화 |
 | `POST`  | `/full-body-image/validate` | 전신 사진 적합성 검증 |
 
 ## 관련 코드
