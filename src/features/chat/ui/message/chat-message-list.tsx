@@ -13,6 +13,9 @@ import { Button } from "@/shared/ui/button";
 import { formatKoreanDate } from "@/shared/utils/date-format";
 
 type ChatMessageListProps = {
+  anchorMessageId?: number | null;
+  hasNewerMessages?: boolean;
+  onLoadNewerMessages?: () => Promise<void>;
   hasPreviousMessages?: boolean;
   isGenerating?: boolean;
   isLoadingPreviousMessages?: boolean;
@@ -24,6 +27,9 @@ type ChatMessageListProps = {
 };
 
 export function ChatMessageList({
+  anchorMessageId,
+  hasNewerMessages = false,
+  onLoadNewerMessages,
   hasPreviousMessages = false,
   isGenerating = false,
   isLoadingPreviousMessages = false,
@@ -37,6 +43,9 @@ export function ChatMessageList({
   const isNearBottomRef = useRef(true);
   const [unreadReplyId, setUnreadReplyId] = useState<number | null>(null);
   const loadMoreRef = useRef<HTMLDivElement>(null);
+  const loadNewerRef = useRef<HTMLDivElement>(null);
+  const loadingNewerRef = useRef(false);
+  const hadNewerMessagesRef = useRef(hasNewerMessages);
   const isLoadingPreviousMessagesRef = useRef(false);
   const didInitialScrollRef = useRef(false);
   const latestMessageId = messages.at(-1)?.messageId;
@@ -90,8 +99,38 @@ export function ChatMessageList({
   }, []);
 
   useLayoutEffect(() => {
+    return () => {
+      if (anchorMessageId == null) return;
+      previousLatestMessageIdRef.current = undefined;
+      didInitialScrollRef.current = false;
+    };
+  }, [anchorMessageId]);
+
+  useLayoutEffect(() => {
     if (latestMessageId == null) return;
     const previousId = previousLatestMessageIdRef.current;
+    const hadNewerMessages = hadNewerMessagesRef.current;
+    hadNewerMessagesRef.current = hasNewerMessages;
+
+    if (previousId == null && anchorMessageId != null) {
+      const target = listRef.current?.querySelector<HTMLElement>(
+        `[data-message-id="${anchorMessageId}"]`,
+      );
+      target?.scrollIntoView({ block: "center", behavior: "instant" });
+      isNearBottomRef.current =
+        document.documentElement.scrollHeight -
+          window.scrollY -
+          window.innerHeight <
+        120;
+      previousLatestMessageIdRef.current = latestMessageId;
+      didInitialScrollRef.current = true;
+      return;
+    }
+
+    if (previousId != null && hadNewerMessages) {
+      previousLatestMessageIdRef.current = latestMessageId;
+      return;
+    }
     if (previousId === latestMessageId) return;
 
     const latestMessage = messages.at(-1)!;
@@ -118,7 +157,7 @@ export function ChatMessageList({
       didInitialScrollRef.current = true;
     });
     return () => cancelAnimationFrame(frameId);
-  }, [latestMessageId, messages]);
+  }, [anchorMessageId, hasNewerMessages, latestMessageId, messages]);
 
   useEffect(() => {
     const loadMoreElement = loadMoreRef.current;
@@ -141,16 +180,23 @@ export function ChatMessageList({
           return;
         }
 
-        const previousScrollHeight = document.documentElement.scrollHeight;
+        const firstMessage =
+          listRef.current?.querySelector("[data-message-id]");
+        if (!firstMessage) return;
         const previousScrollY = window.scrollY;
+        const previousTop =
+          firstMessage.getBoundingClientRect().top + previousScrollY;
 
         isLoadingPreviousMessagesRef.current = true;
         void onLoadPreviousMessages()
           .then((succeeded) => {
             if (!succeeded) return;
             requestAnimationFrame(() => {
+              if (!firstMessage.isConnected) return;
               const addedHeight =
-                document.documentElement.scrollHeight - previousScrollHeight;
+                firstMessage.getBoundingClientRect().top +
+                window.scrollY -
+                previousTop;
               window.scrollTo({
                 top: previousScrollY + addedHeight,
                 behavior: "auto",
@@ -172,6 +218,29 @@ export function ChatMessageList({
       observer.disconnect();
     };
   }, [hasPreviousMessages, onLoadPreviousMessages]);
+
+  useEffect(() => {
+    const trigger = loadNewerRef.current;
+    if (!hasNewerMessages || !trigger || !onLoadNewerMessages) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (
+          !entry.isIntersecting ||
+          !didInitialScrollRef.current ||
+          loadingNewerRef.current
+        )
+          return;
+        loadingNewerRef.current = true;
+        void onLoadNewerMessages().finally(() => {
+          loadingNewerRef.current = false;
+        });
+      },
+      { rootMargin: "0px 0px 200px" },
+    );
+    observer.observe(trigger);
+    return () => observer.disconnect();
+  }, [hasNewerMessages, latestMessageId, onLoadNewerMessages]);
 
   return (
     <div
@@ -206,30 +275,31 @@ export function ChatMessageList({
           >
             {group.dateLabel}
           </time>
-          {group.messages.map((message) =>
-            message.senderType === "USER" ? (
-              <UserChatMessage
-                canRetry={
-                  message.messageId === latestMessageId &&
-                  message.generationStatus === "FAILED"
-                }
-                isRetryPending={isRetryPending}
-                key={message.messageId}
-                message={message}
-                onRetryMessage={onRetryMessage}
-              />
-            ) : (
-              <div
-                className={styles.reply}
-                data-message-id={message.messageId}
-                key={message.messageId}
-              >
+          {group.messages.map((message) => (
+            <div
+              className={`${message.senderType === "AI" ? styles.reply : ""} ${message.messageId === anchorMessageId ? styles.anchor : ""}`}
+              data-message-id={message.messageId}
+              key={message.messageId}
+            >
+              {message.senderType === "USER" ? (
+                <UserChatMessage
+                  canRetry={
+                    !hasNewerMessages &&
+                    message.messageId === latestMessageId &&
+                    message.generationStatus === "FAILED"
+                  }
+                  isRetryPending={isRetryPending}
+                  message={message}
+                  onRetryMessage={onRetryMessage}
+                />
+              ) : (
                 <AIChatMessage message={message} />
-              </div>
-            ),
-          )}
+              )}
+            </div>
+          ))}
         </section>
       ))}
+      {hasNewerMessages && <div aria-hidden="true" ref={loadNewerRef} />}
       {unreadReplyId != null && (
         <div className={styles.newReply}>
           <Button

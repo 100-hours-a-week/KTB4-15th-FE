@@ -96,15 +96,16 @@ export const chatMessageResponse = z.discriminatedUnion("senderType", [
 
 export type ChatMessageResponse = z.infer<typeof chatMessageResponse>;
 
-export const chatRoomDetailResponse = z.object({
+export const chatMessageContextResponse = z.object({
   chatRoomId: z.number().int().positive(),
   title: z.string(),
   messages: z.array(chatMessageResponse),
   nextCursor: z.number().int().positive().nullable(),
   hasNext: z.boolean(),
+  anchorMessageId: z.number().int().positive().nullable(),
+  previousCursor: z.number().int().positive().nullable(),
+  hasPrevious: z.boolean(),
 });
-
-export type ChatRoomDetailResponse = z.infer<typeof chatRoomDetailResponse>;
 
 export const chatStreamEvent = z.discriminatedUnion("type", [
   z.object({

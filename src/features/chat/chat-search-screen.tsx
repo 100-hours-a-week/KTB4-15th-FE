@@ -65,7 +65,8 @@ export function ChatSearchScreen() {
                 <li key={`${item.chatRoomId}-${item.messageId}`}>
                   <Link
                     className={styles.card}
-                    href={`/chat/${item.chatRoomId}`}
+                    href={`/chat/${item.chatRoomId}?messageId=${item.messageId}`}
+                    scroll={false}
                   >
                     <div className={styles.cardTitle}>
                       <strong>{item.title}</strong>

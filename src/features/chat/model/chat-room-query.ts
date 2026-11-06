@@ -26,20 +26,49 @@ export const chatRoomListQueryOptions = infiniteQueryOptions({
       : undefined,
 });
 
-export const chatRoomQueryOptions = (chatRoomId?: number) =>
+export const chatRoomQueryOptions = (
+  chatRoomId: number,
+  anchorMessageId?: number,
+) =>
   infiniteQueryOptions({
-    queryKey: chatRoomQueryKeys.detail(chatRoomId),
-    queryFn: ({ pageParam }) => {
-      if (chatRoomId == null) {
-        throw new Error("채팅방 ID가 없습니다.");
-      }
-
-      return getChatRoom(chatRoomId, pageParam);
-    },
+    queryKey: [...chatRoomQueryKeys.detail(chatRoomId), anchorMessageId],
+    queryFn: ({ pageParam }) =>
+      getChatRoom(
+        chatRoomId,
+        pageParam != null
+          ? anchorMessageId == null
+            ? { before: pageParam }
+            : { after: pageParam }
+          : anchorMessageId == null
+            ? null
+            : { aroundMessageId: anchorMessageId },
+      ),
     initialPageParam: null as number | null,
     getNextPageParam: (lastPage) =>
-      lastPage.hasNext ? lastPage.nextCursor : undefined,
-    enabled: chatRoomId != null,
+      anchorMessageId == null
+        ? lastPage.hasPrevious
+          ? lastPage.previousCursor
+          : undefined
+        : lastPage.hasNext
+          ? lastPage.nextCursor
+          : undefined,
+    retry: false,
+  });
+
+export const chatRoomOlderQueryOptions = (
+  chatRoomId: number,
+  cursor: number | null,
+) =>
+  infiniteQueryOptions({
+    queryKey: [...chatRoomQueryKeys.detail(chatRoomId), "before", cursor],
+    queryFn: ({ pageParam }) => {
+      if (pageParam == null) throw new Error("이전 메시지 커서가 없습니다.");
+      return getChatRoom(chatRoomId, { before: pageParam });
+    },
+    initialPageParam: cursor,
+    getNextPageParam: (lastPage) =>
+      lastPage.hasPrevious ? lastPage.previousCursor : undefined,
+    enabled: false,
     retry: false,
   });
 

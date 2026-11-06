@@ -1,5 +1,8 @@
 import { http, HttpResponse, passthrough, type RequestHandler } from "msw";
 
+import type { ChatMessageResponse } from "../features/chat/schema/chat.ts";
+import { chatHistoryPage } from "./chat-history.ts";
+
 type MockProfile = {
   age: number | null;
   email: string;
@@ -151,7 +154,96 @@ const chatSearchItems = [
   })),
 ] as const;
 
+const mockChatRooms = new Map(
+  [25, 18, 12].map((chatRoomId) => {
+    const results = chatSearchItems.filter(
+      (item) => item.chatRoomId === chatRoomId,
+    );
+    const matches = new Map<number, string>(
+      results.map((item) => [item.messageId, item.message]),
+    );
+    const firstId = Math.min(...matches.keys()) - 25;
+    const lastId = Math.max(...matches.keys()) + 25;
+    const messages = Array.from(
+      { length: lastId - firstId + 1 },
+      (_, index): ChatMessageResponse => {
+        const messageId = firstId + index;
+        const match = matches.get(messageId);
+        const createdAt = new Date(
+          Date.UTC(2026, 10, 3, 0, index),
+        ).toISOString();
+        return match
+          ? {
+              messageId,
+              createdAt,
+              content: match,
+              senderType: "USER",
+              generationStatus: "COMPLETED",
+              recommendation: null,
+            }
+          : {
+              messageId,
+              createdAt,
+              content: `스타일링 대화 ${messageId}`,
+              senderType: "AI",
+              generationStatus: null,
+              recommendation: null,
+            };
+      },
+    );
+    return [
+      chatRoomId,
+      { chatRoomId, title: results[0].title, messages },
+    ] as const;
+  }),
+);
+
 export const handlers: RequestHandler[] = [
+  http.get("*/chat-rooms/:roomId/messages", ({ request, params }) => {
+    const room = mockChatRooms.get(Number(params.roomId));
+    if (!room) return passthrough();
+    const page = chatHistoryPage(room, new URL(request.url).searchParams);
+    if (page) return success(page);
+    return HttpResponse.json(
+      {
+        code: "CHAT_MESSAGE_NOT_FOUND",
+        data: null,
+        message: "메시지를 찾을 수 없습니다.",
+      },
+      { status: 404 },
+    );
+  }),
+  http.post("*/chat-rooms/:roomId/messages", async ({ request, params }) => {
+    const room = mockChatRooms.get(Number(params.roomId));
+    if (!room) return passthrough();
+    const { content } = (await request.json()) as { content: string };
+    const messageId = room.messages.at(-1)!.messageId + 1;
+    const createdAt = new Date().toISOString();
+    room.messages.push(
+      {
+        messageId,
+        content,
+        createdAt,
+        senderType: "USER",
+        generationStatus: "COMPLETED",
+        recommendation: null,
+      },
+      {
+        messageId: messageId + 1,
+        content: "스타일링 요청을 확인했어요.",
+        createdAt,
+        senderType: "AI",
+        generationStatus: null,
+        recommendation: null,
+      },
+    );
+    return success({
+      chatRoomId: room.chatRoomId,
+      messageId,
+      content,
+      createdAt,
+    });
+  }),
   http.get("*/chat-rooms", ({ request }) => {
     const searchParams = new URL(request.url).searchParams;
 
