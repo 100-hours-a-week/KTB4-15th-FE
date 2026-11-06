@@ -1,4 +1,5 @@
 import { http, HttpResponse } from "msw";
+import { chatHistoryPage } from "../../../src/mocks/chat-history.ts";
 import { handlers } from "../../../src/mocks/handlers.ts";
 import {
   createdAt,
@@ -114,7 +115,9 @@ export const testHandlers = [
     return success(null);
   }),
   http.get("*/chat-rooms", ({ request }) => {
-    const cursor = Number(new URL(request.url).searchParams.get("cursor"));
+    const searchParams = new URL(request.url).searchParams;
+    if (searchParams.has("keyword")) return;
+    const cursor = Number(searchParams.get("cursor"));
     if (scenario.failRoomList || (cursor && scenario.failRoomListPage))
       return failure("목록 조회 실패");
     const sorted = [...rooms.values()]
@@ -152,22 +155,22 @@ export const testHandlers = [
     const { content } = (await request.json()) as { content: string };
     return success(addMessage(content, chatRoomId));
   }),
-  http.get("*/chat-rooms/:roomId", ({ request, params }) => {
+  http.get("*/chat-rooms/:roomId/messages", ({ request, params }) => {
     if (scenario.deniedRoom)
       return failure("접근 불가", 403, "CHAT_ROOM_ACCESS_DENIED");
     const room = rooms.get(Number(params.roomId));
     if (!room) return failure("채팅방 없음", 404, "CHAT_ROOM_NOT_FOUND");
-    const cursor = Number(new URL(request.url).searchParams.get("cursor"));
-    if (scenario.failRoomDetail || (cursor && scenario.failHistory))
+    const searchParams = new URL(request.url).searchParams;
+    if (
+      scenario.failRoomDetail ||
+      (searchParams.has("before") && scenario.failHistory)
+    )
       return failure("메시지 조회 실패");
-    const all = room.messages.filter(
-      (item) => !cursor || item.messageId < cursor,
-    );
-    const page = all.slice(-20);
+    const page = chatHistoryPage(room, searchParams);
+    if (!page) return failure("메시지 없음", 404, "CHAT_MESSAGE_NOT_FOUND");
     return success({
-      chatRoomId: room.chatRoomId,
-      title: room.title,
-      messages: page.map((item) =>
+      ...page,
+      messages: page.messages.map((item) =>
         item.senderType === "AI" && item.recommendation
           ? {
               ...item,
@@ -178,8 +181,6 @@ export const testHandlers = [
             }
           : item,
       ),
-      nextCursor: all.length > 20 ? page[0].messageId : null,
-      hasNext: all.length > 20,
     });
   }),
   http.patch("*/chat-rooms/:roomId", async ({ request, params }) => {
