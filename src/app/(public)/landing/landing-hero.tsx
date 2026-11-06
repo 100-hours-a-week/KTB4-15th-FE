@@ -144,7 +144,7 @@ export function LandingHero() {
               </div>
               <div className={styles.fittingScreen} data-fitting>
                 <div className={styles.screenHeader}>
-                  <span>내 모습으로 입어봤어요</span>
+                  <span>내 모습에 입혀봤어요</span>
                 </div>
                 <div className={styles.fittingCard}>
                   <div className={styles.photo} data-photo>
@@ -191,9 +191,6 @@ export function LandingHero() {
           </div>
         </div>
       </div>
-      <p className={styles.scrollHint}>
-        <span aria-hidden="true">↓</span>
-      </p>
     </section>
   );
 }

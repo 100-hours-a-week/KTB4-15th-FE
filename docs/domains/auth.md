@@ -28,7 +28,7 @@
 
 1. 마이 페이지에서 `POST /bff/auth/logout`을 요청합니다.
 2. 성공하면 피팅 선택과 모든 TanStack Query Cache를 제거합니다.
-3. `/login`으로 이동한 뒤 Route를 새로 고칩니다.
+3. 공개 랜딩(`/`)으로 이동한 뒤 Route를 새로 고칩니다.
 
 ### 세션 만료
 

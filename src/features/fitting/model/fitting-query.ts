@@ -1,3 +1,4 @@
+import { WARDROBE_PAGE_SIZE } from "../schema/fitting-candidate";
 import {
   infiniteQueryOptions,
   queryOptions,
@@ -55,7 +56,11 @@ export const fittingCandidatesQueryOptions = (itemType?: ProductItemType) =>
   infiniteQueryOptions({
     queryKey: fittingQueryKeys.candidateList(itemType),
     queryFn: ({ pageParam }) =>
-      getFittingCandidates({ cursor: pageParam, itemType, size: 20 }),
+      getFittingCandidates({
+        cursor: pageParam,
+        itemType,
+        size: WARDROBE_PAGE_SIZE,
+      }),
     initialPageParam: undefined as number | undefined,
     getNextPageParam: (lastPage) =>
       lastPage.hasNext ? (lastPage.nextCursor ?? undefined) : undefined,

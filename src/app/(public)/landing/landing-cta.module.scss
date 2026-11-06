@@ -8,6 +8,7 @@
 }
 
 .cta {
+  position: relative;
   display: flex;
   flex: 1;
   flex-direction: column;
@@ -15,6 +16,18 @@
   justify-content: center;
   padding: 90px 24px;
   text-align: center;
+  background: #e8eee5;
+
+  &::before {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    height: 80px;
+    background: linear-gradient(to bottom, #faf9f6, #e8eee5);
+    content: "";
+    pointer-events: none;
+  }
 }
 
 .cta h2 {

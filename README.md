@@ -48,25 +48,39 @@ pnpm check        # 포맷, lint, 타입 검사 일괄 실행
 ## 프로젝트 구조
 
 ```text
-src/
-├── app/                         # Route, Layout, Page
-│   ├── (public)/                # 랜딩과 인증 화면
-│   │   ├── (auth)/            # 로그인, 회원가입 화면
-│   │   ├── page.tsx           # 공개 랜딩 /
-│   │   └── landing/            # 랜딩 전용 컴포넌트와 스타일
-│   └── (service)/
-│       ├── layout.tsx          # 서비스 인증 공통 적용
-│       ├── service-shell.tsx   # Navigation, PageShell, 화면 전환
-│       ├── chat/               # 채팅 화면
-│       ├── fitting/            # 가상 피팅 화면
-│       ├── mypage/             # 마이 페이지
-│       └── profile/            # 프로필 화면
-├── features/                    # 비즈니스 기능별 UI, API 타입, Fixture
-├── shared/
-│   ├── api/                     # 공통 API 응답 타입과 서버·클라이언트 요청 설정
-│   ├── ui/                      # 기능에 종속되지 않는 공통 UI
-│   └── utils/                   # 범용 Utility
-└── styles/                      # 전역 Design Token과 Mixin
+fe/
+├── docs/                            # 아키텍처, 도메인 규칙과 성능 개선 기록
+├── public/                          # 정적 파일
+├── src/
+│   ├── app/                         # 라우트, 레이아웃과 라우트 전용 코드
+│   │   ├── (public)/                # 공개 랜딩과 인증 화면
+│   │   │   ├── (auth)/              # 로그인, 회원가입
+│   │   │   ├── page.tsx             # 공개 랜딩 /
+│   │   │   └── landing/             # 랜딩 전용 컴포넌트와 스타일
+│   │   ├── (service)/               # 인증이 필요한 서비스 화면
+│   │   │   ├── layout.tsx           # 서비스 인증 공통 적용
+│   │   │   ├── service-shell.tsx    # 내비게이션, 페이지 표면과 화면 전환
+│   │   │   ├── chat/                # 채팅 목록과 대화방
+│   │   │   ├── fitting/             # 피팅 홈, 옷장 목록과 작업 상태
+│   │   │   ├── fitting-results/     # 피팅 결과 목록과 상세
+│   │   │   ├── mypage/              # 마이 페이지
+│   │   │   ├── notifications/       # 알림 목록
+│   │   │   ├── profile/             # 프로필 설정
+│   │   │   ├── ranking/             # 상품 랭킹
+│   │   │   └── wishlists/           # 찜 목록
+│   │   ├── bff/auth/                # 인증 갱신·로그아웃 Route Handler
+│   │   └── health/                  # 상태 확인 Route Handler
+│   ├── features/                    # 도메인별 UI, API, 스키마와 상태 관리
+│   ├── mocks/                       # MSW 기반 API 모킹
+│   ├── shared/
+│   │   ├── api/                     # 공통 API 응답 타입과 요청 설정
+│   │   ├── assets/                  # 공통 이미지
+│   │   ├── monitoring/              # 모니터링 공통 설정
+│   │   ├── schema/                  # 공통 데이터 스키마
+│   │   ├── ui/                      # 공통 UI
+│   │   └── utils/                   # 공통 유틸리티
+│   └── styles/                      # 전역 디자인 토큰과 Mixin
+└── tests/                           # 단위 테스트와 브라우저 테스트
 ```
 
 서비스 라우트는 URL의 도메인 계층과 같은 폴더 구조로 구성합니다. `(service)/layout.tsx`는 인증을 공통 적용하고, `service-shell.tsx`는 현재 경로에 따른 네비게이션과 페이지 표면을 관리합니다. 라우트 전용 코드는 `app`에, 도메인 기능은 `features`에, 둘 이상의 기능에서 재사용하는 UI와 Utility는 `shared`에 배치합니다.

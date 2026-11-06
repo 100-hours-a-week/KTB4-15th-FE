@@ -13,7 +13,6 @@ export function LandingStartButton({ className }: LandingStartButtonProps) {
   const router = useRouter();
   const { mutate, isPending } = useMutation({
     mutationFn: getMemberMe,
-    retry: false,
     onSuccess: (member) => {
       router.push(member.profileCompleted ? "/chat" : "/profile/setup");
     },

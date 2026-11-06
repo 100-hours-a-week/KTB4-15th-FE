@@ -1,4 +1,10 @@
-import { http, HttpResponse, passthrough, type RequestHandler } from "msw";
+import {
+  delay,
+  http,
+  HttpResponse,
+  passthrough,
+  type RequestHandler,
+} from "msw";
 
 import type { ChatMessageResponse } from "../features/chat/schema/chat.ts";
 import { chatHistoryPage } from "./chat-history.ts";
@@ -97,6 +103,39 @@ const rankingItems = {
     },
   ],
 } as const;
+
+function paginationMode(request: Request) {
+  return new URLSearchParams(
+    typeof window !== "undefined"
+      ? window.location.search
+      : new URL(request.url).search,
+  ).get("mockPagination");
+}
+
+const failedPaginationRequests = new Set<string>();
+
+async function paginationFailure(request: Request) {
+  const url = new URL(request.url);
+  const cursor =
+    url.searchParams.get("cursor") ??
+    url.searchParams.get("before") ??
+    url.searchParams.get("after");
+  if (cursor == null) return;
+  const mode = paginationMode(request);
+  if (mode === "slow" || mode === "recover" || mode === "fail")
+    await delay(1000);
+  const key = `${url.pathname}:${cursor}`;
+  if (
+    mode === "fail" ||
+    (mode === "recover" && !failedPaginationRequests.has(key))
+  ) {
+    if (mode === "recover") failedPaginationRequests.add(key);
+    return HttpResponse.json(
+      { code: "MOCK_PAGINATION_ERROR", data: null, message: "추가 조회 실패" },
+      { status: 400 },
+    );
+  }
+}
 
 const chatSearchItems = [
   {
@@ -199,9 +238,22 @@ const mockChatRooms = new Map(
 );
 
 export const handlers: RequestHandler[] = [
-  http.get("*/chat-rooms/:roomId/messages", ({ request, params }) => {
-    const room = mockChatRooms.get(Number(params.roomId));
-    if (!room) return passthrough();
+  http.get("*/chat-rooms/:roomId/messages", async ({ request, params }) => {
+    const failure = await paginationFailure(request);
+    if (failure) return failure;
+    const chatRoomId = Number(params.roomId);
+    const room = mockChatRooms.get(chatRoomId) ?? {
+      chatRoomId,
+      title: `테스트 대화 ${chatRoomId}`,
+      messages: Array.from({ length: 24 }, (_, index): ChatMessageResponse => ({
+        messageId: index + 1,
+        content: `이전 대화 ${index + 1} — 추가 조회 실패 UI를 확인하는 테스트 메시지입니다.`,
+        createdAt: "2026-11-04T00:00:00",
+        senderType: "AI",
+        generationStatus: null,
+        recommendation: null,
+      })),
+    };
     const page = chatHistoryPage(room, new URL(request.url).searchParams);
     if (page) return success(page);
     return HttpResponse.json(
@@ -247,7 +299,7 @@ export const handlers: RequestHandler[] = [
   http.get("*/chat-rooms", ({ request }) => {
     const searchParams = new URL(request.url).searchParams;
 
-    if (!searchParams.has("keyword")) return passthrough();
+    if (!searchParams.has("keyword")) return;
 
     const keyword = searchParams.get("keyword")?.trim();
 
@@ -287,6 +339,69 @@ export const handlers: RequestHandler[] = [
           : "일치하는 대화가 없습니다.",
     });
   }),
+  http.get("*/chat-rooms", async ({ request }) => {
+    const failure = await paginationFailure(request);
+    if (failure) return failure;
+    const cursor =
+      Number(new URL(request.url).searchParams.get("cursor")) || 25;
+    const items = Array.from(
+      { length: Math.min(20, Math.max(0, cursor - 1)) },
+      (_, index) => ({
+        chatRoomId: cursor - index - 1,
+        title: `테스트 대화 ${cursor - index - 1}`,
+        lastMessageAt: "2026-11-04T00:00:00",
+      }),
+    );
+    return success({
+      items,
+      nextCursor: cursor > 21 ? items.at(-1)!.chatRoomId : null,
+      hasNext: cursor > 21,
+    });
+  }),
+  ...["fitting-candidates", "wishlists"].map((endpoint) =>
+    http.get(`*/${endpoint}`, async ({ request }) => {
+      const url = new URL(request.url);
+      const failure = await paginationFailure(request);
+      if (failure) return failure;
+      const size =
+        Number(url.searchParams.get("size")) ||
+        (endpoint === "wishlists" ? 20 : 10);
+      const cursor = Number(url.searchParams.get("cursor")) || 0;
+      const itemType = url.searchParams.get("itemType");
+      const allItems = Array.from({ length: 100 }, (_, index) => {
+        const id = index + 1;
+        return {
+          fittingCandidateId: id,
+          wishlistId: id,
+          productId: id,
+          productName: `테스트 상품 ${id}`,
+          productImageUrl: "/images/fixtures/virtual-fitting.png",
+          itemType: index % 2 === 0 ? "TOP" : "BOTTOM",
+          color: "네이비",
+          currentPrice: 42000,
+          wishedPrice: 42000,
+          priceChangeRate: 0,
+          purchaseUrl: "https://shop.example.com/products/101",
+          wishedAt: "2026-11-04T00:00:00",
+        };
+      }).filter(
+        (item) =>
+          endpoint !== "fitting-candidates" ||
+          !itemType ||
+          item.itemType === itemType,
+      );
+      const remaining = allItems.filter((item) => item.productId > cursor);
+      const items = remaining.slice(0, size);
+      const hasNext = remaining.length > items.length;
+      const nextCursor = hasNext ? items.at(-1)!.productId : null;
+      return success({
+        items,
+        totalCount: allItems.length,
+        hasNext,
+        nextCursor,
+      });
+    }),
+  ),
 
   http.get("*/notifications/stream", () => {
     const failed =
@@ -409,6 +524,17 @@ export const handlers: RequestHandler[] = [
   http.get("*/members/me", () => success({ profileCompleted })),
 
   http.get("*/members/me/profile", () => success(profile)),
+
+  http.post("*/full-body-image/warmup", () =>
+    HttpResponse.json(
+      {
+        code: "BODY_IMAGE_WARMUP_ACCEPTED",
+        data: null,
+        message: "전신 이미지 검증 사전 활성화 요청을 접수했습니다.",
+      },
+      { status: 202 },
+    ),
+  ),
 
   http.post("*/full-body-image/validate", () => {
     const appOrigin =
@@ -679,7 +805,30 @@ export const handlers: RequestHandler[] = [
     });
   }),
 
-  http.get("*/fitting-results", () => {
+  http.get("*/fitting-results", async ({ request }) => {
+    if (paginationMode(request)) {
+      const failure = await paginationFailure(request);
+      if (failure) return failure;
+      const cursor =
+        Number(new URL(request.url).searchParams.get("cursor")) || 0;
+      const items = Array.from(
+        { length: Math.max(0, Math.min(10, 21 - cursor)) },
+        (_, index) => ({
+          fittingResultId: cursor + index + 1,
+          resultImageUrl: "/images/fixtures/virtual-fitting.png",
+          outfitName: `테스트 피팅 ${cursor + index + 1}`,
+          savedAt: "2026-11-04T00:00:00",
+        }),
+      );
+      const nextCursor = cursor + items.length;
+      return success({
+        items,
+        totalCount: 21,
+        hasNext: nextCursor < 21,
+        nextCursor: nextCursor < 21 ? nextCursor : null,
+      });
+    }
+
     const items = fittingResultSaved
       ? [
           {

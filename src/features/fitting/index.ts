@@ -15,4 +15,4 @@ export { FittingResultListScreen } from "./ui/result/fitting-result-list-screen"
 export { FittingResultSection } from "./ui/result/fitting-result-section";
 export { FittingTempResultScreen } from "./ui/result/fitting-temp-result-screen";
 export { FittingOutfitSection } from "./ui/entry/fitting-outfit-section";
-export { FittingWardrobe } from "./ui/wardrobe/fitting-wardrobe";
+export { FittingWardrobeScreen } from "./ui/wardrobe/fitting-wardrobe-screen";

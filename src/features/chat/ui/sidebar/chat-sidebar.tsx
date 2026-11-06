@@ -1,9 +1,12 @@
 "use client";
 
+import { PaginationStatus } from "@/shared/ui/pagination-status";
+import { useScrollPagination } from "@/shared/hooks/use-scroll-pagination";
+
 import * as Dialog from "@radix-ui/react-dialog";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { Button, IconButton } from "@/shared/ui/button";
 import { ConfirmDialog, RenameDialog } from "@/shared/ui/dialog";
 import { Dropdown, DropdownItem } from "@/shared/ui/dropdown";
@@ -36,7 +39,6 @@ export function ChatSidebar({ open, onOpenChange }: ChatSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const chatRoomListRef = useRef<HTMLElement>(null);
-  const loadMoreRef = useRef<HTMLDivElement>(null);
   const returnFocusRef = useRef<HTMLElement | null>(null);
   const [renameTarget, setRenameTarget] = useState<{
     id: number;
@@ -54,42 +56,14 @@ export function ChatSidebar({ open, onOpenChange }: ChatSidebarProps) {
 
   const chatRooms =
     chatRoomQuery.data?.pages.flatMap((page) => page.items) ?? [];
-  const {
+  const { fetchNextPage, hasNextPage, isFetchNextPageError } = chatRoomQuery;
+
+  const loadMoreRef = useScrollPagination({
+    enabled: open && Boolean(hasNextPage) && !isFetchNextPageError,
+    isFetching: chatRoomQuery.isFetching,
     fetchNextPage,
-    hasNextPage,
-    isFetchNextPageError,
-    isFetchingNextPage,
-  } = chatRoomQuery;
-
-  useEffect(() => {
-    const root = chatRoomListRef.current;
-    const target = loadMoreRef.current;
-
-    if (!open || !root || !target || !hasNextPage) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (
-          entry.isIntersecting &&
-          !isFetchingNextPage &&
-          !isFetchNextPageError
-        ) {
-          void fetchNextPage();
-        }
-      },
-      { root, rootMargin: "0px 0px 200px" },
-    );
-
-    observer.observe(target);
-
-    return () => observer.disconnect();
-  }, [
-    fetchNextPage,
-    hasNextPage,
-    isFetchNextPageError,
-    isFetchingNextPage,
-    open,
-  ]);
+    rootRef: chatRoomListRef,
+  });
 
   const startNewChat = () => {
     onOpenChange(false);
@@ -244,21 +218,13 @@ export function ChatSidebar({ open, onOpenChange }: ChatSidebarProps) {
 
               {chatRooms.length > 0 && (
                 <div className={styles.loadMore} ref={loadMoreRef}>
-                  {chatRoomQuery.isFetchingNextPage && (
-                    <span aria-live="polite">대화를 더 불러오는 중...</span>
-                  )}
-                  {chatRoomQuery.isFetchNextPageError && (
-                    <>
-                      <span role="alert">추가 대화를 불러오지 못했어요</span>
-                      <Button
-                        onClick={() => void chatRoomQuery.fetchNextPage()}
-                        size="small"
-                        variant="text"
-                      >
-                        다시 시도
-                      </Button>
-                    </>
-                  )}
+                  <PaginationStatus
+                    isLoading={chatRoomQuery.isFetchingNextPage}
+                    isError={chatRoomQuery.isFetchNextPageError}
+                    loadingLabel="대화를 더 불러오는 중"
+                    errorMessage="추가 대화를 불러오지 못했어요"
+                    onRetry={() => void chatRoomQuery.fetchNextPage()}
+                  />
                 </div>
               )}
             </nav>

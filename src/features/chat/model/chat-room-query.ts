@@ -52,7 +52,6 @@ export const chatRoomQueryOptions = (
         : lastPage.hasNext
           ? lastPage.nextCursor
           : undefined,
-    retry: false,
   });
 
 export const chatRoomOlderQueryOptions = (
@@ -69,7 +68,6 @@ export const chatRoomOlderQueryOptions = (
     getNextPageParam: (lastPage) =>
       lastPage.hasPrevious ? lastPage.previousCursor : undefined,
     enabled: false,
-    retry: false,
   });
 
 export function useCreateChatRoomMutation() {

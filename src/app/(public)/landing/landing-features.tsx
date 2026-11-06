@@ -28,17 +28,12 @@ const introductionSlides = [
 export function LandingFeatures() {
   return (
     <section
-      aria-labelledby="introduction-title"
+      aria-label="룩딱 기능 소개"
       className={styles.details}
       data-details
     >
       <div className={styles.detailsHeading}>
         <p className={styles.eyebrow}>MORE WAYS TO FIND YOUR STYLE.</p>
-        <h2 id="introduction-title">
-          취향을 쌓고,
-          <br />
-          발견을 넓혀보세요.
-        </h2>
       </div>
       <div
         aria-label="룩딱 기능 소개, 스크롤하여 다음 소개 보기"
