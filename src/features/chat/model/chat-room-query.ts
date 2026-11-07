@@ -33,6 +33,7 @@ export const chatRoomQueryOptions = (
 ) =>
   infiniteQueryOptions({
     queryKey: [...chatRoomQueryKeys.detail(chatRoomId), anchorMessageId],
+    refetchOnWindowFocus: false,
     queryFn: ({ pageParam }) =>
       getChatRoom(
         chatRoomId,
@@ -61,6 +62,7 @@ export const chatRoomOlderQueryOptions = (
 ) =>
   infiniteQueryOptions({
     queryKey: [...chatRoomQueryKeys.detail(chatRoomId), "before", cursor],
+    refetchOnWindowFocus: false,
     queryFn: ({ pageParam }) => {
       if (pageParam == null) throw new Error("이전 메시지 커서가 없습니다.");
       return getChatRoom(chatRoomId, { before: pageParam });

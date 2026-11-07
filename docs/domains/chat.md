@@ -38,6 +38,8 @@ Sidebar는 목록 버튼을 처음 누를 때 동적으로 로드합니다. 이�
 
 ### 기존 대화
 
+채팅 내역은 탭 복귀만으로 재조회하지 않습니다. 메시지 전송에 따른 캐시 무효화와 네트워크 재연결 시 재조회는 유지합니다.
+
 1. `GET /chat-rooms/{chatRoomId}/messages`로 최근 메시지를 가져옵니다.
 2. 사용자가 메시지를 보내면 `POST /chat-rooms/{chatRoomId}/messages`를 요청합니다.
 3. 대화 Query를 무효화하여 새 User Message와 생성 상태를 반영합니다.

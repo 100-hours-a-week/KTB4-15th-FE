@@ -310,9 +310,10 @@ test("늦게 도착한 내역 응답이 status의 완료 결과를 덮어쓰지 
       page.getByRole("log").getByText(message, { exact: true }),
     ).toBeVisible();
 
-    await page.evaluate(() =>
-      window.dispatchEvent(new Event("visibilitychange")),
-    );
+    await page.evaluate(() => {
+      window.dispatchEvent(new Event("offline"));
+      window.dispatchEvent(new Event("online"));
+    });
     await expect.poll(() => historyRequests).toBe(2);
     await historyPending;
     releaseStatus();
