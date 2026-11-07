@@ -14,7 +14,6 @@ export function AuthenticatedUserRedirect({
   const memberQuery = useQuery({
     ...memberMeQueryOptions,
     refetchOnMount: "always",
-    retry: false,
   });
   const destination = memberQuery.isSuccess
     ? memberQuery.data.profileCompleted

@@ -11,6 +11,7 @@ export type {
   AIMessageResponse,
   ChatMessageResponse,
   ChatMessageGenerationStatus,
+  ChatSearchResponse,
   ChatSourceType,
   CreateChatRoomRequest,
   CreateChatRoomResponse,

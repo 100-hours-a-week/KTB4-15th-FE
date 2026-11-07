@@ -1,6 +1,6 @@
 # 회원·프로필 도메인
 
-마지막 업데이트: 2026-10-10
+마지막 업데이트: 2026-11-07
 
 ## 목적
 
@@ -48,11 +48,21 @@
 
 ## 전신 사진 규칙
 
+### 검증 자원 사전 활성화
+
+`/fitting`의 사진 변경·등록과 `/profile/setup`의 사진 등록 버튼으로 File Picker를 열기 직전에 `POST /full-body-image/warmup`을 Body 없이 요청합니다. 사진 미리보기와 촬영 가이드의 사진 선택도 같은 흐름을 사용합니다. 화면 마운트당 첫 선택 시 한 번만 요청하며, 취소·실패 후 다시 선택해도 반복하지 않습니다.
+
+기존 Cookie 인증 Client를 사용하고 `401`은 공통 인증 갱신 흐름으로 처리합니다. 인증 갱신 후 재요청 외에는 자동 재시도하지 않습니다. `202`는 접수만 의미하며, 준비 상태를 폴링하지 않습니다. 응답을 기다리지 않고 File Picker를 열며, `429`, `5xx`, 네트워크 오류는 별도 로그나 사용자 알림 없이 무시하고 사진 선택·검증을 계속 진행합니다. AI 주소와 내부 키는 FE에서 사용하지 않습니다.
+
 ### 브라우저 검증
 
-- 확장자: JPG, JPEG, PNG
-- MIME Type: JPEG, PNG 또는 Browser가 제공하지 않은 빈 값
-- 최대 크기: 10MB
+- 확장자: JPG, JPEG, PNG, HEIC, HEIF
+- MIME Type: JPEG, PNG, HEIC/HEIF(Sequence 포함) 또는 Browser가 제공하지 않은 빈 값
+- 최대 크기: 원본과 변환 결과 각각 10MB
+
+HEIC/HEIF는 선택 시에만 `heic-to/csp`를 지연 로드해 브라우저에서 JPEG(품질 0.9)로 변환합니다. 변환된 파일을 미리보기와 검증 요청에 함께 사용하고 서버 API는 변경하지 않습니다. Canvas 재인코딩으로 원본 EXIF 메타데이터를 전달하지 않습니다. 변환 중에도 검증 중과 동일하게 중복 선택·제출을 막으며, 실패 시 재선택 안내를 표시합니다. JPG/PNG는 변환하지 않습니다.
+
+변환 라이브러리: [heic-to](https://github.com/hoppergee/heic-to) (LGPL-3.0).
 
 ### 서버 검증
 
@@ -64,7 +74,7 @@
 - 전신, 양팔, 양다리가 보이지 않거나 정면이 아님
 - AI Server 연결 실패, Timeout 또는 System Error
 
-촬영 가이드는 한 사람의 머리부터 발끝까지 정면으로 촬영하도록 안내합니다. File Picker가 취소되거나 Camera 권한이 거부된 경우에도 구분된 메시지를 표시합니다.
+촬영 가이드는 한 사람의 머리부터 발끝까지 정면으로 촬영하도록 안내합니다. 미리보기 사진이 없는 상태에서 File Picker를 취소하면 사진 등록이 취소되었다는 안내를 표시합니다.
 
 ## 프로필 조회와 활용
 
@@ -85,6 +95,7 @@
 | `GET`   | `/members/me/profile`       | 현재 Profile 조회     |
 | `POST`  | `/members/me/profile`       | 최초 Profile 등록     |
 | `PATCH` | `/members/me/profile`       | Profile 수정          |
+| `POST`  | `/full-body-image/warmup`   | 검증 자원 사전 활성화 |
 | `POST`  | `/full-body-image/validate` | 전신 사진 적합성 검증 |
 
 ## 관련 코드
@@ -101,3 +112,7 @@
 - 등록한 Profile 수정
 - 마이페이지 전신 사진 편집 UI
 - 가격 하락 알림 설정 변경
+
+## 회원 탈퇴 안내
+
+마이페이지 계정 카드 아래 오른쪽의 작은 회원 탈퇴 버튼으로 공통 Dialog를 엽니다. `master@lookddak.com` 문의와 가입 이메일 기재를 안내하며, 메일 링크는 메일 앱을 엽니다. 화면에서 탈퇴 API를 호출하거나 계정을 삭제하지 않습니다.

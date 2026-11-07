@@ -63,3 +63,49 @@ test("오프라인 전송은 입력 내용을 유지하며 연결 안내를 표�
   await input(page).press("Enter");
   await finishReply(page, request);
 });
+
+test("503 메시지 전송 실패는 자동 재시도하지 않고 입력을 유지한다", async ({
+  page,
+}) => {
+  let attempts = 0;
+  await page.route(`${apiURL}/chat-rooms`, async (route) => {
+    if (route.request().method() !== "POST") return route.continue();
+    attempts += 1;
+    await route.fulfill({
+      status: 503,
+      json: { code: "ERROR", message: "전송 실패", data: null },
+    });
+  });
+  await page.goto("/chat");
+  await input(page).fill(message);
+  await input(page).press("Enter");
+  await expect.poll(() => attempts).toBe(1);
+  await expect(input(page)).toHaveValue(message);
+  await expect(input(page)).toBeEnabled();
+  expect(attempts).toBe(1);
+});
+
+test("503 재시도 예산을 사용한 뒤 401이어도 한 번 갱신하고 복구한다", async ({
+  page,
+  request,
+}) => {
+  let attempts = 0;
+  await page.route(`${apiURL}/chat-rooms?**`, async (route) => {
+    attempts += 1;
+    if (attempts <= 3) {
+      const status = attempts < 3 ? 503 : 401;
+      return route.fulfill({
+        status,
+        json: { code: "ERROR", message: "일시적 오류", data: null },
+      });
+    }
+    return route.continue();
+  });
+  await page.goto("/chat");
+  await page.getByRole("button", { name: "대화 목록 열기" }).click();
+  await expect(
+    page.getByText("아직 대화가 없어요", { exact: true }),
+  ).toBeVisible();
+  expect(attempts).toBe(4);
+  expect(await writes(request, "/auth/refresh")).toHaveLength(1);
+});

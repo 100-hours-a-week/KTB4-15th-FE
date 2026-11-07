@@ -7,7 +7,10 @@ import { InfoIcon, RetryIcon } from "@/shared/ui/icon";
 import styles from "./chat-message.module.scss";
 import { RecommendedProductList } from "../product/recommended-product-list";
 
+import { HighlightedChatText } from "./highlighted-chat-text";
+
 type UserChatMessageProps = {
+  highlightKeyword?: string;
   canRetry?: boolean;
   isRetryPending?: boolean;
   message: UserMessageResponse;
@@ -15,6 +18,7 @@ type UserChatMessageProps = {
 };
 
 type AIChatMessageProps = {
+  highlightKeyword?: string;
   message: AIMessageResponse;
 };
 
@@ -41,8 +45,41 @@ export function StreamingAIChatMessage({ content }: { content: string }) {
   );
 }
 
+export function ChatMessageRetry({
+  align = "end",
+  isPending = false,
+  label = "다시 시도",
+  message,
+  onRetry,
+}: {
+  align?: "start" | "end";
+  isPending?: boolean;
+  label?: string;
+  message: string;
+  onRetry: () => void;
+}) {
+  return (
+    <div className={styles.retryArea} data-align={align}>
+      <p className={styles.retryMessage} role="alert">
+        <InfoIcon />
+        {message}
+      </p>
+      <Button
+        isLoading={isPending}
+        leadingIcon={<RetryIcon />}
+        onClick={onRetry}
+        size="small"
+        variant="outlined"
+      >
+        {label}
+      </Button>
+    </div>
+  );
+}
+
 export function UserChatMessage({
   canRetry = false,
+  highlightKeyword,
   isRetryPending = false,
   message,
   onRetryMessage,
@@ -53,30 +90,28 @@ export function UserChatMessage({
         <time className={styles.time} dateTime={message.createdAt}>
           {formatKoreanTime(message.createdAt)}
         </time>
-        <div className={styles.userBubble}>{message.content}</div>
+        <div className={styles.userBubble}>
+          <HighlightedChatText
+            text={message.content}
+            keyword={highlightKeyword}
+          />
+        </div>
       </div>
       {canRetry && onRetryMessage && (
-        <div className={styles.retryArea}>
-          <p className={styles.retryMessage} role="alert">
-            <InfoIcon />
-            문제가 발생했습니다. 다시 시도해 주세요.
-          </p>
-          <Button
-            isLoading={isRetryPending}
-            leadingIcon={<RetryIcon />}
-            onClick={() => onRetryMessage(message.content)}
-            size="small"
-            variant="outlined"
-          >
-            다시 시도
-          </Button>
-        </div>
+        <ChatMessageRetry
+          isPending={isRetryPending}
+          message="문제가 발생했습니다. 다시 시도해 주세요."
+          onRetry={() => onRetryMessage(message.content)}
+        />
       )}
     </article>
   );
 }
 
-export function AIChatMessage({ message }: AIChatMessageProps) {
+export function AIChatMessage({
+  message,
+  highlightKeyword,
+}: AIChatMessageProps) {
   return (
     <article className={styles.aiMessage}>
       <Image
@@ -96,7 +131,12 @@ export function AIChatMessage({ message }: AIChatMessageProps) {
             {formatKoreanTime(message.createdAt)}
           </time>
         </div>
-        <p className={styles.aiBubble}>{message.content}</p>
+        <p className={styles.aiBubble}>
+          <HighlightedChatText
+            text={message.content}
+            keyword={highlightKeyword}
+          />
+        </p>
         {message.recommendation && (
           <RecommendedProductList products={message.recommendation.products} />
         )}

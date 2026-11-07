@@ -132,7 +132,7 @@ test.describe("채팅방 한도 초과", () => {
     await input(page).fill(message);
     await input(page).press("Enter");
     await expect(
-      page.getByText("채팅방은 최대 100개까지 생성할 수 있습니다.", {
+      page.getByText("채팅방은 최대 100개까지 생성할 수 있어요.", {
         exact: true,
       }),
     ).toBeVisible();

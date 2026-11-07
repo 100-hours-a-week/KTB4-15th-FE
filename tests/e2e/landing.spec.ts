@@ -52,6 +52,31 @@ test("feature images become eager near the introduction", async ({ page }) => {
 });
 
 for (const width of [390, 1440]) {
+  test(`landing header links to login and signup at ${width}px`, async ({
+    page,
+    request,
+  }) => {
+    await request.post("http://127.0.0.1:3101/__test/reset", {
+      data: { memberStatus: "unauthenticated" },
+    });
+    await page.setViewportSize({ width, height: 800 });
+    const header = page.locator("header");
+
+    for (const [name, destination] of [
+      ["로그인", "/login?returnTo=%2Fchat"],
+      ["회원가입", "/signup"],
+    ]) {
+      await page.goto("/");
+      const link = header.getByRole("link", { name, exact: true });
+      await expect(link).toBeInViewport({ ratio: 1 });
+      await link.click();
+      await expect(page).toHaveURL(new URL(destination, page.url()).href);
+      await expect(
+        page.getByText("로그인이 만료됐어요. 다시 로그인해 주세요."),
+      ).toHaveCount(0);
+    }
+  });
+
   test(`landing scroll reveal at ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 800 });
     await page.goto("/");
@@ -82,8 +107,8 @@ for (const width of [390, 1440]) {
       ),
     ).toBe(true);
     await expect(
-      page.locator("section").getByRole("button", { name: "룩딱 시작하기" }),
-    ).toBeEnabled();
+      page.locator("section").getByRole("link", { name: "룩딱 시작하기" }),
+    ).toHaveAttribute("href", "/signup");
     expect(
       await page
         .locator("[data-result] img")
@@ -91,6 +116,77 @@ for (const width of [390, 1440]) {
           (image: HTMLImageElement) => image.complete && image.naturalWidth > 0,
         ),
     ).toBe(true);
+  });
+}
+
+test("landing login shows feedback while navigation is pending", async ({
+  page,
+  request,
+}) => {
+  await request.post("http://127.0.0.1:3101/__test/reset", {
+    data: { memberStatus: "unauthenticated" },
+  });
+  const navigation = Promise.withResolvers<void>();
+  await page.route(
+    (url) => url.pathname === "/chat",
+    async (route) => {
+      await navigation.promise;
+      await route.continue();
+    },
+  );
+
+  try {
+    await page.goto("/");
+    await expect(page.locator("[data-scene]").locator("xpath=..")).toHaveClass(
+      /pin-spacer/,
+    );
+    const header = page.locator("header");
+    await header.getByRole("link", { name: "로그인" }).click();
+    await expect(header.getByRole("link", { name: "확인 중…" })).toBeVisible();
+  } finally {
+    navigation.resolve();
+  }
+  await expect(page).toHaveURL(/\/login\?returnTo=%2Fchat$/);
+});
+
+for (const [memberStatus, expiredRefresh, destination] of [
+  ["complete", false, /\/chat$/],
+  ["refreshable", false, /\/chat$/],
+  ["unauthenticated", true, /\/login\?returnTo=%2Fchat$/],
+] as const) {
+  test(`landing login handles a ${memberStatus} session`, async ({
+    page,
+    request,
+    context,
+  }) => {
+    await request.post("http://127.0.0.1:3101/__test/reset", {
+      data: { memberStatus, expiredRefresh },
+    });
+    await context.addCookies([
+      {
+        name: "refreshToken",
+        value: "session",
+        domain: "127.0.0.1",
+        path: "/bff/auth",
+      },
+      ...(memberStatus === "complete"
+        ? [
+            {
+              name: "accessToken",
+              value: "active",
+              domain: "127.0.0.1",
+              path: "/",
+            },
+          ]
+        : []),
+    ]);
+
+    await page.goto("/");
+    await page.locator("header").getByRole("link", { name: "로그인" }).click();
+    await expect(page).toHaveURL(destination);
+    if (expiredRefresh) {
+      await expect(page.getByLabel("비밀번호", { exact: true })).toBeVisible();
+    }
   });
 }
 
@@ -120,6 +216,41 @@ test("reduced motion shows the result without pinning", async ({ page }) => {
   });
   expect(layout.contentBottom).toBeLessThanOrEqual(layout.bottom);
   expect(layout.faqTop).toBeGreaterThanOrEqual(layout.bottom);
+});
+
+test("guest login resumes the requested service path and query", async ({
+  page,
+  request,
+}) => {
+  const mockApi = "http://127.0.0.1:3101";
+  await request.post(`${mockApi}/__test/reset`, {
+    data: { memberStatus: "unauthenticated" },
+  });
+  await page.route(`${mockApi}/auth/login`, async (route) => {
+    await request.post(`${mockApi}/__test/scenario`, {
+      data: { memberStatus: "complete" },
+    });
+    await route.fulfill({
+      json: {
+        code: "SUCCESS",
+        message: "성공",
+        data: { profileCompleted: true },
+      },
+    });
+  });
+
+  const destination = "/ranking?type=VIEW";
+  await page.goto(destination);
+  await expect(page).toHaveURL(
+    new URL(
+      `/login?${new URLSearchParams({ returnTo: destination })}`,
+      page.url(),
+    ).href,
+  );
+  await page.getByLabel("이메일", { exact: true }).fill("tester@example.com");
+  await page.getByLabel("비밀번호", { exact: true }).fill("TestPassword1!");
+  await page.getByRole("button", { name: "로그인", exact: true }).click();
+  await expect(page).toHaveURL(new URL(destination, page.url()).href);
 });
 
 test("introduction moves horizontally and releases to the start link", async ({
@@ -199,10 +330,10 @@ test("introduction moves horizontally and releases to the start link", async ({
   );
   await page
     .locator("section")
-    .getByRole("button", { name: "룩딱 시작하기" })
+    .getByRole("link", { name: "룩딱 시작하기" })
     .scrollIntoViewIfNeeded();
   await expect(
-    page.locator("section").getByRole("button", { name: "룩딱 시작하기" }),
+    page.locator("section").getByRole("link", { name: "룩딱 시작하기" }),
   ).toBeInViewport();
 });
 
@@ -363,6 +494,25 @@ for (const value of [undefined, "false", "true"]) {
   });
 }
 
+test("home serves the landing without looking up a session cookie", async ({
+  request,
+}) => {
+  const mockApi = "http://127.0.0.1:3101";
+  await request.post(`${mockApi}/__test/reset`, {
+    data: { memberStatus: "complete" },
+  });
+  const response = await request.get("/", {
+    headers: { Cookie: "accessToken=active" },
+    maxRedirects: 0,
+  });
+  expect(response.status()).toBe(200);
+  expect(await response.text()).toContain("말하면 찾아주고");
+  const { data } = await (
+    await request.get(`${mockApi}/__test/requests`)
+  ).json();
+  expect(data.requests).toHaveLength(0);
+});
+
 for (const path of ["/landing", "/onboarding"]) {
   test(`legacy ${path} redirects to home`, async ({ request }) => {
     const response = await request.get(path, { maxRedirects: 0 });
@@ -373,122 +523,9 @@ for (const path of ["/landing", "/onboarding"]) {
   });
 }
 
-for (const [memberStatus, destination] of [
-  ["unauthenticated", "/signup"],
-  ["incomplete", "/profile/setup"],
-  ["complete", "/chat"],
-] as const) {
-  test(`landing start routes ${memberStatus} visitors to ${destination}`, async ({
-    page,
-    request,
-  }) => {
-    await request.post("http://127.0.0.1:3101/__test/reset", {
-      data: {
-        memberStatus,
-        expiredRefresh: memberStatus === "unauthenticated",
-      },
-    });
-    await page.goto("/");
-    await expect(page.getByRole("heading", { level: 1 })).toContainText(
-      "말하면 찾아주고",
-    );
-    await page
-      .locator("header")
-      .getByRole("button", { name: "룩딱 시작하기" })
-      .click();
-    await expect(page).toHaveURL(new RegExp(`${destination}(?:\\?|$)`));
-  });
-}
-
-test("start refreshes an expired session before entering chat", async ({
-  page,
-  request,
-}) => {
-  await request.post("http://127.0.0.1:3101/__test/reset", {
-    data: { memberStatus: "refreshable" },
-  });
+test("landing CTA links directly to signup", async ({ page }) => {
   await page.goto("/");
-  await page
-    .locator("header")
-    .getByRole("button", { name: "룩딱 시작하기" })
-    .click();
-  await expect(page).toHaveURL(/\/chat$/);
-});
-
-test("start stops after one refresh when membership stays unauthorized", async ({
-  page,
-  request,
-}) => {
-  await request.post("http://127.0.0.1:3101/__test/reset", {
-    data: { memberStatus: "unauthenticated" },
-  });
-  await page.goto("/");
-  await page
-    .locator("header")
-    .getByRole("button", { name: "룩딱 시작하기" })
-    .click();
-  await expect(page).toHaveURL(/\/signup$/);
-  const { data } = await (
-    await request.get("http://127.0.0.1:3101/__test/requests")
-  ).json();
-  expect(
-    data.requests.filter(
-      (item: { path: string }) => item.path === "/auth/refresh",
-    ),
-  ).toHaveLength(1);
-});
-
-for (const failure of [400, 403, 500, "network"] as const) {
-  test(`start falls back to login on ${failure}`, async ({ page }) => {
-    await page.route("http://127.0.0.1:3101/members/me", (route) =>
-      failure === "network"
-        ? route.abort("failed")
-        : route.fulfill({
-            status: failure,
-            json: { code: "TEST_FAILURE", data: null },
-          }),
-    );
-    await page.goto("/");
-    await page
-      .locator("header")
-      .getByRole("button", { name: "룩딱 시작하기" })
-      .click();
-    await expect(page).toHaveURL(/\/login$/);
-  });
-}
-
-test("start only checks membership on click and blocks duplicate clicks", async ({
-  page,
-}) => {
-  let calls = 0;
-  let release!: () => void;
-  const pending = new Promise<void>((resolve) => {
-    release = resolve;
-  });
-  await page.route("http://127.0.0.1:3101/members/me", async (route) => {
-    calls++;
-    await pending;
-    await route.fulfill({
-      status: 401,
-      json: { code: "UNAUTHORIZED", data: null },
-    });
-  });
-  await page.route("**/bff/auth/refresh", (route) =>
-    route.fulfill({ status: 401, json: { code: "UNAUTHORIZED", data: null } }),
-  );
-  await page.goto("/");
-  await expect(page.locator("[data-scene]").locator("xpath=..")).toHaveClass(
-    /pin-spacer/,
-  );
-  expect(calls).toBe(0);
-  const button = page.locator("header").getByRole("button");
-  await button.click();
-  await expect(button).toBeDisabled();
-  await expect(button).toHaveText("확인 중…");
-  await expect.poll(() => calls).toBe(1);
-  await button.evaluate((element: HTMLButtonElement) => element.click());
-  expect(calls).toBe(1);
-  release();
+  await page.getByRole("link", { name: "룩딱 시작하기" }).click();
   await expect(page).toHaveURL(/\/signup$/);
 });
 

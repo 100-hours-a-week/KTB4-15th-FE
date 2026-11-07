@@ -17,7 +17,7 @@ import { login } from "../api/auth";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-export function LoginForm() {
+export function LoginForm({ returnTo }: { returnTo?: string }) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
@@ -39,7 +39,9 @@ export function LoginForm() {
       queryClient.setQueryData(memberMeQueryOptions.queryKey, {
         profileCompleted,
       });
-      router.replace(profileCompleted ? "/chat" : "/profile/setup");
+      router.replace(
+        profileCompleted ? (returnTo ?? "/chat") : "/profile/setup",
+      );
     } catch (error) {
       if (error instanceof ApiError && error.code === "INVALID_CREDENTIALS") {
         setError(

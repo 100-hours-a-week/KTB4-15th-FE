@@ -48,19 +48,25 @@ function refreshAccessToken() {
 export const apiClient = ky.create({
   ...apiOptions,
   retry: {
-    limit: 1,
+    limit: 2,
+    methods: ["get", "head"],
+    statusCodes: [408, 429, 500, 502, 503, 504],
   },
   hooks: {
     beforeRequest: [throwIfOffline],
     beforeError: [({ error }) => normalizeApiError(error)],
     afterResponse: [
-      async ({ request, response, retryCount }) => {
+      async ({ request, response, retryCount, options }) => {
         const { pathname } = new URL(request.url);
         const isRefreshExcluded = refreshExcludedPaths.some((path) =>
           pathname.endsWith(path),
         );
 
-        if (response.status !== 401 || retryCount > 0 || isRefreshExcluded) {
+        if (
+          response.status !== 401 ||
+          options.context.authRefreshAttempted ||
+          isRefreshExcluded
+        ) {
           return;
         }
 
@@ -75,8 +81,13 @@ export const apiClient = ky.create({
           throw error;
         }
 
-        return ky.retry({
-          code: "TOKEN_REFRESHED",
+        return ky(request, {
+          ...options,
+          context: { ...options.context, authRefreshAttempted: true },
+          retry: {
+            ...options.retry,
+            limit: Math.max(0, options.retry.limit - retryCount),
+          },
         });
       },
     ],

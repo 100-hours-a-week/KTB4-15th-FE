@@ -1,13 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { useInfiniteQuery } from "@tanstack/react-query";
 import {
   useChatMessageStream,
   useSendChatMessageMutation,
 } from "./model/chat-message-query";
-import { chatRoomQueryOptions } from "./model/chat-room-query";
+import { useChatRoomHistory } from "./hooks/use-chat-room-history";
 import styles from "./chat-room-screen.module.scss";
 import { ChatComposer } from "./ui/composer/chat-composer";
 import { ChatMessageList } from "./ui/message/chat-message-list";
@@ -19,7 +18,7 @@ import { showToast } from "@/shared/ui/toast";
 function showSendChatMessageError(error: Error) {
   const message =
     error instanceof ApiError && error.code === "CHAT_ROOM_LIMIT_EXCEEDED"
-      ? "채팅방은 최대 100개까지 생성할 수 있습니다."
+      ? "채팅방은 최대 100개까지 생성할 수 있어요."
       : getApiErrorMessage(
           error,
           "메시지를 보내지 못했어요. 다시 시도해 주세요.",
@@ -28,54 +27,48 @@ function showSendChatMessageError(error: Error) {
   showToast.error(message, { id: "send-chat-message" });
 }
 
-export function ChatRoomScreen({ chatRoomId }: { chatRoomId: number }) {
+export function ChatRoomScreen({
+  chatRoomId,
+  anchorMessageId,
+  searchKeyword,
+}: {
+  chatRoomId: number;
+  anchorMessageId?: number;
+  searchKeyword?: string;
+}) {
   const router = useRouter();
   const { isNavigationVisible, keyboardInset } = useNavigationVisibility();
   const submissionLockRef = useRef(false);
   const sendChatMessageMutation = useSendChatMessageMutation();
-  const chatRoomQuery = useInfiniteQuery(chatRoomQueryOptions(chatRoomId));
-
-  const messages =
-    chatRoomQuery.data?.pages.toReversed().flatMap((page) => page.messages) ??
-    [];
+  const history = useChatRoomHistory(chatRoomId, anchorMessageId);
+  const { messages, hasNewerMessages } = history;
 
   const generatingMessageId =
-    messages.findLast(
-      (message) =>
-        message.senderType === "USER" &&
-        (message.generationStatus === "PENDING" ||
-          message.generationStatus === "GENERATING"),
-    )?.messageId ?? null;
+    (hasNewerMessages
+      ? null
+      : messages.findLast(
+          (message) =>
+            message.senderType === "USER" &&
+            (message.generationStatus === "PENDING" ||
+              message.generationStatus === "GENERATING"),
+        )?.messageId) ?? null;
 
   const chatMessageStream = useChatMessageStream(
     chatRoomId,
     generatingMessageId,
   );
 
+  const canRetryStream = chatMessageStream.retry != null;
+
   useEffect(() => {
-    if (chatMessageStream.error == null) {
+    if (chatMessageStream.error == null || canRetryStream) {
       return;
     }
 
     showToast.error(chatMessageStream.error.message, {
       id: "chat-message-stream",
     });
-  }, [chatMessageStream.error]);
-
-  const { fetchNextPage } = chatRoomQuery;
-  const handleLoadPreviousMessages = useCallback(async () => {
-    const result = await fetchNextPage();
-    if (result.isFetchNextPageError) {
-      showToast.error(
-        "이전 메시지를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.",
-        {
-          id: "previous-chat-messages",
-        },
-      );
-      return false;
-    }
-    return true;
-  }, [fetchNextPage]);
+  }, [chatMessageStream.error, canRetryStream]);
 
   const isGenerating = generatingMessageId != null;
 
@@ -91,6 +84,7 @@ export function ChatRoomScreen({ chatRoomId }: { chatRoomId: number }) {
         { chatRoomId, content },
         { onError: showSendChatMessageError },
       );
+      if (hasNewerMessages) router.replace(`/chat/${chatRoomId}`);
     } finally {
       submissionLockRef.current = false;
     }
@@ -115,15 +109,18 @@ export function ChatRoomScreen({ chatRoomId }: { chatRoomId: number }) {
   };
 
   const isSubmitting = sendChatMessageMutation.isPending || isGenerating;
-  const isInitialChatRoomPending = chatRoomQuery.isPending;
-  const isInitialChatRoomError =
-    chatRoomQuery.isError && chatRoomQuery.data == null;
+  const { initialError } = history;
   const isChatRoomMissingOrForbidden =
-    chatRoomQuery.error instanceof ApiError &&
-    (chatRoomQuery.error.code === "CHAT_ROOM_NOT_FOUND" ||
-      chatRoomQuery.error.code === "CHAT_ROOM_ACCESS_DENIED");
+    initialError instanceof ApiError &&
+    (initialError.code === "CHAT_ROOM_NOT_FOUND" ||
+      initialError.code === "CHAT_ROOM_ACCESS_DENIED");
 
-  if (isInitialChatRoomError) {
+  const isAnchorMissing =
+    anchorMessageId != null &&
+    initialError instanceof ApiError &&
+    initialError.code === "CHAT_MESSAGE_NOT_FOUND";
+
+  if (initialError != null) {
     return (
       <main className={styles.errorState} role="alert">
         <div className={styles.errorContent}>
@@ -131,19 +128,29 @@ export function ChatRoomScreen({ chatRoomId }: { chatRoomId: number }) {
           <p>
             {isChatRoomMissingOrForbidden
               ? "존재하지 않거나 접근할 수 없는 채팅방이에요."
-              : "잠시 후 다시 시도해 주세요."}
+              : isAnchorMissing
+                ? "검색한 메시지를 찾을 수 없어요."
+                : "잠시 후 다시 시도해 주세요."}
           </p>
           <Button
             isLoading={
-              !isChatRoomMissingOrForbidden && chatRoomQuery.isFetching
+              !isChatRoomMissingOrForbidden &&
+              !isAnchorMissing &&
+              history.isFetching
             }
             onClick={() =>
               isChatRoomMissingOrForbidden
                 ? router.replace("/chat")
-                : void chatRoomQuery.refetch()
+                : isAnchorMissing
+                  ? router.replace(`/chat/${chatRoomId}`)
+                  : void history.refetch()
             }
           >
-            {isChatRoomMissingOrForbidden ? "채팅 홈으로 이동" : "다시 시도"}
+            {isChatRoomMissingOrForbidden
+              ? "채팅 홈으로 이동"
+              : isAnchorMissing
+                ? "최신 대화 보기"
+                : "다시 시도"}
           </Button>
         </div>
       </main>
@@ -153,14 +160,18 @@ export function ChatRoomScreen({ chatRoomId }: { chatRoomId: number }) {
   return (
     <>
       <ChatMessageList
-        key={chatRoomId}
-        hasPreviousMessages={chatRoomQuery.hasNextPage}
-        isGenerating={isGenerating}
-        isLoadingPreviousMessages={chatRoomQuery.isFetchingNextPage}
+        anchorMessageId={history.anchorMessageId}
+        searchKeyword={searchKeyword}
+        hasNewerMessages={hasNewerMessages}
+        hasPreviousMessages={history.hasPreviousMessages}
+        onLoadNewerMessages={history.loadNewerMessages}
+        isGenerating={isGenerating && chatMessageStream.retry == null}
+        isLoadingPreviousMessages={history.isLoadingPreviousMessages}
         isRetryPending={sendChatMessageMutation.isPending}
         messages={messages}
-        onLoadPreviousMessages={handleLoadPreviousMessages}
+        onLoadPreviousMessages={history.loadPreviousMessages}
         onRetryMessage={handleRetry}
+        onRetryStream={chatMessageStream.retry}
         streamingContent={chatMessageStream.content}
       />
       <div
@@ -172,7 +183,7 @@ export function ChatRoomScreen({ chatRoomId }: { chatRoomId: number }) {
         style={keyboardInset > 0 ? { bottom: keyboardInset } : undefined}
       >
         <ChatComposer
-          disabled={isInitialChatRoomPending}
+          disabled={history.isPending}
           isSubmitting={isSubmitting}
           onSubmit={handleSubmit}
         />

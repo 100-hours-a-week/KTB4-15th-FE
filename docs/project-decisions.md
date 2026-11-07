@@ -67,6 +67,8 @@
 - `NEXT_PUBLIC_*`는 Browser Bundle에 공개되는 값만 사용하고 Build Argument로 전달합니다.
 - 운영 배포는 GitHub Actions에서 ECR Image를 생성한 뒤 AWS SSM을 통해 요청합니다. 문서만 변경된 Commit은 자동 배포하지 않습니다.
 - Liveness는 외부 의존성을 조회하지 않는 `GET /health`로 확인합니다.
+- Next.js에 공통 응답 헤더 `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`을 설정합니다. HSTS는 하위 도메인을 포함해 2년으로 설정하고 `preload` 지시어를 보냅니다. `Permissions-Policy`로 카메라, 마이크, 위치 접근을 제한하고 `X-Powered-By`는 비활성화합니다.
+- 배포 후 공개 HTTPS의 최종 응답에서 각 보안 헤더가 한 번씩 반환되고 `X-Powered-By`가 빠져 있는지 확인합니다. Next.js 설정으로 처리하는 리다이렉트는 도착 경로에서 공통 헤더를 반환합니다.
 
 ## 보류 항목
 
@@ -103,3 +105,13 @@
 - 버튼·사진 처리 모달·채팅 이전 메시지 로딩은 공통 `shared/ui/spinner`를 사용합니다. 회전과 모션 감소 처리를 공통화하고 각 사용처가 상태 안내와 배치·색상을 소유합니다.
 
 - 인증 이미지 BFF와 프로세스 메모리 변환 캐시는 철회했습니다. 기본 Next.js 최적화로 복원한 비교 실험 이후, 현재 `/fitting` 전신 사진은 `unoptimized`로 직접 표시하며 전신 사진 S3 허용 항목은 제거했습니다. 원본 presigned URL 만료와 변환 캐시 만료는 별개이며, 소유자만 접근하거나 서명 만료 시 변환본도 차단한다는 보장은 없습니다. 운영 보안 정책의 확정이나 배포를 의미하지 않습니다.
+
+## API 재시도 (2026-11-04)
+
+- 자동 재시도는 ky에서 관리합니다. 조회는 일시적 오류에 최초 포함 최대 3회 시도하고 변경 요청은 일반 자동 재시도하지 않습니다. Query 전역 재시도는 끄며 401 토큰 갱신은 기존 동작을 유지합니다. 상세 정책은 [API와 인증](./api-and-auth.md)을 참고합니다.
+
+## 개발 배포 (2026-11-08)
+
+- `develop`과 `hotfix/**` push에서는 FE 이미지를 한 번만 빌드하고, 빌드 결과의 immutable digest를 V2 ECS와 V3 EKS 배포에 함께 사용합니다.
+- V2는 기존 ECS Task Definition 갱신을 유지합니다. V3는 GitHub App installation token으로 GitOps 저장소에 `dev-image-published` 이벤트를 보내며, GitOps CI와 Auto Merge, Argo CD Auto Sync가 배포를 담당합니다.
+- 종료된 V1 EC2 개발 배포 job은 제거합니다. 수동 rollback은 기존 V2 ECS 흐름에만 적용하고 V3 배포 승격은 새 이미지가 빌드되는 push 이벤트에서만 수행합니다.

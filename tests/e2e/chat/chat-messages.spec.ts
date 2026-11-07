@@ -178,3 +178,300 @@ for (const streamFailure of ["error", "disconnect"] as const) {
     });
   });
 }
+
+test("SSE 단절 후 생성 중이면 재연결하고 내역 전체를 재조회하지 않는다", async ({
+  page,
+  request,
+}) => {
+  let connections = 0;
+  const historyRequests: string[] = [];
+  page.on("request", (request) => {
+    if (/\/chat-rooms\/1\/messages\?/.test(request.url()))
+      historyRequests.push(request.url());
+  });
+  await page.route("**/messages/*/stream", (route) => {
+    connections++;
+    if (connections > 1) return route.fallback();
+    return route.fulfill({ contentType: "text/event-stream", body: "" });
+  });
+  await page.goto("/chat");
+  await input(page).fill(message);
+  await input(page).press("Enter");
+  await expect.poll(() => connections).toBe(2);
+  const before = historyRequests.length;
+  await finishReply(page, request);
+  expect(historyRequests).toHaveLength(before);
+  await expect(page.getByText(reply, { exact: true })).toHaveCount(1);
+});
+
+test("SSE 단절 후 완료 상태이면 해당 답변만 캐시에 반영한다", async ({
+  page,
+}) => {
+  const historyRequests: string[] = [];
+  page.on("request", (request) => {
+    if (/\/chat-rooms\/1\/messages\?/.test(request.url()))
+      historyRequests.push(request.url());
+  });
+  await page.route("**/messages/*/stream", (route) =>
+    route.fulfill({ contentType: "text/event-stream", body: "" }),
+  );
+  await page.route("**/messages/*/status", (route) =>
+    route.fulfill({
+      json: {
+        code: "OK",
+        message: "성공",
+        data: {
+          generationStatus: "COMPLETED",
+          message: {
+            messageId: 2,
+            senderType: "AI",
+            content: reply,
+            generationStatus: null,
+            recommendation: null,
+            createdAt: "2026-10-24T09:00:00",
+          },
+        },
+      },
+    }),
+  );
+  await page.goto("/chat");
+  await input(page).fill(message);
+  await input(page).press("Enter");
+  await expect(page.getByText(reply, { exact: true })).toHaveCount(1);
+  await expect(input(page)).toBeEnabled();
+  expect(historyRequests).toHaveLength(1);
+});
+
+test("상태 조회 실패 후 같은 답변의 연결을 다시 시도할 수 있다", async ({
+  page,
+  request,
+}) => {
+  let streamRequests = 0;
+  let statusRequests = 0;
+  await page.route("**/messages/*/stream", (route) => {
+    streamRequests++;
+    return route.fulfill({ contentType: "text/event-stream", body: "" });
+  });
+  await page.route("**/messages/*/status", (route) => {
+    statusRequests++;
+    if (statusRequests === 1) return route.fulfill({ status: 400 });
+    return route.fulfill({
+      json: {
+        code: "OK",
+        message: "성공",
+        data: {
+          generationStatus: "COMPLETED",
+          message: {
+            messageId: 2,
+            senderType: "AI",
+            content: reply,
+            generationStatus: null,
+            recommendation: null,
+            createdAt: "2026-10-24T09:00:00",
+          },
+        },
+      },
+    });
+  });
+
+  await page.goto("/chat");
+  await input(page).fill(message);
+  await input(page).press("Enter");
+  await expect(
+    page.getByRole("alert").filter({ hasText: "답변 연결이 끊겼어요." }),
+  ).toBeVisible();
+  const retry = page.getByRole("button", { name: "다시 시도", exact: true });
+  await expect(retry).toBeVisible();
+  await expect(input(page)).toBeDisabled();
+
+  await retry.click();
+  await expect(page.getByText(reply, { exact: true })).toHaveCount(1);
+  await expect(input(page)).toBeEnabled();
+  await expect(retry).toHaveCount(0);
+  expect(streamRequests).toBe(1);
+  expect(statusRequests).toBe(2);
+  expect(await writes(request, "/chat-rooms")).toHaveLength(1);
+  expect(await writes(request, "/chat-rooms/1/messages")).toHaveLength(0);
+});
+
+test("늦게 도착한 내역 응답이 status의 완료 결과를 덮어쓰지 않는다", async ({
+  page,
+}) => {
+  let releaseStatus!: () => void;
+  const statusGate = new Promise<void>((resolve) => {
+    releaseStatus = resolve;
+  });
+  let releaseHistory!: () => void;
+  const historyGate = new Promise<void>((resolve) => {
+    releaseHistory = resolve;
+  });
+  let historyStarted!: () => void;
+  const historyPending = new Promise<void>((resolve) => {
+    historyStarted = resolve;
+  });
+  let lateResponseFinished!: () => void;
+  const lateResponse = new Promise<void>((resolve) => {
+    lateResponseFinished = resolve;
+  });
+  let historyRequests = 0;
+  let streamRequests = 0;
+  let lateRequestUrl = "";
+
+  await page.route("**/chat-rooms/1/messages?*", async (route) => {
+    const response = await route.fetch();
+    if (++historyRequests === 1) return route.fulfill({ response });
+    const staleBody = await response.json();
+    expect(staleBody.data.messages[0].generationStatus).toBe("PENDING");
+    lateRequestUrl = route.request().url();
+    historyStarted();
+    await historyGate;
+    await route.fulfill({ response, json: staleBody });
+    lateResponseFinished();
+  });
+  await page.route("**/messages/*/stream", (route) => {
+    streamRequests++;
+    return route.fulfill({ contentType: "text/event-stream", body: "" });
+  });
+  await page.route("**/messages/*/status", async (route) => {
+    await statusGate;
+    await route.fulfill({
+      json: {
+        code: "OK",
+        message: "성공",
+        data: {
+          generationStatus: "COMPLETED",
+          message: {
+            messageId: 2,
+            senderType: "AI",
+            content: reply,
+            generationStatus: null,
+            recommendation: null,
+            createdAt: "2026-10-24T09:00:00",
+          },
+        },
+      },
+    });
+  });
+
+  try {
+    await page.goto("/chat");
+    await input(page).fill(message);
+    await input(page).press("Enter");
+    await expect(page).toHaveURL(/\/chat\/1$/);
+    await expect(
+      page.getByRole("log").getByText(message, { exact: true }),
+    ).toBeVisible();
+
+    await page.evaluate(() => {
+      window.dispatchEvent(new Event("offline"));
+      window.dispatchEvent(new Event("online"));
+    });
+    await expect.poll(() => historyRequests).toBe(2);
+    await historyPending;
+    releaseStatus();
+    await expect(page.getByText(reply, { exact: true })).toHaveCount(1);
+    await expect(input(page)).toBeEnabled();
+    const delivered = page.waitForResponse(
+      (response) => response.url() === lateRequestUrl,
+    );
+    releaseHistory();
+    await lateResponse;
+    await (await delivered).finished();
+    // Flush the delivered response and the resulting render before checking it.
+    await page.evaluate(
+      () =>
+        new Promise<void>((resolve) =>
+          requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+        ),
+    );
+    await expect(page.getByText(reply, { exact: true })).toHaveCount(1);
+    await expect(input(page)).toBeEnabled();
+    expect(historyRequests).toBe(2);
+    expect(streamRequests).toBe(1);
+  } finally {
+    releaseStatus();
+    releaseHistory();
+  }
+});
+
+test("답변 완료와 이전 페이지 응답이 겹쳐도 둘 다 표시한다", async ({
+  page,
+}) => {
+  let releasePrevious!: () => void;
+  const previousGate = new Promise<void>((resolve) => {
+    releasePrevious = resolve;
+  });
+  let previousStarted!: () => void;
+  const previousPending = new Promise<void>((resolve) => {
+    previousStarted = resolve;
+  });
+  const olderText = "이전 페이지에 있는 메시지";
+  await page.route("**/chat-rooms/1/messages?*", async (route) => {
+    const response = await route.fetch();
+    const body = await response.json();
+    const isPrevious = new URL(route.request().url()).searchParams.has(
+      "before",
+    );
+    if (isPrevious) {
+      previousStarted();
+      await previousGate;
+      body.data.messages = [
+        {
+          messageId: 3,
+          senderType: "USER",
+          content: olderText,
+          generationStatus: "COMPLETED",
+          recommendation: null,
+          createdAt: "2026-10-23T09:00:00",
+        },
+      ];
+    }
+    body.data.hasPrevious = !isPrevious;
+    body.data.previousCursor = isPrevious ? null : 1;
+    await route.fulfill({ response, json: body });
+  });
+  await page.route("**/messages/*/stream", (route) =>
+    route.fulfill({ contentType: "text/event-stream", body: "" }),
+  );
+  await page.route("**/messages/*/status", async (route) => {
+    await previousPending;
+    await route.fulfill({
+      json: {
+        code: "OK",
+        message: "성공",
+        data: {
+          generationStatus: "COMPLETED",
+          message: {
+            messageId: 2,
+            senderType: "AI",
+            content: reply,
+            generationStatus: null,
+            recommendation: null,
+            createdAt: "2026-10-24T09:00:00",
+          },
+        },
+      },
+    });
+  });
+
+  try {
+    await page.goto("/chat");
+    const statusResponse = page.waitForResponse("**/messages/*/status");
+    await input(page).fill(message);
+    await input(page).press("Enter");
+    await (await statusResponse).finished();
+    await page.evaluate(
+      () =>
+        new Promise<void>((resolve) =>
+          requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+        ),
+    );
+    releasePrevious();
+    await expect(page.getByText(olderText, { exact: true })).toHaveCount(1);
+    await expect(page.getByText(reply, { exact: true })).toHaveCount(1);
+    await expect(input(page)).toBeEnabled();
+  } finally {
+    releasePrevious();
+    previousStarted();
+  }
+});

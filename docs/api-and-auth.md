@@ -56,7 +56,7 @@ Server Component과 Route Handler에서는 `src/shared/api/server.ts`의 `server
 
 1. 일반 API 요청이 `401`을 반환하면 Next Route Handler인 `/bff/auth/refresh`로 Access Token 갱신을 요청합니다.
 2. Route Handler는 현재 요청의 Cookie를 Spring `/auth/refresh`에 전달하고, Spring 응답의 `Set-Cookie`를 브라우저에 전달합니다.
-3. SSR 데이터 요청이 `401`이면 `/bff/auth/refresh`로 이동해 Cookie를 갱신한 뒤 원래 경로로 돌아와 SSR을 다시 실행합니다. 중간 UI는 렌더링하지 않으며, 두 번째 `401`은 로그인 화면으로 이동해 반복을 막습니다.
+3. SSR 데이터 요청이 `401`이면 `/bff/auth/refresh`로 이동해 Cookie를 갱신한 뒤 원래 경로로 돌아와 SSR을 다시 실행합니다. 갱신 쿠키가 없으면 갱신 요청 없이 로그인으로 이동합니다. 갱신이 거절되거나 두 번째 `401`을 받으면 로그인 화면에서 세션 만료를 안내합니다.
 4. 동시에 여러 요청이 실패해도 갱신 요청은 하나만 실행합니다.
 5. 갱신이 성공하면 원래 요청을 한 번 다시 시도합니다.
 6. 갱신 요청도 `401`이면 세션 만료 상태를 알리고 로그인 화면으로 이동합니다.
@@ -68,7 +68,7 @@ Server Component과 Route Handler에서는 `src/shared/api/server.ts`의 `server
 
 `(service)` 영역은 `GET /members/me`의 결과와 Token 갱신 결과를 기준으로 접근을 제어합니다.
 
-- 인증되지 않은 사용자: `/login?reason=session-expired`
+- 인증되지 않은 사용자는 `/login`으로 이동합니다. 서버에서 리다이렉트할 때는 원래 서비스 경로와 쿼리를 `returnTo`로 전달하고, 프로필이 완료된 회원은 로그인 후 해당 내부 경로로 돌아갑니다.
 - 프로필을 완료하지 않은 사용자: `/profile/setup`
 - 프로필을 완료한 사용자가 `/profile/setup`에 접근: `/chat`
 - 사용자 정보 조회가 짧게 끝나면 로딩 화면을 생략하고, 조회가 이어질 때만 현재 상태를 안내
@@ -89,3 +89,11 @@ Server Component과 Route Handler에서는 `src/shared/api/server.ts`의 `server
 ## 전신 사진 제공 비교 실험
 
 인증 이미지 BFF 실험은 철회했습니다. 현재 `/fitting`은 프로필 API가 반환한 S3 presigned URL을 `unoptimized`로 직접 표시하고, 전신 사진의 S3 경로는 Next 이미지 최적화 허용 목록에서 제거했습니다. AI의 WebP 저장은 아직 확인하지 않았으므로 PNG URL이면 원본 PNG를 그대로 다운로드합니다. `/_next/image`는 소유자 인증을 하지 않으며 변환 캐시 만료는 S3 서명 만료와 연동되지 않습니다. 원본 서명 만료 뒤 변환본까지 접근 차단하는 보안 요구를 만족한 것으로 간주하지 않습니다. 기존 변환 캐시 파일을 삭제하거나 운영 배포한 것은 아닙니다. 측정 이력과 보류 사항은 [피팅 성능 기록](./performance/fitting.md)을 참고합니다.
+
+## 자동 재시도
+
+조회(GET·HEAD)는 ky에서 네트워크 오류 및 408·429·500·502·503·504 응답에 최대 2회 재시도합니다(최초 포함 총 3회). 400·403·404와 변경 요청(POST·PUT·PATCH·DELETE)은 일반 자동 재시도를 하지 않습니다. Query·Mutation 자동 재시도는 `Providers`에서 한 번만 꺼 중복 재시도를 방지합니다. 401은 기존 토큰 갱신 후 요청 재전송 흐름을 유지하며, 스트림 연결처럼 개별 요청에서 재시도를 끈 경우는 해당 설정을 따릅니다.
+
+### 긴 작업과 재시도 대기 시간
+
+`timeout`은 한 HTTP 요청의 응답 대기 시간이며 `Retry-After`는 실패한 요청의 다음 시도까지 대기할 시간입니다. 둘은 별개이고 요청별 옵션으로 재정의할 수 있습니다. 현재 채팅 SSE는 `timeout: false`·일반 재시도 없음, 전신 사진 검증은 120초를 사용합니다. 가상 피팅 생성은 기본 HTTP 타임아웃으로 작업을 접수하고, 생성 작업은 별도 상태 조회로 확인합니다. 이번 변경에서 이 대기 시간은 바꾸지 않습니다. 인증 갱신 여부는 일반 재시도 횟수와 분리하며, 갱신 후 재전송에서도 이미 사용한 일반 재시도 예산을 복원하지 않습니다.
