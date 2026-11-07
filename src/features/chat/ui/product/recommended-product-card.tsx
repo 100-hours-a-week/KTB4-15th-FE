@@ -98,7 +98,10 @@ export function RecommendedProductCard({
       },
       onError: (error) => {
         showToast.error(
-          getApiErrorMessage(error, "피팅 목록에 추가하지 못했어요."),
+          error instanceof ApiError &&
+            error.code === "FITTING_CANDIDATE_LIMIT_EXCEEDED"
+            ? "피팅 후보 상품은 최대 300개까지 가능해요."
+            : getApiErrorMessage(error, "피팅 목록에 추가하지 못했어요."),
           {
             id: `add-fitting-candidate:${product.productId}`,
           },
