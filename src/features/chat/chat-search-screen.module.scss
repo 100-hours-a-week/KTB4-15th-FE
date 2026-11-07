@@ -1,9 +1,5 @@
 @use "@/styles/typography" as type;
 
-.searchArea {
-  padding-block: var(--space-md) var(--space-xl);
-}
-
 .searchField {
   display: flex;
   align-items: center;
@@ -71,11 +67,6 @@
     border-radius: var(--radius-small);
     outline: 2px solid var(--color-focus-ring);
   }
-}
-
-.main {
-  padding-block: var(--space-xs)
-    calc(var(--navigation-height) + var(--space-2xl));
 }
 
 .results {

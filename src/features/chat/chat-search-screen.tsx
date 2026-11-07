@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useScrollPagination } from "@/shared/hooks/use-scroll-pagination";
 import { PaginationStatus } from "@/shared/ui/pagination-status";
 import { getApiErrorMessage } from "@/shared/api/error";
-import { BackButton, Header, HeaderTitle } from "@/shared/ui/header";
 import { ChevronRightIcon, ClearIcon, SearchIcon } from "@/shared/ui/icon";
 import { HighlightedChatText } from "./ui/message/highlighted-chat-text";
 import { useChatSearch } from "./model/use-chat-search";
@@ -28,11 +27,7 @@ export function ChatSearchScreen() {
 
   return (
     <>
-      <Header
-        left={<BackButton />}
-        center={<HeaderTitle>채팅 검색</HeaderTitle>}
-      />
-      <div className={styles.searchArea}>
+      <div>
         <div className={styles.searchField} role="search">
           <SearchIcon aria-hidden="true" className={styles.searchIcon} />
           <label className={styles.visuallyHidden} htmlFor="chat-search">
@@ -58,7 +53,7 @@ export function ChatSearchScreen() {
           )}
         </div>
       </div>
-      <main className={styles.main}>
+      <div>
         {showResults && query.isLoading && (
           <p className={styles.message} role="status">
             대화를 검색하는 중...
@@ -113,7 +108,7 @@ export function ChatSearchScreen() {
             모든 검색 결과를 확인했어요.
           </p>
         )}
-      </main>
+      </div>
     </>
   );
 }
