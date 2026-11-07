@@ -1,9 +1,12 @@
 @use "@/styles/typography" as type;
 
 .list {
+  position: relative;
+  overflow-anchor: none;
   display: flex;
   flex-direction: column;
   gap: 40px;
+  padding-top: 32px;
 }
 
 .dateGroup {
@@ -29,6 +32,10 @@
 }
 
 .previousMessagesLoading {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
   display: flex;
   justify-content: center;
   min-height: 24px;

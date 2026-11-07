@@ -163,3 +163,39 @@ test.describe("검색 결과의 채팅 문맥", () => {
     expect(searchRequests).toHaveLength(1);
   });
 });
+
+test("이전 내역 응답을 기다리며 이동한 스크롤 위치를 유지한다", async ({
+  page,
+}) => {
+  let releaseResponse: (() => void) | undefined;
+  const responseGate = new Promise<void>((resolve) => {
+    releaseResponse = resolve;
+  });
+  let requested: (() => void) | undefined;
+  const requestStarted = new Promise<void>((resolve) => {
+    requested = resolve;
+  });
+  await page.route(
+    (url) =>
+      url.pathname.endsWith("/chat-rooms/1/messages") &&
+      url.searchParams.has("before"),
+    async (route) => {
+      const response = await route.fetch();
+      requested?.();
+      await responseGate;
+      await route.fulfill({ response });
+    },
+  );
+  await page.goto("/chat/1");
+  await expect(page.getByRole("log").getByRole("article")).toHaveCount(20);
+  await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
+  await requestStarted;
+  await page.evaluate(() => window.scrollTo({ top: 500, behavior: "instant" }));
+  const anchor = page.locator('[data-message-id="10"]');
+  const before = (await anchor.boundingBox())!.y;
+  releaseResponse?.();
+  await expect(page.getByRole("log").getByRole("article")).toHaveCount(24);
+  await expect
+    .poll(async () => Math.abs((await anchor.boundingBox())!.y - before))
+    .toBeLessThan(3);
+});

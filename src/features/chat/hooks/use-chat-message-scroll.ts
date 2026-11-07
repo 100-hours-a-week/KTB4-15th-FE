@@ -20,6 +20,10 @@ export function useChatMessageScroll({
   onLoadNewerMessages,
   onLoadPreviousMessages,
 }: ChatMessageScrollOptions) {
+  const pendingPrependRef = useRef<{ element: Element; top: number } | null>(
+    null,
+  );
+  const firstMessageId = messages[0]?.messageId;
   const listRef = useRef<HTMLDivElement>(null);
   const isNearBottomRef = useRef(true);
   const [unreadReplyId, setUnreadReplyId] = useState<number | null>(null);
@@ -118,6 +122,18 @@ export function useChatMessageScroll({
     return () => cancelAnimationFrame(frameId);
   }, [anchorMessageId, hasNewerMessages, latestMessageId, messages]);
 
+  useLayoutEffect(() => {
+    const pending = pendingPrependRef.current;
+    if (!pending) return;
+    pendingPrependRef.current = null;
+    if (!pending.element.isConnected) return;
+    const addedHeight =
+      pending.element.getBoundingClientRect().top +
+      window.scrollY -
+      pending.top;
+    window.scrollTo({ top: window.scrollY + addedHeight, behavior: "instant" });
+  }, [firstMessageId]);
+
   useEffect(() => {
     const loadMoreElement = loadMoreRef.current;
 
@@ -142,25 +158,15 @@ export function useChatMessageScroll({
         const firstMessage =
           listRef.current?.querySelector("[data-message-id]");
         if (!firstMessage) return;
-        const previousScrollY = window.scrollY;
-        const previousTop =
-          firstMessage.getBoundingClientRect().top + previousScrollY;
+        pendingPrependRef.current = {
+          element: firstMessage,
+          top: firstMessage.getBoundingClientRect().top + window.scrollY,
+        };
 
         isLoadingPreviousMessagesRef.current = true;
         void onLoadPreviousMessages()
           .then((succeeded) => {
-            if (!succeeded) return;
-            requestAnimationFrame(() => {
-              if (!firstMessage.isConnected) return;
-              const addedHeight =
-                firstMessage.getBoundingClientRect().top +
-                window.scrollY -
-                previousTop;
-              window.scrollTo({
-                top: previousScrollY + addedHeight,
-                behavior: "auto",
-              });
-            });
+            if (!succeeded) pendingPrependRef.current = null;
           })
           .finally(() => {
             isLoadingPreviousMessagesRef.current = false;
