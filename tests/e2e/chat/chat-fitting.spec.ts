@@ -63,3 +63,28 @@ test.describe("피팅 목록 추가 실패", () => {
     expect(await writes(request, "/fitting-candidates")).toHaveLength(2);
   });
 });
+
+test("피팅 후보 한도에 도달하면 최대 개수를 안내한다", async ({
+  page,
+  request,
+}) => {
+  await recommend(page, request);
+  await page.route("**/fitting-candidates", (route) => {
+    if (route.request().method() !== "POST") return route.fallback();
+    return route.fulfill({
+      status: 409,
+      json: {
+        code: "FITTING_CANDIDATE_LIMIT_EXCEEDED",
+        data: null,
+        message: "피팅 후보 상품은 최대 300개까지 추가할 수 있습니다.",
+      },
+    });
+  });
+  await fittingButton(page).click();
+  await expect(
+    page.getByText("피팅 후보 상품은 최대 300개까지 가능해요.", {
+      exact: true,
+    }),
+  ).toBeVisible();
+  await expect(fittingButton(page)).toBeEnabled();
+});

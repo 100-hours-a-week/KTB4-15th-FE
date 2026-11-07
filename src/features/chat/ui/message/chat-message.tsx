@@ -7,7 +7,10 @@ import { InfoIcon, RetryIcon } from "@/shared/ui/icon";
 import styles from "./chat-message.module.scss";
 import { RecommendedProductList } from "../product/recommended-product-list";
 
+import { HighlightedChatText } from "./highlighted-chat-text";
+
 type UserChatMessageProps = {
+  highlightKeyword?: string;
   canRetry?: boolean;
   isRetryPending?: boolean;
   message: UserMessageResponse;
@@ -15,6 +18,7 @@ type UserChatMessageProps = {
 };
 
 type AIChatMessageProps = {
+  highlightKeyword?: string;
   message: AIMessageResponse;
 };
 
@@ -43,6 +47,7 @@ export function StreamingAIChatMessage({ content }: { content: string }) {
 
 export function UserChatMessage({
   canRetry = false,
+  highlightKeyword,
   isRetryPending = false,
   message,
   onRetryMessage,
@@ -53,7 +58,12 @@ export function UserChatMessage({
         <time className={styles.time} dateTime={message.createdAt}>
           {formatKoreanTime(message.createdAt)}
         </time>
-        <div className={styles.userBubble}>{message.content}</div>
+        <div className={styles.userBubble}>
+          <HighlightedChatText
+            text={message.content}
+            keyword={highlightKeyword}
+          />
+        </div>
       </div>
       {canRetry && onRetryMessage && (
         <div className={styles.retryArea}>
@@ -76,7 +86,10 @@ export function UserChatMessage({
   );
 }
 
-export function AIChatMessage({ message }: AIChatMessageProps) {
+export function AIChatMessage({
+  message,
+  highlightKeyword,
+}: AIChatMessageProps) {
   return (
     <article className={styles.aiMessage}>
       <Image
@@ -96,7 +109,12 @@ export function AIChatMessage({ message }: AIChatMessageProps) {
             {formatKoreanTime(message.createdAt)}
           </time>
         </div>
-        <p className={styles.aiBubble}>{message.content}</p>
+        <p className={styles.aiBubble}>
+          <HighlightedChatText
+            text={message.content}
+            keyword={highlightKeyword}
+          />
+        </p>
         {message.recommendation && (
           <RecommendedProductList products={message.recommendation.products} />
         )}
