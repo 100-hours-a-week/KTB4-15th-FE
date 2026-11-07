@@ -13,6 +13,7 @@ import {
 
 export const chatRoomQueryKeys = {
   list: ["chat", "rooms"] as const,
+  search: ["chat", "search"] as const,
   detail: (chatRoomId?: number) => ["chat", "room", chatRoomId] as const,
 };
 
@@ -76,7 +77,10 @@ export function useCreateChatRoomMutation() {
   return useMutation({
     mutationFn: createChatRoom,
     onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: chatRoomQueryKeys.list }),
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: chatRoomQueryKeys.list }),
+        queryClient.invalidateQueries({ queryKey: chatRoomQueryKeys.search }),
+      ]),
   });
 }
 
@@ -92,7 +96,10 @@ export function useRenameChatRoomMutation() {
       title: string;
     }) => renameChatRoom(chatRoomId, { title }),
     onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: chatRoomQueryKeys.list }),
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: chatRoomQueryKeys.list }),
+        queryClient.invalidateQueries({ queryKey: chatRoomQueryKeys.search }),
+      ]),
   });
 }
 
@@ -102,6 +109,9 @@ export function useDeleteChatRoomMutation() {
   return useMutation({
     mutationFn: deleteChatRoom,
     onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: chatRoomQueryKeys.list }),
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: chatRoomQueryKeys.list }),
+        queryClient.invalidateQueries({ queryKey: chatRoomQueryKeys.search }),
+      ]),
   });
 }

@@ -142,8 +142,11 @@ export function useSendChatMessageMutation() {
       content: string;
     }) => sendChatMessage(chatRoomId, { content }),
     onSuccess: (_, { chatRoomId }) =>
-      queryClient.invalidateQueries({
-        queryKey: chatRoomQueryKeys.detail(chatRoomId),
-      }),
+      Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: chatRoomQueryKeys.detail(chatRoomId),
+        }),
+        queryClient.invalidateQueries({ queryKey: chatRoomQueryKeys.search }),
+      ]),
   });
 }
