@@ -45,3 +45,7 @@
 .navigationHidden {
   padding-bottom: calc(env(safe-area-inset-bottom) + var(--space-sm));
 }
+
+.streamRetry {
+  margin-bottom: var(--space-xs);
+}

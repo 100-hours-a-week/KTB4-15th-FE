@@ -163,7 +163,7 @@ export function ChatRoomScreen({
         hasNewerMessages={hasNewerMessages}
         hasPreviousMessages={history.hasPreviousMessages}
         onLoadNewerMessages={history.loadNewerMessages}
-        isGenerating={isGenerating}
+        isGenerating={isGenerating && chatMessageStream.retry == null}
         isLoadingPreviousMessages={history.isLoadingPreviousMessages}
         isRetryPending={sendChatMessageMutation.isPending}
         messages={messages}
@@ -179,6 +179,17 @@ export function ChatRoomScreen({
         }`}
         style={keyboardInset > 0 ? { bottom: keyboardInset } : undefined}
       >
+        {chatMessageStream.retry && (
+          <Button
+            className={styles.streamRetry}
+            fullWidth
+            onClick={chatMessageStream.retry}
+            size="small"
+            variant="secondary"
+          >
+            답변 연결 다시 시도
+          </Button>
+        )}
         <ChatComposer
           disabled={history.isPending}
           isSubmitting={isSubmitting}

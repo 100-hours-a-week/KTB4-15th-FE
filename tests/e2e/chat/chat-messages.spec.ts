@@ -242,6 +242,58 @@ test("SSE 단절 후 완료 상태이면 해당 답변만 캐시에 반영한다
   expect(historyRequests).toHaveLength(1);
 });
 
+test("상태 조회 실패 후 같은 답변의 연결을 다시 시도할 수 있다", async ({
+  page,
+  request,
+}) => {
+  let streamRequests = 0;
+  let statusRequests = 0;
+  await page.route("**/messages/*/stream", (route) => {
+    streamRequests++;
+    return route.fulfill({ contentType: "text/event-stream", body: "" });
+  });
+  await page.route("**/messages/*/status", (route) => {
+    statusRequests++;
+    if (statusRequests === 1) return route.fulfill({ status: 400 });
+    return route.fulfill({
+      json: {
+        code: "OK",
+        message: "성공",
+        data: {
+          generationStatus: "COMPLETED",
+          message: {
+            messageId: 2,
+            senderType: "AI",
+            content: reply,
+            generationStatus: null,
+            recommendation: null,
+            createdAt: "2026-10-24T09:00:00",
+          },
+        },
+      },
+    });
+  });
+
+  await page.goto("/chat");
+  await input(page).fill(message);
+  await input(page).press("Enter");
+  await expect(
+    page.getByText("답변 상태를 확인하지 못했어요. 연결을 다시 시도해 주세요."),
+  ).toBeVisible();
+  const retry = page.getByRole("button", { name: "답변 연결 다시 시도" });
+  await expect(retry).toBeVisible();
+  await expect(input(page)).toBeDisabled();
+
+  await retry.click();
+  await expect(page.getByText(reply, { exact: true })).toHaveCount(1);
+  await expect(input(page)).toBeEnabled();
+  await expect(retry).toHaveCount(0);
+  expect(streamRequests).toBe(1);
+  expect(statusRequests).toBe(2);
+  expect(await writes(request, "/chat-rooms")).toHaveLength(1);
+  expect(await writes(request, "/chat-rooms/1/messages")).toHaveLength(0);
+});
+
 test("늦게 도착한 내역 응답이 status의 완료 결과를 덮어쓰지 않는다", async ({
   page,
 }) => {
