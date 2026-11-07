@@ -90,3 +90,9 @@
 ## API 재시도 (2026-11-04)
 
 - 자동 재시도는 ky에서 관리합니다. 조회는 일시적 오류에 최초 포함 최대 3회 시도하고 변경 요청은 일반 자동 재시도하지 않습니다. Query 전역 재시도는 끄며 401 토큰 갱신은 기존 동작을 유지합니다. 상세 정책은 [API와 인증](./api-and-auth.md)을 참고합니다.
+
+## 개발 배포 (2026-11-08)
+
+- `develop`과 `hotfix/**` push에서는 FE 이미지를 한 번만 빌드하고, 빌드 결과의 immutable digest를 V2 ECS와 V3 EKS 배포에 함께 사용합니다.
+- V2는 기존 ECS Task Definition 갱신을 유지합니다. V3는 GitHub App installation token으로 GitOps 저장소에 `dev-image-published` 이벤트를 보내며, GitOps CI와 Auto Merge, Argo CD Auto Sync가 배포를 담당합니다.
+- 종료된 V1 EC2 개발 배포 job은 제거합니다. 수동 rollback은 기존 V2 ECS 흐름에만 적용하고 V3 배포 승격은 새 이미지가 빌드되는 push 이벤트에서만 수행합니다.
