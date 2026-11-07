@@ -32,9 +32,12 @@ export function useChatMessageStream(
     let completionTimerId: number | undefined;
 
     const invalidateChatRoom = () =>
-      queryClient.invalidateQueries({
-        queryKey: chatRoomQueryKeys.detail(chatRoomId),
-      });
+      Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: chatRoomQueryKeys.detail(chatRoomId),
+        }),
+        queryClient.invalidateQueries({ queryKey: chatRoomQueryKeys.search }),
+      ]);
 
     const displayTimerId = window.setInterval(() => {
       const [nextChunk, remainingContent] = takeChatStreamChunk(pendingContent);
@@ -142,8 +145,11 @@ export function useSendChatMessageMutation() {
       content: string;
     }) => sendChatMessage(chatRoomId, { content }),
     onSuccess: (_, { chatRoomId }) =>
-      queryClient.invalidateQueries({
-        queryKey: chatRoomQueryKeys.detail(chatRoomId),
-      }),
+      Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: chatRoomQueryKeys.detail(chatRoomId),
+        }),
+        queryClient.invalidateQueries({ queryKey: chatRoomQueryKeys.search }),
+      ]),
   });
 }

@@ -31,7 +31,7 @@ for (const endpoint of ["wishlists", "fitting-candidates"]) {
   });
 }
 
-for (const endpoint of ["chat-rooms", "chat-rooms/1"]) {
+for (const endpoint of ["chat-rooms", "chat-rooms/1/messages"]) {
   test(`${endpoint}: chat preview fails only cursor requests`, async () => {
     const initial = await getResponse(
       handlers,
@@ -39,11 +39,13 @@ for (const endpoint of ["chat-rooms", "chat-rooms/1"]) {
     );
     assert.equal(initial?.status, 200);
     const { data } = await initial!.json();
-    assert.equal(data.hasNext, true);
+    const cursor = data.previousCursor ?? data.nextCursor;
+    const direction = data.previousCursor ? "before" : "cursor";
+    assert.ok(cursor);
     const failed = await getResponse(
       handlers,
       new Request(
-        `https://example.com/${endpoint}?mockPagination=fail&cursor=${data.nextCursor}`,
+        `https://example.com/${endpoint}?mockPagination=fail&${direction}=${cursor}`,
       ),
     );
     assert.equal(failed?.status, 400);
@@ -55,7 +57,7 @@ for (const endpoint of [
   "fitting-candidates",
   "fitting-results",
   "chat-rooms",
-  "chat-rooms/1",
+  "chat-rooms/1/messages",
 ]) {
   test(`${endpoint}: recovery preview fails once then succeeds`, async () => {
     const initial = await getResponse(
@@ -64,8 +66,10 @@ for (const endpoint of [
     );
     assert.equal(initial?.status, 200);
     const { data } = await initial!.json();
-    assert.equal(data.hasNext, true);
-    const url = `https://example.com/${endpoint}?mockPagination=recover&cursor=${data.nextCursor}`;
+    const cursor = data.previousCursor ?? data.nextCursor;
+    const direction = data.previousCursor ? "before" : "cursor";
+    assert.ok(cursor);
+    const url = `https://example.com/${endpoint}?mockPagination=recover&${direction}=${cursor}`;
     assert.equal((await getResponse(handlers, new Request(url)))?.status, 400);
     assert.equal((await getResponse(handlers, new Request(url)))?.status, 200);
   });

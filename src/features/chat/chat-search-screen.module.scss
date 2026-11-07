@@ -1,0 +1,154 @@
+@use "@/styles/typography" as type;
+
+.searchField {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  min-height: 48px;
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-medium);
+  padding-inline: var(--space-lg);
+  background: var(--color-background-surface);
+
+  input {
+    @include type.body-large;
+
+    width: 100%;
+    min-width: 0;
+    border: 0;
+    padding: 0;
+    background: transparent;
+    color: var(--color-text-primary);
+    outline: none;
+
+    &::placeholder {
+      color: var(--color-text-placeholder);
+    }
+
+    &::-webkit-search-cancel-button {
+      display: none;
+    }
+  }
+
+  &:has(input:focus-visible) {
+    outline: 1px solid var(--color-border-strong);
+    outline-offset: 0;
+  }
+}
+
+.searchIcon {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 auto;
+  color: var(--color-text-brand);
+}
+
+.clearButton {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  flex: 0 0 auto;
+  border: 0;
+  padding: 10px;
+  background: transparent;
+  color: var(--color-gray-700);
+  cursor: pointer;
+  place-items: center;
+
+  svg {
+    width: 24px;
+    height: 24px;
+    border-radius: var(--radius-full);
+    padding: 3px;
+    background: var(--color-gray-100);
+  }
+
+  &:focus-visible {
+    border-radius: var(--radius-small);
+    outline: 2px solid var(--color-focus-ring);
+  }
+}
+
+.results {
+  display: grid;
+  gap: var(--space-md);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.loadMore {
+  display: grid;
+  min-height: 44px;
+  place-items: center;
+}
+
+.card {
+  display: block;
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-medium);
+  padding: var(--space-xl);
+  background: var(--color-background-surface);
+
+  &:hover {
+    background: var(--color-background-hover);
+  }
+
+  &:active {
+    background: var(--color-background-pressed);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: 2px;
+  }
+}
+
+.cardTitle {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-sm);
+
+  strong {
+    @include type.body-large;
+
+    font-weight: var(--font-weight-semibold);
+    min-width: 0;
+    color: var(--color-text-primary);
+    overflow-wrap: anywhere;
+  }
+
+  svg {
+    width: 20px;
+    height: 20px;
+    flex: 0 0 auto;
+    color: var(--color-gray-400);
+  }
+}
+
+.snippet {
+  @include type.body-medium;
+
+  margin: var(--space-sm) 0 0;
+  color: var(--color-gray-600);
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+
+.message {
+  @include type.body-medium;
+
+  margin: var(--space-2xl) 0;
+  color: var(--color-gray-600);
+  text-align: center;
+}
+
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

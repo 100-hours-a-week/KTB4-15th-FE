@@ -58,7 +58,7 @@ AI 답변 생성 중에는 추가 전송을 막습니다. 빠른 중복 입력�
 
 ## 새 답변과 스크롤
 
-- 채팅방 진입 시 최신 대화로 이동합니다. 직접 메시지를 보내면 하단으로 부드럽게 이동합니다.
+- 일반 채팅방 진입 시 최신 대화로 이동합니다. 직접 메시지를 보내면 하단으로 부드럽게 이동합니다.
 - 새 AI 답변 도착 직전 하단에서 120px 이내에 있으면 답변 시작으로 부드럽게 이동합니다.
 - 이전 대화를 읽는 중이면 위치를 유지하고 입력창 위 중앙에 `↓ 새 답변 도착` 버튼을 표시합니다. 버튼을 누르면 새 답변 시작으로 이동하며, 직접 하단으로 돌아와도 버튼은 사라집니다.
 - 동작 줄이기 설정에서는 스크롤 애니메이션을 생략합니다.
@@ -66,7 +66,7 @@ AI 답변 생성 중에는 추가 전송을 막습니다. 빠른 중복 입력�
 ## 메시지 조회와 실패 처리
 
 - 한 번에 20개씩 Cursor 기반으로 조회합니다.
-- 이전 메시지를 더 불러오면 Page 순서를 뒤집어 시간 순서로 합칩니다.
+- 과거 방향은 `before`, 최신 방향은 `after`로 조회하며 요청한 방향의 커서만 갱신합니다. 합친 목록은 메시지 ID로 중복을 제거합니다.
 - AI 생성이 `FAILED`인 User Message에는 원문으로 다시 전송하는 동작을 제공합니다.
 - 메시지 전송 실패는 Toast로 안내하고 입력 내용을 유지합니다.
 - 대화 목록 추가 조회가 실패하면 목록 하단에서 다시 시도할 수 있습니다.
@@ -96,15 +96,15 @@ AI Message의 Recommendation은 하나 이상의 추천 상품을 포함할 수 
 
 ## API
 
-| Method   | Path                                                   | 역할                  |
-| -------- | ------------------------------------------------------ | --------------------- |
-| `POST`   | `/chat-rooms`                                          | 첫 메시지로 대화 생성 |
-| `GET`    | `/chat-rooms`                                          | 대화 목록 조회        |
-| `GET`    | `/chat-rooms/{chatRoomId}`                             | 대화와 메시지 조회    |
-| `POST`   | `/chat-rooms/{chatRoomId}/messages`                    | 후속 메시지 전송      |
-| `GET`    | `/chat-rooms/{chatRoomId}/messages/{messageId}/stream` | AI 답변 SSE 스트리밍  |
-| `PATCH`  | `/chat-rooms/{chatRoomId}`                             | 대화 이름 수정        |
-| `DELETE` | `/chat-rooms/{chatRoomId}`                             | 대화 삭제             |
+| Method   | Path                                                   | 역할                                   |
+| -------- | ------------------------------------------------------ | -------------------------------------- |
+| `POST`   | `/chat-rooms`                                          | 첫 메시지로 대화 생성                  |
+| `GET`    | `/chat-rooms`                                          | 대화 목록 조회                         |
+| `GET`    | `/chat-rooms/{chatRoomId}/messages`                    | 최신·기준 메시지 주변·방향별 내역 조회 |
+| `POST`   | `/chat-rooms/{chatRoomId}/messages`                    | 후속 메시지 전송                       |
+| `GET`    | `/chat-rooms/{chatRoomId}/messages/{messageId}/stream` | AI 답변 SSE 스트리밍                   |
+| `PATCH`  | `/chat-rooms/{chatRoomId}`                             | 대화 이름 수정                         |
+| `DELETE` | `/chat-rooms/{chatRoomId}`                             | 대화 삭제                              |
 
 ## 관련 코드
 
@@ -116,6 +116,17 @@ AI Message의 Recommendation은 하나 이상의 추천 상품을 포함할 수 
 - `src/features/chat/ui/product`: 추천 상품과 피팅 연동
 - `src/app/(service)/chat`: 채팅 Route
 
-## 보류 항목
+## 대화 내용 검색
 
-- 대화 내용 검색
+- `/chat/search`는 별도 제목 헤더와 검색창을 제공합니다.
+- 입력을 멈춘 뒤 300ms 후 `GET /chat-rooms/search?keyword={keyword}`로 검색하며 빈 검색어는 요청하지 않습니다.
+- 같은 검색어의 결과는 5분 동안 신선한 데이터로 간주해 검색 화면에 돌아왔을 때 재조회 없이 표시합니다.
+- 결과 목록 하단에서 `hasNext`가 참이면 `nextCursor`로 추가 결과를 조회합니다. 추가 조회에 실패하면 현재 결과를 유지하고 재시도 버튼을 표시합니다.
+- API의 `items` 순서 그대로 메시지마다 카드를 표시합니다. 같은 대화도 합치지 않습니다.
+- MSW 검색은 제목이 아닌 메시지 내용에 검색어가 포함된 항목만 반환합니다.
+- 검색어는 URL의 `keyword`에 저장하여 뒤로 이동하거나 새로고침할 때 복원합니다.
+- Route는 헤더와 공통 레이아웃, Screen은 본문, `hooks/use-chat-search.ts`는 검색 상태와 조회를 담당합니다.
+
+- 검색 결과는 채팅방 URL에 `messageId`와 `keyword`를 전달합니다. `aroundMessageId`로 대상 앞뒤를 불러와 대상을 중앙에 놓고, 해당 메시지 안에서 일치한 검색어를 강조합니다.
+- 검색 위치에서 위로 스크롤하면 과거 내역을, 아래로 스크롤하면 이후 내역을 추가합니다. 최신 내역까지 불러오기 전에 메시지를 보내면 최신 대화로 이동합니다.
+- `NEXT_PUBLIC_API_MOCKING=enabled pnpm dev`로 실행한 뒤 `/chat/search?keyword=반바지`에서 결과를 선택하면 양쪽 내역을 확인할 수 있습니다.
