@@ -1,4 +1,13 @@
-import { delay, http, HttpResponse, type RequestHandler } from "msw";
+import {
+  delay,
+  http,
+  HttpResponse,
+  passthrough,
+  type RequestHandler,
+} from "msw";
+
+import type { ChatMessageResponse } from "../features/chat/schema/chat.ts";
+import { chatHistoryPage } from "./chat-history.ts";
 
 type MockProfile = {
   age: number | null;
@@ -107,11 +116,15 @@ const failedPaginationRequests = new Set<string>();
 
 async function paginationFailure(request: Request) {
   const url = new URL(request.url);
-  if (!url.searchParams.has("cursor")) return;
+  const cursor =
+    url.searchParams.get("cursor") ??
+    url.searchParams.get("before") ??
+    url.searchParams.get("after");
+  if (cursor == null) return;
   const mode = paginationMode(request);
   if (mode === "slow" || mode === "recover" || mode === "fail")
     await delay(1000);
-  const key = `${url.pathname}:${url.searchParams.get("cursor")}`;
+  const key = `${url.pathname}:${cursor}`;
   if (
     mode === "fail" ||
     (mode === "recover" && !failedPaginationRequests.has(key))
@@ -124,7 +137,228 @@ async function paginationFailure(request: Request) {
   }
 }
 
+const chatSearchItems = [
+  {
+    chatRoomId: 25,
+    title: "검정 바지에 어울리는 상의",
+    messageId: 381,
+    message: "반바지로 알아봐줘.",
+  },
+  {
+    chatRoomId: 25,
+    title: "검정 바지에 어울리는 상의",
+    messageId: 382,
+    message: "검정 반바지에 입을 깔끔한 반팔 셔츠 추천해줘.",
+  },
+  {
+    chatRoomId: 25,
+    title: "검정 바지에 어울리는 상의",
+    messageId: 383,
+    message: "시원한 린넨 반바지와 매치하고 싶어요.",
+  },
+  {
+    chatRoomId: 18,
+    title: "출근용 셔츠 추천",
+    messageId: 327,
+    message: "하얀 반바지랑 어울리면 좋겠어요.",
+  },
+  {
+    chatRoomId: 12,
+    title: "가을 니트 코디",
+    messageId: 204,
+    message: "브라운 니트와 데님 조합을 추천해 주세요.",
+  },
+  ...[
+    "반바지에 운동화를 신으면 양말은 어떤 길이가 좋아?",
+    "베이지 반바지에 어울리는 티셔츠 색을 골라줘.",
+    "여행 갈 때 입을 편한 반바지 코디 추천해줘.",
+    "데님 반바지와 스트라이프 셔츠를 같이 입고 싶어요.",
+    "반바지가 무릎 위까지 오는데 너무 짧아 보이지 않게 입으려면?",
+    "네이비 반바지에 흰색 스니커즈를 신을 거예요.",
+    "주말 산책용으로 반바지와 가벼운 바람막이를 맞춰줘.",
+    "카키 반바지에는 어떤 색 상의가 자연스러워?",
+    "반바지에 샌들을 신어도 단정해 보이는 조합이 있을까?",
+    "오버핏 셔츠를 반바지 안에 넣어 입을지 고민돼요.",
+    "여름 휴가에 입을 반바지 두 벌만 고르고 싶어요.",
+    "회색 반바지에 파란 셔츠를 입으면 어때?",
+    "반바지와 얇은 가디건을 함께 입는 코디를 보여줘.",
+    "밝은 반바지를 입을 때 가방은 어떤 색이 좋을까?",
+    "반바지에 로퍼를 신는 스타일도 추천해줘.",
+    "비 오는 날에도 편하게 입을 수 있는 반바지 코디가 필요해요.",
+    "흰 반바지에 어울리는 가방을 추천해줘.",
+  ].map((message, index) => ({
+    chatRoomId: index % 2 === 0 ? 25 : 18,
+    title: index % 2 === 0 ? "여름 반바지 코디" : "편한 주말 스타일링",
+    messageId: 400 + index,
+    message,
+  })),
+] as const;
+
+const mockChatRooms = new Map(
+  [25, 18, 12].map((chatRoomId) => {
+    const results = chatSearchItems.filter(
+      (item) => item.chatRoomId === chatRoomId,
+    );
+    const matches = new Map<number, string>(
+      results.map((item) => [item.messageId, item.message]),
+    );
+    const firstId = Math.min(...matches.keys()) - 25;
+    const lastId = Math.max(...matches.keys()) + 25;
+    const messages = Array.from(
+      { length: lastId - firstId + 1 },
+      (_, index): ChatMessageResponse => {
+        const messageId = firstId + index;
+        const match = matches.get(messageId);
+        const createdAt = new Date(
+          Date.UTC(2026, 10, 3, 0, index),
+        ).toISOString();
+        return match
+          ? {
+              messageId,
+              createdAt,
+              content: match,
+              senderType: "USER",
+              generationStatus: "COMPLETED",
+              recommendation: null,
+            }
+          : {
+              messageId,
+              createdAt,
+              content: `스타일링 대화 ${messageId}`,
+              senderType: "AI",
+              generationStatus: null,
+              recommendation: null,
+            };
+      },
+    );
+    return [
+      chatRoomId,
+      { chatRoomId, title: results[0].title, messages },
+    ] as const;
+  }),
+);
+
 export const handlers: RequestHandler[] = [
+  http.get("*/chat-rooms/:roomId/messages", async ({ request, params }) => {
+    const failure = await paginationFailure(request);
+    if (failure) return failure;
+    const chatRoomId = Number(params.roomId);
+    const room = mockChatRooms.get(chatRoomId) ?? {
+      chatRoomId,
+      title: `테스트 대화 ${chatRoomId}`,
+      messages: Array.from({ length: 24 }, (_, index): ChatMessageResponse => ({
+        messageId: index + 1,
+        content: `이전 대화 ${index + 1} — 추가 조회 실패 UI를 확인하는 테스트 메시지입니다.`,
+        createdAt: "2026-11-04T00:00:00",
+        senderType: "AI",
+        generationStatus: null,
+        recommendation: null,
+      })),
+    };
+    const page = chatHistoryPage(room, new URL(request.url).searchParams);
+    if (page) return success(page);
+    return HttpResponse.json(
+      {
+        code: "CHAT_MESSAGE_NOT_FOUND",
+        data: null,
+        message: "메시지를 찾을 수 없습니다.",
+      },
+      { status: 404 },
+    );
+  }),
+  http.post("*/chat-rooms/:roomId/messages", async ({ request, params }) => {
+    const room = mockChatRooms.get(Number(params.roomId));
+    if (!room) return passthrough();
+    const { content } = (await request.json()) as { content: string };
+    const messageId = room.messages.at(-1)!.messageId + 1;
+    const createdAt = new Date().toISOString();
+    room.messages.push(
+      {
+        messageId,
+        content,
+        createdAt,
+        senderType: "USER",
+        generationStatus: "COMPLETED",
+        recommendation: null,
+      },
+      {
+        messageId: messageId + 1,
+        content: "스타일링 요청을 확인했어요.",
+        createdAt,
+        senderType: "AI",
+        generationStatus: null,
+        recommendation: null,
+      },
+    );
+    return success({
+      chatRoomId: room.chatRoomId,
+      messageId,
+      content,
+      createdAt,
+    });
+  }),
+  http.get("*/chat-rooms/search", ({ request }) => {
+    const searchParams = new URL(request.url).searchParams;
+    const keyword = searchParams.get("keyword")?.trim();
+
+    if (!keyword) {
+      return HttpResponse.json(
+        {
+          code: "INVALID_SEARCH_KEYWORD",
+          data: null,
+          message: "검색어를 입력해주세요.",
+        },
+        { status: 400 },
+      );
+    }
+
+    if (keyword.length > 100) {
+      return HttpResponse.json(
+        {
+          code: "SEARCH_KEYWORD_LENGTH_EXCEEDED",
+          data: null,
+          message: "검색어는 최대 100자까지 입력할 수 있어요.",
+        },
+        { status: 400 },
+      );
+    }
+
+    const normalizedKeyword = keyword.toLocaleLowerCase("ko-KR");
+    const matches = chatSearchItems.filter(({ message }) =>
+      message.toLocaleLowerCase("ko-KR").includes(normalizedKeyword),
+    );
+
+    const cursor = searchParams.get("cursor");
+    const cursorIndex = matches.findIndex(
+      ({ messageId }) => String(messageId) === cursor,
+    );
+    if (cursor != null && cursorIndex === -1) {
+      return HttpResponse.json(
+        {
+          code: "INVALID_SEARCH_CURSOR",
+          data: null,
+          message: "잘못된 검색 커서입니다.",
+        },
+        { status: 400 },
+      );
+    }
+    const remaining = matches.slice(cursorIndex + 1);
+    const items = remaining.slice(0, Number(searchParams.get("size") ?? 20));
+    const hasNext = remaining.length > items.length;
+
+    return HttpResponse.json({
+      code: "CHAT_ROOM_SEARCH_SUCCESS",
+      data: {
+        items,
+        hasNext,
+        nextCursor: hasNext ? (items.at(-1)?.messageId ?? null) : null,
+      },
+      message:
+        items.length > 0
+          ? "대화 검색 결과를 조회했습니다."
+          : "일치하는 대화가 없습니다.",
+    });
+  }),
   http.get("*/chat-rooms", async ({ request }) => {
     const failure = await paginationFailure(request);
     if (failure) return failure;
@@ -142,28 +376,6 @@ export const handlers: RequestHandler[] = [
       items,
       nextCursor: cursor > 21 ? items.at(-1)!.chatRoomId : null,
       hasNext: cursor > 21,
-    });
-  }),
-  http.get("*/chat-rooms/:roomId", async ({ request, params }) => {
-    const failure = await paginationFailure(request);
-    if (failure) return failure;
-    const cursor =
-      Number(new URL(request.url).searchParams.get("cursor")) || 25;
-    const first = Math.max(1, cursor - 20);
-    const messages = Array.from({ length: cursor - first }, (_, index) => ({
-      messageId: first + index,
-      content: `이전 대화 ${first + index} — 추가 조회 실패 UI를 확인하는 테스트 메시지입니다.`,
-      createdAt: "2026-11-04T00:00:00",
-      senderType: "AI",
-      generationStatus: null,
-      recommendation: null,
-    }));
-    return success({
-      chatRoomId: Number(params.roomId),
-      title: `테스트 대화 ${params.roomId}`,
-      messages,
-      nextCursor: first > 1 ? first : null,
-      hasNext: first > 1,
     });
   }),
   ...["fitting-candidates", "wishlists"].map((endpoint) =>

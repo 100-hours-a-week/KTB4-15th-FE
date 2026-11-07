@@ -98,7 +98,10 @@ export function RecommendedProductCard({
       },
       onError: (error) => {
         showToast.error(
-          getApiErrorMessage(error, "피팅 목록에 추가하지 못했어요."),
+          error instanceof ApiError &&
+            error.code === "FITTING_CANDIDATE_LIMIT_EXCEEDED"
+            ? "피팅 후보 상품은 최대 300개까지 가능해요."
+            : getApiErrorMessage(error, "피팅 목록에 추가하지 못했어요."),
           {
             id: `add-fitting-candidate:${product.productId}`,
           },
@@ -114,7 +117,9 @@ export function RecommendedProductCard({
     try {
       const currentJob = await getCurrentFittingJob();
       if (currentJob?.status === "GENERATING") {
-        showToast.error("다른 피팅 작업 중입니다. 잠시 후 다시 시도해주세요.");
+        showToast.error(
+          "다른 피팅 작업 중 이에요.\n잠시 후 다시 시도해주세요.",
+        );
         return;
       }
 
@@ -132,7 +137,7 @@ export function RecommendedProductCard({
       showToast.error(
         getApiErrorMessage(
           error,
-          "피팅 작업을 확인하지 못했어요. 잠시 후 다시 시도해 주세요.",
+          "피팅 작업을 확인하지 못했어요.\n잠시 후 다시 시도해 주세요.",
         ),
       );
     } finally {

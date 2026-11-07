@@ -13,6 +13,7 @@ import {
 
 export const chatRoomQueryKeys = {
   list: ["chat", "rooms"] as const,
+  search: ["chat", "search"] as const,
   detail: (chatRoomId?: number) => ["chat", "room", chatRoomId] as const,
 };
 
@@ -26,20 +27,48 @@ export const chatRoomListQueryOptions = infiniteQueryOptions({
       : undefined,
 });
 
-export const chatRoomQueryOptions = (chatRoomId?: number) =>
+export const chatRoomQueryOptions = (
+  chatRoomId: number,
+  anchorMessageId?: number,
+) =>
   infiniteQueryOptions({
-    queryKey: chatRoomQueryKeys.detail(chatRoomId),
-    queryFn: ({ pageParam }) => {
-      if (chatRoomId == null) {
-        throw new Error("채팅방 ID가 없습니다.");
-      }
-
-      return getChatRoom(chatRoomId, pageParam);
-    },
+    queryKey: [...chatRoomQueryKeys.detail(chatRoomId), anchorMessageId],
+    queryFn: ({ pageParam }) =>
+      getChatRoom(
+        chatRoomId,
+        pageParam != null
+          ? anchorMessageId == null
+            ? { before: pageParam }
+            : { after: pageParam }
+          : anchorMessageId == null
+            ? null
+            : { aroundMessageId: anchorMessageId },
+      ),
     initialPageParam: null as number | null,
     getNextPageParam: (lastPage) =>
-      lastPage.hasNext ? lastPage.nextCursor : undefined,
-    enabled: chatRoomId != null,
+      anchorMessageId == null
+        ? lastPage.hasPrevious
+          ? lastPage.previousCursor
+          : undefined
+        : lastPage.hasNext
+          ? lastPage.nextCursor
+          : undefined,
+  });
+
+export const chatRoomOlderQueryOptions = (
+  chatRoomId: number,
+  cursor: number | null,
+) =>
+  infiniteQueryOptions({
+    queryKey: [...chatRoomQueryKeys.detail(chatRoomId), "before", cursor],
+    queryFn: ({ pageParam }) => {
+      if (pageParam == null) throw new Error("이전 메시지 커서가 없습니다.");
+      return getChatRoom(chatRoomId, { before: pageParam });
+    },
+    initialPageParam: cursor,
+    getNextPageParam: (lastPage) =>
+      lastPage.hasPrevious ? lastPage.previousCursor : undefined,
+    enabled: (query) => cursor != null && query.state.data != null,
   });
 
 export function useCreateChatRoomMutation() {
@@ -48,7 +77,10 @@ export function useCreateChatRoomMutation() {
   return useMutation({
     mutationFn: createChatRoom,
     onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: chatRoomQueryKeys.list }),
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: chatRoomQueryKeys.list }),
+        queryClient.invalidateQueries({ queryKey: chatRoomQueryKeys.search }),
+      ]),
   });
 }
 
@@ -64,7 +96,10 @@ export function useRenameChatRoomMutation() {
       title: string;
     }) => renameChatRoom(chatRoomId, { title }),
     onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: chatRoomQueryKeys.list }),
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: chatRoomQueryKeys.list }),
+        queryClient.invalidateQueries({ queryKey: chatRoomQueryKeys.search }),
+      ]),
   });
 }
 
@@ -74,6 +109,9 @@ export function useDeleteChatRoomMutation() {
   return useMutation({
     mutationFn: deleteChatRoom,
     onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: chatRoomQueryKeys.list }),
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: chatRoomQueryKeys.list }),
+        queryClient.invalidateQueries({ queryKey: chatRoomQueryKeys.search }),
+      ]),
   });
 }
