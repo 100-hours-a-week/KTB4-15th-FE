@@ -87,36 +87,20 @@ export function useFullBodyPhoto({
     }
   };
 
-  const handlePhotoPickerCancel = useCallback(async () => {
+  const handlePhotoPickerCancel = useCallback(() => {
     filePickerLockedRef.current = false;
     if (photoUrl) return;
 
-    let isCameraPermissionDenied = false;
-
-    try {
-      const permission = await navigator.permissions?.query({
-        name: "camera" as PermissionName,
-      });
-      isCameraPermissionDenied = permission?.state === "denied";
-    } catch {
-      // Some browsers do not expose camera permission state for file inputs.
-    }
-
-    setErrorMessage(
-      isCameraPermissionDenied
-        ? "카메라 권한이 필요해요. 설정에서 권한을 허용하거나 로컬 사진 등록을 선택해주세요."
-        : "사진 등록이 취소되었습니다.",
-    );
+    setErrorMessage("사진 등록이 취소되었습니다.");
   }, [photoUrl]);
 
   useEffect(() => {
     const input = fileInputRef.current;
     if (!input) return;
 
-    const handleCancel = () => void handlePhotoPickerCancel();
-    input.addEventListener("cancel", handleCancel);
+    input.addEventListener("cancel", handlePhotoPickerCancel);
 
-    return () => input.removeEventListener("cancel", handleCancel);
+    return () => input.removeEventListener("cancel", handlePhotoPickerCancel);
   }, [handlePhotoPickerCancel]);
 
   const openPhotoPicker = () => {
