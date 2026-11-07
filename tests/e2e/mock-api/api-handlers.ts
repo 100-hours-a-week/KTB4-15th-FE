@@ -197,6 +197,24 @@ export const testHandlers = [
       return failure("채팅방 없음", 404);
     return new HttpResponse(null, { status: 204 });
   }),
+  http.get("*/chat-rooms/:roomId/messages/:messageId/status", ({ params }) => {
+    const messages = rooms.get(Number(params.roomId))?.messages ?? [];
+    const user = messages.find(
+      (message) => message.messageId === Number(params.messageId),
+    );
+    if (!user || user.senderType !== "USER") return failure("메시지 없음", 404);
+    return success({
+      generationStatus: user.generationStatus,
+      message:
+        user.generationStatus === "COMPLETED"
+          ? (messages.find(
+              (message) =>
+                message.messageId > user.messageId &&
+                message.senderType === "AI",
+            ) ?? null)
+          : null,
+    });
+  }),
   http.get("*/chat-rooms/:roomId/messages/:messageId/stream", ({ params }) => {
     const messages = rooms.get(Number(params.roomId))?.messages ?? [];
     const userMessage = messages.find(
