@@ -1,13 +1,14 @@
 import { LoginForm, SessionExpiredToast } from "@/features/auth";
 import { IntroHero } from "@/shared/ui/intro-hero";
+import { normalizeReturnTo } from "@/app/bff/auth/_lib/return-to";
 import styles from "./page.module.scss";
 
 type LoginPageProps = {
-  searchParams: Promise<{ reason?: string }>;
+  searchParams: Promise<{ reason?: string; returnTo?: string | string[] }>;
 };
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
-  const { reason } = await searchParams;
+  const { reason, returnTo } = await searchParams;
 
   return (
     <main className={styles.main}>
@@ -18,7 +19,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         title={"패션이 쉬워지는\nAI 도우미 룩딱"}
       />
       <SessionExpiredToast enabled={reason === "session-expired"} />
-      <LoginForm />
+      <LoginForm returnTo={normalizeReturnTo(returnTo)} />
     </main>
   );
 }
