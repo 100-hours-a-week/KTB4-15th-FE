@@ -1,8 +1,22 @@
 import { useEffect, useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { connectChatStream, sendChatMessage } from "../api/chat";
+import {
+  useMutation,
+  useQueryClient,
+  type InfiniteData,
+} from "@tanstack/react-query";
+import {
+  connectChatStream,
+  getChatGenerationStatus,
+  sendChatMessage,
+} from "../api/chat";
 import { chatRoomQueryKeys } from "./chat-room-query";
 import { takeChatStreamChunk } from "./chat-stream-buffer";
+
+import { updateChatGenerationCache } from "./chat-message-cache";
+import type {
+  ChatMessageContextResponse,
+  ChatGenerationStatusResponse,
+} from "../schema/chat";
 
 const STREAM_RENDER_INTERVAL_MS = 36;
 const RECOMMENDATION_REVEAL_DELAY_MS = 200;
@@ -31,13 +45,35 @@ export function useChatMessageStream(
     let hasProducts = false;
     let completionTimerId: number | undefined;
 
-    const invalidateChatRoom = () =>
-      Promise.all([
-        queryClient.invalidateQueries({
-          queryKey: chatRoomQueryKeys.detail(chatRoomId),
-        }),
-        queryClient.invalidateQueries({ queryKey: chatRoomQueryKeys.search }),
-      ]);
+    let completedStatus: ChatGenerationStatusResponse | undefined;
+    let reconnectTimerId: number | undefined;
+
+    const applyStatus = async (status: ChatGenerationStatusResponse) => {
+      await queryClient.cancelQueries({
+        queryKey: chatRoomQueryKeys.detail(chatRoomId),
+      });
+      if (controller.signal.aborted) return;
+      queryClient.setQueriesData<InfiniteData<ChatMessageContextResponse>>(
+        { queryKey: chatRoomQueryKeys.detail(chatRoomId) },
+        (data) => updateChatGenerationCache(data, messageId, status),
+      );
+      if (status.generationStatus === "COMPLETED") {
+        void queryClient.invalidateQueries({
+          queryKey: chatRoomQueryKeys.search,
+        });
+      }
+    };
+
+    const waitForReconnect = () =>
+      new Promise<void>((resolve) => {
+        const finish = () => {
+          window.clearTimeout(reconnectTimerId);
+          controller.signal.removeEventListener("abort", finish);
+          resolve();
+        };
+        controller.signal.addEventListener("abort", finish, { once: true });
+        reconnectTimerId = window.setTimeout(finish, 1000);
+      });
 
     const displayTimerId = window.setInterval(() => {
       const [nextChunk, remainingContent] = takeChatStreamChunk(pendingContent);
@@ -53,69 +89,120 @@ export function useChatMessageStream(
         didFinish = true;
         window.clearInterval(displayTimerId);
         completionTimerId = window.setTimeout(
-          () => void invalidateChatRoom(),
+          () => {
+            if (completedStatus) void applyStatus(completedStatus);
+          },
           hasProducts ? RECOMMENDATION_REVEAL_DELAY_MS : 0,
         );
       }
     }, STREAM_RENDER_INTERVAL_MS);
 
     const consume = async () => {
-      try {
-        for await (const event of connectChatStream(
-          chatRoomId,
-          messageId,
-          controller.signal,
-        )) {
-          if (event.userMessageId !== messageId) {
-            throw new Error("요청한 메시지와 스트림 응답이 일치하지 않습니다.");
-          }
-
-          if (event.type === "snapshot") {
-            displayedContent = event.content;
-            pendingContent = "";
-            setState({ messageId, content: event.content, error: null });
-          } else if (event.type === "token") {
-            pendingContent += event.content;
-          } else if (event.type === "done") {
-            const receivedContent = displayedContent + pendingContent;
-
-            if (event.content.startsWith(receivedContent)) {
-              pendingContent += event.content.slice(receivedContent.length);
+      for (
+        let reconnectAttempt = 0;
+        !controller.signal.aborted;
+        reconnectAttempt++
+      ) {
+        try {
+          for await (const event of connectChatStream(
+            chatRoomId,
+            messageId,
+            controller.signal,
+          )) {
+            if (event.userMessageId !== messageId) {
+              throw new Error(
+                "요청한 메시지와 스트림 응답이 일치하지 않습니다.",
+              );
             }
 
-            hasProducts = event.products.length > 0;
-            isDone = true;
-            return;
-          } else if (event.type === "error") {
-            window.clearInterval(displayTimerId);
-            setState((current) => ({
-              messageId,
-              content: current?.messageId === messageId ? current.content : "",
-              error: new Error(event.message),
-            }));
-            await invalidateChatRoom();
+            if (event.type === "snapshot") {
+              displayedContent = event.content;
+              pendingContent = "";
+              setState({ messageId, content: event.content, error: null });
+            } else if (event.type === "token") {
+              pendingContent += event.content;
+            } else if (event.type === "done") {
+              const receivedContent = displayedContent + pendingContent;
+
+              if (event.content.startsWith(receivedContent)) {
+                pendingContent += event.content.slice(receivedContent.length);
+              }
+
+              completedStatus = await getChatGenerationStatus(
+                chatRoomId,
+                messageId,
+                controller.signal,
+              );
+              if (controller.signal.aborted) return;
+              if (completedStatus.generationStatus !== "COMPLETED") {
+                throw new Error("완료된 AI 답변 상태를 확인하지 못했어요.");
+              }
+              hasProducts = completedStatus.message.recommendation != null;
+              isDone = true;
+              return;
+            } else if (event.type === "error") {
+              throw new Error(event.message);
+            }
+          }
+
+          if (!controller.signal.aborted) {
+            throw new Error("AI 응답 연결이 완료 이벤트 없이 종료되었습니다.");
+          }
+        } catch (caught) {
+          if (controller.signal.aborted) {
             return;
           }
-        }
 
-        if (!controller.signal.aborted) {
-          throw new Error("AI 응답 연결이 완료 이벤트 없이 종료되었습니다.");
-        }
-      } catch (caught) {
-        if (controller.signal.aborted) {
+          try {
+            const status = await getChatGenerationStatus(
+              chatRoomId,
+              messageId,
+              controller.signal,
+            );
+            if (controller.signal.aborted) return;
+            if (status.generationStatus === "COMPLETED") {
+              window.clearInterval(displayTimerId);
+              await applyStatus(status);
+              return;
+            }
+            if (status.generationStatus !== "FAILED" && reconnectAttempt < 3) {
+              await waitForReconnect();
+              if (controller.signal.aborted) return;
+              // The reconnect snapshot replaces partial text, so replayed tokens cannot duplicate it.
+              displayedContent = "";
+              pendingContent = "";
+              setState({ messageId, content: "", error: null });
+              continue;
+            }
+            if (status.generationStatus === "FAILED") {
+              window.clearInterval(displayTimerId);
+              setState((current) => ({
+                messageId,
+                content:
+                  current?.messageId === messageId ? current.content : "",
+                error:
+                  caught instanceof Error
+                    ? caught
+                    : new Error("AI 응답을 불러오지 못했습니다."),
+              }));
+              await applyStatus(status);
+              return;
+            }
+          } catch (statusError) {
+            if (controller.signal.aborted) return;
+            caught = statusError;
+          }
+          window.clearInterval(displayTimerId);
+          setState((current) => ({
+            messageId,
+            content: current?.messageId === messageId ? current.content : "",
+            error:
+              caught instanceof Error
+                ? caught
+                : new Error("AI 응답을 불러오지 못했습니다."),
+          }));
           return;
         }
-
-        window.clearInterval(displayTimerId);
-        setState((current) => ({
-          messageId,
-          content: current?.messageId === messageId ? current.content : "",
-          error:
-            caught instanceof Error
-              ? caught
-              : new Error("AI 응답을 불러오지 못했습니다."),
-        }));
-        await invalidateChatRoom();
       }
     };
 
@@ -124,13 +211,18 @@ export function useChatMessageStream(
     return () => {
       window.clearInterval(displayTimerId);
       window.clearTimeout(completionTimerId);
+      window.clearTimeout(reconnectTimerId);
       controller.abort();
     };
   }, [chatRoomId, messageId, queryClient]);
 
   return state != null && state.messageId === messageId
     ? state
-    : { messageId, content: "", error: null };
+    : {
+        messageId,
+        content: "",
+        error: messageId == null ? (state?.error ?? null) : null,
+      };
 }
 
 export function useSendChatMessageMutation() {
@@ -145,11 +237,8 @@ export function useSendChatMessageMutation() {
       content: string;
     }) => sendChatMessage(chatRoomId, { content }),
     onSuccess: (_, { chatRoomId }) =>
-      Promise.all([
-        queryClient.invalidateQueries({
-          queryKey: chatRoomQueryKeys.detail(chatRoomId),
-        }),
-        queryClient.invalidateQueries({ queryKey: chatRoomQueryKeys.search }),
-      ]),
+      queryClient.invalidateQueries({
+        queryKey: chatRoomQueryKeys.detail(chatRoomId),
+      }),
   });
 }
