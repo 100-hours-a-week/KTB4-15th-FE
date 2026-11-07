@@ -18,6 +18,7 @@ export function useChatSearch() {
     const timer = window.setTimeout(() => {
       setDebouncedKeyword(trimmedKeyword);
       const url = new URL(window.location.href);
+      if (url.searchParams.get("keyword") === (trimmedKeyword || null)) return;
       if (trimmedKeyword) url.searchParams.set("keyword", trimmedKeyword);
       else url.searchParams.delete("keyword");
       window.history.replaceState(null, "", url);

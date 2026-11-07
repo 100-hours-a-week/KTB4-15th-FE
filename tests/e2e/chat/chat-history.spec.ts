@@ -109,6 +109,15 @@ test.describe("검색 결과의 채팅 문맥", () => {
   test("검색 위치에서 시작해 과거와 최신 내역을 각각 이어 붙인다", async ({
     page,
   }) => {
+    await page.route(
+      (url) => url.pathname === "/chat/25" && url.searchParams.has("_rsc"),
+      async (route) => {
+        const response = await route.fetch();
+        // Let the search debounce finish while the destination is loading.
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        await route.fulfill({ response });
+      },
+    );
     await page.goto("/chat/search?keyword=반바지");
     await page.getByRole("link", { name: /반바지로 알아봐줘/ }).click();
     await expect(page).toHaveURL("/chat/25?messageId=381");
