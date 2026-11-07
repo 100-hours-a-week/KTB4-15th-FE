@@ -61,7 +61,7 @@ for (const failure of ["generatingFitting", "failCurrentFitting"] as const) {
     await expect(
       page.getByText(
         failure === "generatingFitting"
-          ? "다른 피팅 작업 중입니다. 잠시 후 다시 시도해주세요."
+          ? "다른 피팅 작업 중 이에요. 잠시 후 다시 시도해주세요."
           : "피팅 작업을 확인하지 못했어요. 잠시 후 다시 시도해 주세요.",
         { exact: true },
       ),
