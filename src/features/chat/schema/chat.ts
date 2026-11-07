@@ -107,6 +107,27 @@ export const chatMessageContextResponse = z.object({
   hasPrevious: z.boolean(),
 });
 
+export const chatGenerationStatusResponse = z.discriminatedUnion(
+  "generationStatus",
+  [
+    z.object({
+      generationStatus: z.literal("COMPLETED"),
+      message: aiMessageResponse,
+    }),
+    z.object({
+      generationStatus: z.enum(["PENDING", "GENERATING", "FAILED"]),
+      message: z.null(),
+    }),
+  ],
+);
+
+export type ChatGenerationStatusResponse = z.infer<
+  typeof chatGenerationStatusResponse
+>;
+export type ChatMessageContextResponse = z.infer<
+  typeof chatMessageContextResponse
+>;
+
 export const chatStreamEvent = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("connected"),

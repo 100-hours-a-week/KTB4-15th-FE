@@ -45,6 +45,38 @@ export function StreamingAIChatMessage({ content }: { content: string }) {
   );
 }
 
+export function ChatMessageRetry({
+  align = "end",
+  isPending = false,
+  label = "다시 시도",
+  message,
+  onRetry,
+}: {
+  align?: "start" | "end";
+  isPending?: boolean;
+  label?: string;
+  message: string;
+  onRetry: () => void;
+}) {
+  return (
+    <div className={styles.retryArea} data-align={align}>
+      <p className={styles.retryMessage} role="alert">
+        <InfoIcon />
+        {message}
+      </p>
+      <Button
+        isLoading={isPending}
+        leadingIcon={<RetryIcon />}
+        onClick={onRetry}
+        size="small"
+        variant="outlined"
+      >
+        {label}
+      </Button>
+    </div>
+  );
+}
+
 export function UserChatMessage({
   canRetry = false,
   highlightKeyword,
@@ -66,21 +98,11 @@ export function UserChatMessage({
         </div>
       </div>
       {canRetry && onRetryMessage && (
-        <div className={styles.retryArea}>
-          <p className={styles.retryMessage} role="alert">
-            <InfoIcon />
-            문제가 발생했습니다. 다시 시도해 주세요.
-          </p>
-          <Button
-            isLoading={isRetryPending}
-            leadingIcon={<RetryIcon />}
-            onClick={() => onRetryMessage(message.content)}
-            size="small"
-            variant="outlined"
-          >
-            다시 시도
-          </Button>
-        </div>
+        <ChatMessageRetry
+          isPending={isRetryPending}
+          message="문제가 발생했습니다. 다시 시도해 주세요."
+          onRetry={() => onRetryMessage(message.content)}
+        />
       )}
     </article>
   );

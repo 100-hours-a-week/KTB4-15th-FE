@@ -5,6 +5,7 @@ import {
   chatSearchResponse,
   chatRoomListResponse,
   chatStreamEvent,
+  chatGenerationStatusResponse,
   createChatRoomResponse,
   renameChatRoomRequest,
   renameChatRoomResponse,
@@ -32,6 +33,18 @@ export async function sendChatMessage(
   });
 
   return parseResponse(response, sendChatMessageResponse);
+}
+
+export async function getChatGenerationStatus(
+  chatRoomId: number,
+  messageId: number,
+  signal: AbortSignal,
+) {
+  const response = await apiClient.get(
+    `chat-rooms/${chatRoomId}/messages/${messageId}/status`,
+    { signal },
+  );
+  return parseResponse(response, chatGenerationStatusResponse);
 }
 
 export async function* connectChatStream(

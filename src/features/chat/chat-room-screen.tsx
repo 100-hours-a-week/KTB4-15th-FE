@@ -58,15 +58,17 @@ export function ChatRoomScreen({
     generatingMessageId,
   );
 
+  const canRetryStream = chatMessageStream.retry != null;
+
   useEffect(() => {
-    if (chatMessageStream.error == null) {
+    if (chatMessageStream.error == null || canRetryStream) {
       return;
     }
 
     showToast.error(chatMessageStream.error.message, {
       id: "chat-message-stream",
     });
-  }, [chatMessageStream.error]);
+  }, [chatMessageStream.error, canRetryStream]);
 
   const isGenerating = generatingMessageId != null;
 
@@ -163,12 +165,13 @@ export function ChatRoomScreen({
         hasNewerMessages={hasNewerMessages}
         hasPreviousMessages={history.hasPreviousMessages}
         onLoadNewerMessages={history.loadNewerMessages}
-        isGenerating={isGenerating}
+        isGenerating={isGenerating && chatMessageStream.retry == null}
         isLoadingPreviousMessages={history.isLoadingPreviousMessages}
         isRetryPending={sendChatMessageMutation.isPending}
         messages={messages}
         onLoadPreviousMessages={history.loadPreviousMessages}
         onRetryMessage={handleRetry}
+        onRetryStream={chatMessageStream.retry}
         streamingContent={chatMessageStream.content}
       />
       <div
