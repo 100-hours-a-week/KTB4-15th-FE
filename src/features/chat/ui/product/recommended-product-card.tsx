@@ -114,7 +114,7 @@ export function RecommendedProductCard({
     try {
       const currentJob = await getCurrentFittingJob();
       if (currentJob?.status === "GENERATING") {
-        showToast.error("다른 피팅 작업 중입니다. 잠시 후 다시 시도해주세요.");
+        showToast.error("다른 피팅 작업 중 이에요.\n잠시 후 다시 시도해주세요.");
         return;
       }
 
@@ -132,7 +132,7 @@ export function RecommendedProductCard({
       showToast.error(
         getApiErrorMessage(
           error,
-          "피팅 작업을 확인하지 못했어요. 잠시 후 다시 시도해 주세요.",
+          "피팅 작업을 확인하지 못했어요.\n잠시 후 다시 시도해 주세요.",
         ),
       );
     } finally {

@@ -45,7 +45,7 @@ export function useChatRoomHistory(
     const result = await fetchNewerMessages({ cancelRefetch: false });
     if (result.isFetchNextPageError) {
       showToast.error(
-        "이후 메시지를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.",
+        "이후 메시지를 불러오지 못했어요.\n잠시 후 다시 시도해 주세요.",
         {
           id: "newer-chat-messages",
         },
