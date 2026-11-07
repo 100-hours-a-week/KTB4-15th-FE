@@ -25,6 +25,7 @@ type ChatMessageListProps = {
   messages: ChatMessageResponse[];
   onLoadPreviousMessages?: () => Promise<boolean>;
   onRetryMessage?: (content: string) => void;
+  onRetryStream?: () => void;
   streamingContent?: string;
 };
 
@@ -40,6 +41,7 @@ export function ChatMessageList({
   messages,
   onLoadPreviousMessages,
   onRetryMessage,
+  onRetryStream,
   streamingContent = "",
 }: ChatMessageListProps) {
   const {
@@ -165,6 +167,7 @@ export function ChatMessageList({
       ) : (
         isGenerating && <AIChatMessageLoading />
       )}
+      {onRetryStream && <AIChatMessageLoading onRetry={onRetryStream} />}
     </div>
   );
 }

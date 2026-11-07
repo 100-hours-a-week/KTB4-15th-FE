@@ -238,6 +238,20 @@ const mockChatRooms = new Map(
   }),
 );
 
+const retryPreviewText = "답변 연결 재시도 테스트";
+const failedRetryPreviewStatuses = new WeakSet<ChatMessageResponse>();
+
+function findRetryPreviewMessage(roomId: number, messageId: number) {
+  return mockChatRooms
+    .get(roomId)
+    ?.messages.find(
+      (message) =>
+        message.messageId === messageId &&
+        message.senderType === "USER" &&
+        message.content === retryPreviewText,
+    );
+}
+
 export const handlers: RequestHandler[] = [
   http.get("*/chat-rooms/:roomId/messages", async ({ request, params }) => {
     const failure = await paginationFailure(request);
@@ -272,30 +286,69 @@ export const handlers: RequestHandler[] = [
     const { content } = (await request.json()) as { content: string };
     const messageId = room.messages.at(-1)!.messageId + 1;
     const createdAt = new Date().toISOString();
-    room.messages.push(
-      {
-        messageId,
-        content,
-        createdAt,
-        senderType: "USER",
-        generationStatus: "COMPLETED",
-        recommendation: null,
-      },
-      {
+    const retryPreview = content === retryPreviewText;
+    room.messages.push({
+      messageId,
+      content,
+      createdAt,
+      senderType: "USER",
+      generationStatus: retryPreview ? "PENDING" : "COMPLETED",
+      recommendation: null,
+    });
+    if (!retryPreview) {
+      room.messages.push({
         messageId: messageId + 1,
         content: "스타일링 요청을 확인했어요.",
         createdAt,
         senderType: "AI",
         generationStatus: null,
         recommendation: null,
-      },
-    );
+      });
+    }
     return success({
       chatRoomId: room.chatRoomId,
       messageId,
       content,
       createdAt,
     });
+  }),
+  http.get("*/chat-rooms/:roomId/messages/:messageId/stream", ({ params }) => {
+    const message = findRetryPreviewMessage(
+      Number(params.roomId),
+      Number(params.messageId),
+    );
+    if (!message) return passthrough();
+    return new HttpResponse("", {
+      headers: { "Content-Type": "text/event-stream" },
+    });
+  }),
+  http.get("*/chat-rooms/:roomId/messages/:messageId/status", ({ params }) => {
+    const roomId = Number(params.roomId);
+    const messageId = Number(params.messageId);
+    const room = mockChatRooms.get(roomId);
+    const message = findRetryPreviewMessage(roomId, messageId);
+    if (!room || !message || message.senderType !== "USER")
+      return passthrough();
+    if (!failedRetryPreviewStatuses.has(message)) {
+      failedRetryPreviewStatuses.add(message);
+      return HttpResponse.json(
+        { code: "CHAT_STATUS_PREVIEW_ERROR", data: null },
+        { status: 400 },
+      );
+    }
+    const reply: ChatMessageResponse = {
+      messageId: messageId + 1,
+      content: "답변 연결을 복구했어요.",
+      createdAt: new Date().toISOString(),
+      senderType: "AI",
+      generationStatus: null,
+      recommendation: null,
+    };
+    if (message.generationStatus !== "COMPLETED") {
+      message.generationStatus = "COMPLETED";
+      room.messages.push(reply);
+    }
+    return success({ generationStatus: "COMPLETED", message: reply });
   }),
   http.get("*/chat-rooms/search", ({ request }) => {
     const searchParams = new URL(request.url).searchParams;

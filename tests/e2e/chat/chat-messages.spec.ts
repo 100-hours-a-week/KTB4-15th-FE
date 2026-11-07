@@ -278,9 +278,9 @@ test("상태 조회 실패 후 같은 답변의 연결을 다시 시도할 수 �
   await input(page).fill(message);
   await input(page).press("Enter");
   await expect(
-    page.getByText("답변 상태를 확인하지 못했어요. 연결을 다시 시도해 주세요."),
+    page.getByRole("alert").filter({ hasText: "답변 연결이 끊겼어요." }),
   ).toBeVisible();
-  const retry = page.getByRole("button", { name: "답변 연결 다시 시도" });
+  const retry = page.getByRole("button", { name: "다시 시도", exact: true });
   await expect(retry).toBeVisible();
   await expect(input(page)).toBeDisabled();
 

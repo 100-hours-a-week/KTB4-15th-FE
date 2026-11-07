@@ -27,6 +27,10 @@
   flex-direction: column;
   align-items: flex-end;
   gap: var(--space-sm);
+
+  &[data-align="start"] {
+    align-items: flex-start;
+  }
 }
 
 .retryMessage {

@@ -58,15 +58,17 @@ export function ChatRoomScreen({
     generatingMessageId,
   );
 
+  const canRetryStream = chatMessageStream.retry != null;
+
   useEffect(() => {
-    if (chatMessageStream.error == null) {
+    if (chatMessageStream.error == null || canRetryStream) {
       return;
     }
 
     showToast.error(chatMessageStream.error.message, {
       id: "chat-message-stream",
     });
-  }, [chatMessageStream.error]);
+  }, [chatMessageStream.error, canRetryStream]);
 
   const isGenerating = generatingMessageId != null;
 
@@ -169,6 +171,7 @@ export function ChatRoomScreen({
         messages={messages}
         onLoadPreviousMessages={history.loadPreviousMessages}
         onRetryMessage={handleRetry}
+        onRetryStream={chatMessageStream.retry}
         streamingContent={chatMessageStream.content}
       />
       <div
@@ -179,17 +182,6 @@ export function ChatRoomScreen({
         }`}
         style={keyboardInset > 0 ? { bottom: keyboardInset } : undefined}
       >
-        {chatMessageStream.retry && (
-          <Button
-            className={styles.streamRetry}
-            fullWidth
-            onClick={chatMessageStream.retry}
-            size="small"
-            variant="secondary"
-          >
-            답변 연결 다시 시도
-          </Button>
-        )}
         <ChatComposer
           disabled={history.isPending}
           isSubmitting={isSubmitting}
