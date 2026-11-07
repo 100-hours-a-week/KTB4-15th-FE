@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { LandingLoginLink } from "./landing-login-link";
 import styles from "./landing-cta.module.scss";
 
 export function LandingCta() {
@@ -16,10 +17,7 @@ export function LandingCta() {
         룩딱 시작하기
       </Link>
       <p className={styles.loginPrompt}>
-        이미 계정이 있나요?{" "}
-        <Link href="/chat" prefetch={false}>
-          로그인
-        </Link>
+        이미 계정이 있나요? <LandingLoginLink />
       </p>
     </section>
   );

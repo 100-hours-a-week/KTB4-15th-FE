@@ -119,6 +119,36 @@ for (const width of [390, 1440]) {
   });
 }
 
+test("landing login shows feedback while navigation is pending", async ({
+  page,
+  request,
+}) => {
+  await request.post("http://127.0.0.1:3101/__test/reset", {
+    data: { memberStatus: "unauthenticated" },
+  });
+  const navigation = Promise.withResolvers<void>();
+  await page.route(
+    (url) => url.pathname === "/chat",
+    async (route) => {
+      await navigation.promise;
+      await route.continue();
+    },
+  );
+
+  try {
+    await page.goto("/");
+    await expect(page.locator("[data-scene]").locator("xpath=..")).toHaveClass(
+      /pin-spacer/,
+    );
+    const header = page.locator("header");
+    await header.getByRole("link", { name: "로그인" }).click();
+    await expect(header.getByRole("link", { name: "확인 중…" })).toBeVisible();
+  } finally {
+    navigation.resolve();
+  }
+  await expect(page).toHaveURL(/\/login\?returnTo=%2Fchat$/);
+});
+
 for (const [memberStatus, expiredRefresh, destination] of [
   ["complete", false, /\/chat$/],
   ["refreshable", false, /\/chat$/],

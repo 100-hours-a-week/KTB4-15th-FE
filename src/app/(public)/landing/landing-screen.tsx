@@ -9,6 +9,7 @@ import { LandingFooter } from "./landing-footer";
 import { LandingFaq } from "./landing-faq";
 import { LandingFeatures } from "./landing-features";
 import { LandingHero } from "./landing-hero";
+import { LandingLoginLink } from "./landing-login-link";
 import styles from "./landing-screen.module.scss";
 
 export function LandingScreen() {
@@ -386,9 +387,7 @@ export function LandingScreen() {
           LOOK DDAK
         </Link>
         <nav aria-label="계정" className={styles.headerActions}>
-          <Link className={styles.headerLink} href="/chat" prefetch={false}>
-            로그인
-          </Link>
+          <LandingLoginLink className={styles.headerLink} />
           <Link className={styles.headerLink} href="/signup">
             회원가입
           </Link>
