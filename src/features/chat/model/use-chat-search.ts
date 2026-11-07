@@ -36,6 +36,7 @@ export function useChatSearch() {
       lastPage.hasNext ? lastPage.nextCursor : undefined,
     enabled: showResults,
     retry: false,
+    staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
   });
 

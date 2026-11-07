@@ -118,6 +118,12 @@ test.describe("검색 결과의 채팅 문맥", () => {
         await route.fulfill({ response });
       },
     );
+    const searchRequests: string[] = [];
+    page.on("request", (request) => {
+      if (new URL(request.url()).pathname.endsWith("/chat-rooms/search")) {
+        searchRequests.push(request.url());
+      }
+    });
     await page.goto("/chat/search?keyword=반바지");
     await page.getByRole("link", { name: /반바지로 알아봐줘/ }).click();
     await expect(page).toHaveURL(
@@ -154,5 +160,6 @@ test.describe("검색 결과의 채팅 문맥", () => {
     );
     await expect(target).toBeInViewport();
     await expect(log.locator("mark")).toHaveText(["반바지"]);
+    expect(searchRequests).toHaveLength(1);
   });
 });
