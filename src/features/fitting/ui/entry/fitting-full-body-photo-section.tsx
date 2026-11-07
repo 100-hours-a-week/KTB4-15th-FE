@@ -99,7 +99,7 @@ export function FittingFullBodyPhotoSection() {
           </p>
         )}
         <input
-          accept=".jpg,.jpeg,.png,image/jpeg,image/png"
+          accept=".jpg,.jpeg,.png,.heic,.heif,image/jpeg,image/png,image/heic,image/heif,image/heic-sequence,image/heif-sequence"
           hidden
           onChange={handlePhotoChange}
           ref={fileInputRef}

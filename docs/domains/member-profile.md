@@ -1,6 +1,6 @@
 # 회원·프로필 도메인
 
-마지막 업데이트: 2026-11-04
+마지막 업데이트: 2026-11-07
 
 ## 목적
 
@@ -56,9 +56,13 @@
 
 ### 브라우저 검증
 
-- 확장자: JPG, JPEG, PNG
-- MIME Type: JPEG, PNG 또는 Browser가 제공하지 않은 빈 값
-- 최대 크기: 10MB
+- 확장자: JPG, JPEG, PNG, HEIC, HEIF
+- MIME Type: JPEG, PNG, HEIC/HEIF(Sequence 포함) 또는 Browser가 제공하지 않은 빈 값
+- 최대 크기: 원본과 변환 결과 각각 10MB
+
+HEIC/HEIF는 선택 시에만 `heic-to/csp`를 지연 로드해 브라우저에서 JPEG(품질 0.9)로 변환합니다. 변환된 파일을 미리보기와 검증 요청에 함께 사용하고 서버 API는 변경하지 않습니다. Canvas 재인코딩으로 원본 EXIF 메타데이터를 전달하지 않습니다. 변환 중에도 검증 중과 동일하게 중복 선택·제출을 막으며, 실패 시 재선택 안내를 표시합니다. JPG/PNG는 변환하지 않습니다.
+
+변환 라이브러리: [heic-to](https://github.com/hoppergee/heic-to) (LGPL-3.0).
 
 ### 서버 검증
 
