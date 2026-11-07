@@ -98,7 +98,7 @@ export function ChatSearchScreen() {
             </ul>
           ))}
         {showResults && (query.hasNextPage || query.isFetchNextPageError) && (
-          <div ref={loadMoreRef}>
+          <div className={styles.loadMore} ref={loadMoreRef}>
             <PaginationStatus
               isLoading={query.isFetchingNextPage}
               isError={query.isFetchNextPageError}

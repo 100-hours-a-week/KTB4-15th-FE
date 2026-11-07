@@ -86,6 +86,12 @@
   list-style: none;
 }
 
+.loadMore {
+  display: grid;
+  min-height: 44px;
+  place-items: center;
+}
+
 .card {
   display: block;
   border: 1px solid var(--color-border-default);
