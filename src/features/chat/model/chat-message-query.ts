@@ -53,12 +53,20 @@ export function useChatMessageStream(
     let reconnectTimerId: number | undefined;
 
     const applyStatus = async (status: ChatGenerationStatusResponse) => {
-      await queryClient.cancelQueries({
-        queryKey: chatRoomQueryKeys.detail(chatRoomId),
-      });
+      const detailQuery = { queryKey: chatRoomQueryKeys.detail(chatRoomId) };
+      // Pagination builds on the old pages, so let it finish before patching them.
+      const pagination = queryClient
+        .getQueryCache()
+        .findAll({ ...detailQuery, type: "active", fetchStatus: "fetching" })
+        .filter((query) => query.state.fetchMeta?.fetchMore != null);
+      if (pagination.length > 0) {
+        await Promise.allSettled(pagination.map((query) => query.promise));
+      }
+      if (controller.signal.aborted) return;
+      await queryClient.cancelQueries(detailQuery);
       if (controller.signal.aborted) return;
       queryClient.setQueriesData<InfiniteData<ChatMessageContextResponse>>(
-        { queryKey: chatRoomQueryKeys.detail(chatRoomId) },
+        detailQuery,
         (data) => updateChatGenerationCache(data, messageId, status),
       );
       if (status.generationStatus === "COMPLETED") {

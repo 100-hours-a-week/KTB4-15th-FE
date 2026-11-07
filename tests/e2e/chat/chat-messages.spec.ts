@@ -393,3 +393,85 @@ test("늦게 도착한 내역 응답이 status의 완료 결과를 덮어쓰지 
     releaseHistory();
   }
 });
+
+test("답변 완료와 이전 페이지 응답이 겹쳐도 둘 다 표시한다", async ({
+  page,
+}) => {
+  let releasePrevious!: () => void;
+  const previousGate = new Promise<void>((resolve) => {
+    releasePrevious = resolve;
+  });
+  let previousStarted!: () => void;
+  const previousPending = new Promise<void>((resolve) => {
+    previousStarted = resolve;
+  });
+  const olderText = "이전 페이지에 있는 메시지";
+  await page.route("**/chat-rooms/1/messages?*", async (route) => {
+    const response = await route.fetch();
+    const body = await response.json();
+    const isPrevious = new URL(route.request().url()).searchParams.has(
+      "before",
+    );
+    if (isPrevious) {
+      previousStarted();
+      await previousGate;
+      body.data.messages = [
+        {
+          messageId: 3,
+          senderType: "USER",
+          content: olderText,
+          generationStatus: "COMPLETED",
+          recommendation: null,
+          createdAt: "2026-10-23T09:00:00",
+        },
+      ];
+    }
+    body.data.hasPrevious = !isPrevious;
+    body.data.previousCursor = isPrevious ? null : 1;
+    await route.fulfill({ response, json: body });
+  });
+  await page.route("**/messages/*/stream", (route) =>
+    route.fulfill({ contentType: "text/event-stream", body: "" }),
+  );
+  await page.route("**/messages/*/status", async (route) => {
+    await previousPending;
+    await route.fulfill({
+      json: {
+        code: "OK",
+        message: "성공",
+        data: {
+          generationStatus: "COMPLETED",
+          message: {
+            messageId: 2,
+            senderType: "AI",
+            content: reply,
+            generationStatus: null,
+            recommendation: null,
+            createdAt: "2026-10-24T09:00:00",
+          },
+        },
+      },
+    });
+  });
+
+  try {
+    await page.goto("/chat");
+    const statusResponse = page.waitForResponse("**/messages/*/status");
+    await input(page).fill(message);
+    await input(page).press("Enter");
+    await (await statusResponse).finished();
+    await page.evaluate(
+      () =>
+        new Promise<void>((resolve) =>
+          requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+        ),
+    );
+    releasePrevious();
+    await expect(page.getByText(olderText, { exact: true })).toHaveCount(1);
+    await expect(page.getByText(reply, { exact: true })).toHaveCount(1);
+    await expect(input(page)).toBeEnabled();
+  } finally {
+    releasePrevious();
+    previousStarted();
+  }
+});
