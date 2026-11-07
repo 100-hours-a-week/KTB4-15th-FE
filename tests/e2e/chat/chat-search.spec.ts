@@ -24,7 +24,7 @@ const items = [
 test("검색 결과를 응답 순서대로 메시지별로 표시하고 검색어를 복원한다", async ({
   page,
 }) => {
-  await page.route("**/chat-rooms?keyword=*", (route) =>
+  await page.route("**/chat-rooms/search?keyword=*", (route) =>
     route.fulfill({
       json: {
         code: "CHAT_ROOM_SEARCH_SUCCESS",

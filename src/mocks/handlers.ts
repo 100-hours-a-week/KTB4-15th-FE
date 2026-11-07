@@ -296,11 +296,8 @@ export const handlers: RequestHandler[] = [
       createdAt,
     });
   }),
-  http.get("*/chat-rooms", ({ request }) => {
+  http.get("*/chat-rooms/search", ({ request }) => {
     const searchParams = new URL(request.url).searchParams;
-
-    if (!searchParams.has("keyword")) return;
-
     const keyword = searchParams.get("keyword")?.trim();
 
     if (!keyword) {

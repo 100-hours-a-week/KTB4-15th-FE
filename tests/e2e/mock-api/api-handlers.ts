@@ -116,7 +116,6 @@ export const testHandlers = [
   }),
   http.get("*/chat-rooms", ({ request }) => {
     const searchParams = new URL(request.url).searchParams;
-    if (searchParams.has("keyword")) return;
     const cursor = Number(searchParams.get("cursor"));
     if (scenario.failRoomList || (cursor && scenario.failRoomListPage))
       return failure("목록 조회 실패");

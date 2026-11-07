@@ -21,7 +21,7 @@ test("chat search matches message content rather than room titles", async () => 
     const response = await getResponse(
       handlers,
       new Request(
-        `https://example.com/chat-rooms?${new URLSearchParams({ keyword })}`,
+        `https://example.com/chat-rooms/search?${new URLSearchParams({ keyword })}`,
       ),
     );
     assert.equal(response?.status, 200);
