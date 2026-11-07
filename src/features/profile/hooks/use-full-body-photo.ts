@@ -7,7 +7,7 @@ import {
 } from "react";
 import { getApiErrorMessage } from "@/shared/api/error";
 import { warmUpFullBodyImage } from "../api/full-body-image";
-import { getLocalPhotoErrorMessage } from "../lib/full-body-image-validation";
+import { preparePhotoForUpload } from "../lib/full-body-image-validation";
 import { useValidateFullBodyImageMutation } from "../model/full-body-image-query";
 
 type UseFullBodyPhotoOptions = {
@@ -17,6 +17,8 @@ type UseFullBodyPhotoOptions = {
 export function useFullBodyPhoto({
   onValidationChange,
 }: UseFullBodyPhotoOptions) {
+  const [isPreparing, setIsPreparing] = useState(false);
+  const preparingRef = useRef(false);
   const [photoUrl, setPhotoUrl] = useState<string>();
   const [errorMessage, setErrorMessage] = useState<string>();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -53,9 +55,10 @@ export function useFullBodyPhoto({
     };
   }, [photoUrl]);
 
-  const handlePhotoChange = (event: ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoChange = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (!file) return;
+    if (!file || preparingRef.current || validationMutation.isPending) return;
+    const input = event.target;
 
     window.setTimeout(() => {
       filePickerLockedRef.current = false;
@@ -63,18 +66,25 @@ export function useFullBodyPhoto({
 
     validationMutation.reset();
     onValidationChange(undefined);
-    const localErrorMessage = getLocalPhotoErrorMessage(file);
-
-    if (localErrorMessage) {
-      setPhotoUrl(undefined);
-      setErrorMessage(localErrorMessage);
-      event.target.value = "";
-      return;
-    }
-
-    setPhotoUrl(URL.createObjectURL(file));
+    preparingRef.current = true;
+    setIsPreparing(true);
+    setPhotoUrl(undefined);
     setErrorMessage(undefined);
-    validatePhoto(file);
+    try {
+      const prepared = await preparePhotoForUpload(file);
+      setPhotoUrl(URL.createObjectURL(prepared));
+      validatePhoto(prepared);
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "사진을 처리하지 못했어요. 다시 시도해 주세요.",
+      );
+      input.value = "";
+    } finally {
+      preparingRef.current = false;
+      setIsPreparing(false);
+    }
   };
 
   const handlePhotoPickerCancel = useCallback(async () => {
@@ -110,7 +120,12 @@ export function useFullBodyPhoto({
   }, [handlePhotoPickerCancel]);
 
   const openPhotoPicker = () => {
-    if (filePickerLockedRef.current || validationMutation.isPending) return;
+    if (
+      filePickerLockedRef.current ||
+      preparingRef.current ||
+      validationMutation.isPending
+    )
+      return;
 
     const input = fileInputRef.current;
     if (!input) return;
@@ -138,7 +153,7 @@ export function useFullBodyPhoto({
     displayedErrorMessage,
     fileInputRef,
     handlePhotoChange,
-    isPending: validationMutation.isPending,
+    isPending: isPreparing || validationMutation.isPending,
     openPhotoPicker,
     photoUrl,
   };
