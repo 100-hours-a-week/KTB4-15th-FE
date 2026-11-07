@@ -21,11 +21,12 @@ export async function redirectOnServerUnauthorized(
   if (!isServerUnauthorizedError(error)) throw error;
 
   const requestHeaders = await headers();
+  const returnTo = requestHeaders.get("x-lookddak-request-path") ?? "/chat";
   if (requestHeaders.get("x-lookddak-refresh-attempted") === "1") {
-    redirect("/login?reason=session-expired");
+    const query = new URLSearchParams({ returnTo, reason: "session-expired" });
+    redirect(`/login?${query}`);
   }
 
-  const returnTo = requestHeaders.get("x-lookddak-request-path") ?? "/chat";
   redirect(`/bff/auth/refresh?returnTo=${encodeURIComponent(returnTo)}`);
 }
 
