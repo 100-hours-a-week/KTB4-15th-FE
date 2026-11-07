@@ -114,7 +114,9 @@ export function RecommendedProductCard({
     try {
       const currentJob = await getCurrentFittingJob();
       if (currentJob?.status === "GENERATING") {
-        showToast.error("다른 피팅 작업 중 이에요.\n잠시 후 다시 시도해주세요.");
+        showToast.error(
+          "다른 피팅 작업 중 이에요.\n잠시 후 다시 시도해주세요.",
+        );
         return;
       }
 
