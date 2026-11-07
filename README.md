@@ -10,6 +10,7 @@ LOOK DDAK의 Next.js 프론트엔드 프로젝트입니다.
 - React `19.2.8`
 
 Node.js 버전은 Volta와 `.nvmrc`에 고정되어 있습니다.
+pnpm 스크립트는 `pnpm-workspace.yaml`의 `useNodeVersion` 설정으로 Node.js `24.21.0`을 사용합니다. 최초 실행 시 해당 런타임을 자동으로 다운로드할 수 있습니다.
 
 ## 시작하기
 
