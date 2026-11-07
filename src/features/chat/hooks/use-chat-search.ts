@@ -3,6 +3,7 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { chatRoomQueryKeys } from "../model/chat-room-query";
 import { searchChatRooms } from "../api/chat";
 
 export function useChatSearch() {
@@ -28,7 +29,7 @@ export function useChatSearch() {
 
   const showResults = !!trimmedKeyword && trimmedKeyword === debouncedKeyword;
   const query = useInfiniteQuery({
-    queryKey: ["chat", "search", debouncedKeyword],
+    queryKey: [...chatRoomQueryKeys.search, debouncedKeyword],
     queryFn: ({ pageParam, signal }) =>
       searchChatRooms(debouncedKeyword, pageParam, signal),
     initialPageParam: null as number | null,

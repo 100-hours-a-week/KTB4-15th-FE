@@ -125,7 +125,7 @@ AI Message의 Recommendation은 하나 이상의 추천 상품을 포함할 수 
 - API의 `items` 순서 그대로 메시지마다 카드를 표시합니다. 같은 대화도 합치지 않습니다.
 - MSW 검색은 제목이 아닌 메시지 내용에 검색어가 포함된 항목만 반환합니다.
 - 검색어는 URL의 `keyword`에 저장하여 뒤로 이동하거나 새로고침할 때 복원합니다.
-- Route는 Suspense 경계, Screen은 화면, `model/use-chat-search.ts`는 검색 상태와 조회를 담당합니다.
+- Route는 헤더와 공통 레이아웃, Screen은 본문, `hooks/use-chat-search.ts`는 검색 상태와 조회를 담당합니다.
 
 - 검색 결과는 채팅방 URL에 `messageId`와 `keyword`를 전달합니다. `aroundMessageId`로 대상 앞뒤를 불러와 대상을 중앙에 놓고, 해당 메시지 안에서 일치한 검색어를 강조합니다.
 - 검색 위치에서 위로 스크롤하면 과거 내역을, 아래로 스크롤하면 이후 내역을 추가합니다. 최신 내역까지 불러오기 전에 메시지를 보내면 최신 대화로 이동합니다.

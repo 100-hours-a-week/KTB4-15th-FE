@@ -6,7 +6,7 @@ import { PaginationStatus } from "@/shared/ui/pagination-status";
 import { getApiErrorMessage } from "@/shared/api/error";
 import { ChevronRightIcon, ClearIcon, SearchIcon } from "@/shared/ui/icon";
 import { HighlightedChatText } from "./ui/message/highlighted-chat-text";
-import { useChatSearch } from "./model/use-chat-search";
+import { useChatSearch } from "./hooks/use-chat-search";
 import styles from "./chat-search-screen.module.scss";
 
 export function ChatSearchScreen() {

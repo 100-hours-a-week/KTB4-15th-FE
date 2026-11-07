@@ -6,7 +6,7 @@ import {
   useChatMessageStream,
   useSendChatMessageMutation,
 } from "./model/chat-message-query";
-import { useChatRoomHistory } from "./model/use-chat-room-history";
+import { useChatRoomHistory } from "./hooks/use-chat-room-history";
 import styles from "./chat-room-screen.module.scss";
 import { ChatComposer } from "./ui/composer/chat-composer";
 import { ChatMessageList } from "./ui/message/chat-message-list";

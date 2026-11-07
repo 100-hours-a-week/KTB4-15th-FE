@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import type { ChatMessageResponse } from "../../schema/chat";
+import type { ChatMessageResponse } from "../schema/chat";
 
 type ChatMessageScrollOptions = {
   anchorMessageId?: number | null;

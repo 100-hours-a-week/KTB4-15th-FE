@@ -4,7 +4,7 @@ import { showToast } from "@/shared/ui/toast";
 import {
   chatRoomOlderQueryOptions,
   chatRoomQueryOptions,
-} from "./chat-room-query";
+} from "../model/chat-room-query";
 
 export function useChatRoomHistory(
   chatRoomId: number,
