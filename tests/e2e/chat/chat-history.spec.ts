@@ -151,6 +151,22 @@ test.describe("검색 결과의 채팅 문맥", () => {
       expect(text).toContain(roomHistory[index].content),
     );
 
+    await page.route(
+      (url) =>
+        url.pathname.endsWith("/chat-rooms/25/messages") &&
+        url.searchParams.has("before"),
+      async (route) => {
+        const response = await route.fetch();
+        const body = await response.json();
+        body.data.messages = body.data.messages.map(
+          (message: ChatMessageResponse) =>
+            message.messageId === 350
+              ? { ...message, content: "갱신된 이전 메시지" }
+              : message,
+        );
+        await route.fulfill({ response, json: body });
+      },
+    );
     const target = log.getByText("반바지로 알아봐줘.");
     await expect(target).not.toBeInViewport();
     await page.goBack();
@@ -160,6 +176,9 @@ test.describe("검색 결과의 채팅 문맥", () => {
     );
     await expect(target).toBeInViewport();
     await expect(log.locator("mark")).toHaveText(["반바지"]);
+    await expect(
+      log.getByText("갱신된 이전 메시지", { exact: true }),
+    ).toHaveCount(1);
     expect(searchRequests).toHaveLength(1);
   });
 });
