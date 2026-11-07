@@ -56,7 +56,7 @@ Server Component과 Route Handler에서는 `src/shared/api/server.ts`의 `server
 
 1. 일반 API 요청이 `401`을 반환하면 Next Route Handler인 `/bff/auth/refresh`로 Access Token 갱신을 요청합니다.
 2. Route Handler는 현재 요청의 Cookie를 Spring `/auth/refresh`에 전달하고, Spring 응답의 `Set-Cookie`를 브라우저에 전달합니다.
-3. SSR 데이터 요청이 `401`이면 `/bff/auth/refresh`로 이동해 Cookie를 갱신한 뒤 원래 경로로 돌아와 SSR을 다시 실행합니다. 중간 UI는 렌더링하지 않으며, 두 번째 `401`은 로그인 화면으로 이동해 반복을 막습니다.
+3. SSR 데이터 요청이 `401`이면 `/bff/auth/refresh`로 이동해 Cookie를 갱신한 뒤 원래 경로로 돌아와 SSR을 다시 실행합니다. 갱신 쿠키가 없으면 갱신 요청 없이 로그인으로 이동합니다. 갱신이 거절되거나 두 번째 `401`을 받으면 로그인 화면에서 세션 만료를 안내합니다.
 4. 동시에 여러 요청이 실패해도 갱신 요청은 하나만 실행합니다.
 5. 갱신이 성공하면 원래 요청을 한 번 다시 시도합니다.
 6. 갱신 요청도 `401`이면 세션 만료 상태를 알리고 로그인 화면으로 이동합니다.
@@ -68,7 +68,7 @@ Server Component과 Route Handler에서는 `src/shared/api/server.ts`의 `server
 
 `(service)` 영역은 `GET /members/me`의 결과와 Token 갱신 결과를 기준으로 접근을 제어합니다.
 
-- 인증되지 않은 사용자: `/login?reason=session-expired`
+- 인증되지 않은 사용자는 `/login`으로 이동합니다. 서버에서 리다이렉트할 때는 원래 서비스 경로와 쿼리를 `returnTo`로 전달하고, 프로필이 완료된 회원은 로그인 후 해당 내부 경로로 돌아갑니다.
 - 프로필을 완료하지 않은 사용자: `/profile/setup`
 - 프로필을 완료한 사용자가 `/profile/setup`에 접근: `/chat`
 - 사용자 정보 조회가 짧게 끝나면 로딩 화면을 생략하고, 조회가 이어질 때만 현재 상태를 안내
