@@ -25,6 +25,12 @@
   }
 }
 
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
 .headerLink {
   border: 0;
   cursor: pointer;
@@ -34,6 +40,7 @@
   padding: 10px 0;
   font-size: 14px;
   font-weight: 600;
+  white-space: nowrap;
 
   span {
     margin-left: 16px;
@@ -57,12 +64,11 @@
     font-size: 19px;
   }
 
+  .headerActions {
+    gap: 16px;
+  }
+
   .headerLink {
     font-size: 12px;
   }
-}
-
-.headerLink:disabled {
-  cursor: wait;
-  opacity: 0.7;
 }

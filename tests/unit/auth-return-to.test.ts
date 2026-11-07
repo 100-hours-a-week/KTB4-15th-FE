@@ -4,6 +4,7 @@ import test from "node:test";
 import {
   getSafeReturnTo,
   isSecureRequest,
+  normalizeReturnTo,
 } from "../../src/app/bff/auth/_lib/return-to.ts";
 
 test("auth refresh accepts only same-origin internal return paths", () => {
@@ -25,6 +26,13 @@ test("auth refresh accepts only same-origin internal return paths", () => {
     ),
     "/",
   );
+});
+
+test("login return paths cannot become external URLs after normalization", () => {
+  assert.equal(normalizeReturnTo("/ranking?type=VIEW"), "/ranking?type=VIEW");
+  assert.equal(normalizeReturnTo("/.//evil.example"), undefined);
+  assert.equal(normalizeReturnTo("/\\evil.example"), undefined);
+  assert.equal(normalizeReturnTo(["/chat", "/ranking"]), undefined);
 });
 
 test("auth refresh trusts the forwarded protocol behind a proxy", () => {

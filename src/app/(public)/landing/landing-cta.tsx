@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { LandingStartButton } from "./landing-start-button";
 import styles from "./landing-cta.module.scss";
 
 export function LandingCta() {
@@ -13,9 +12,14 @@ export function LandingCta() {
       <p className={styles.ctaDescription}>
         취향을 말하고, 마음에 드는 옷을 내 모습으로 만나보세요.
       </p>
-      <LandingStartButton className={styles.startLink} />
+      <Link className={styles.startLink} href="/signup">
+        룩딱 시작하기
+      </Link>
       <p className={styles.loginPrompt}>
-        이미 계정이 있나요? <Link href="/login">로그인</Link>
+        이미 계정이 있나요?{" "}
+        <Link href="/chat" prefetch={false}>
+          로그인
+        </Link>
       </p>
     </section>
   );
