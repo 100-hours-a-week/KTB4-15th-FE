@@ -126,6 +126,6 @@ AI Message의 Recommendation은 하나 이상의 추천 상품을 포함할 수 
 - 검색어는 URL의 `keyword`에 저장하여 뒤로 이동하거나 새로고침할 때 복원합니다.
 - Route는 Suspense 경계, Screen은 화면, `model/use-chat-search.ts`는 검색 상태와 조회를 담당합니다.
 
-- 검색 결과는 `/chat/{chatRoomId}?messageId={messageId}`로 이동합니다. `aroundMessageId`로 대상 앞뒤를 불러와 대상을 중앙에 놓고 잠시 강조합니다.
+- 검색 결과는 채팅방 URL에 `messageId`와 `keyword`를 전달합니다. `aroundMessageId`로 대상 앞뒤를 불러와 대상을 중앙에 놓고, 해당 메시지 안에서 일치한 검색어를 강조합니다.
 - 검색 위치에서 위로 스크롤하면 과거 내역을, 아래로 스크롤하면 이후 내역을 추가합니다. 최신 내역까지 불러오기 전에 메시지를 보내면 최신 대화로 이동합니다.
 - `NEXT_PUBLIC_API_MOCKING=enabled pnpm dev`로 실행한 뒤 `/chat/search?keyword=반바지`에서 결과를 선택하면 양쪽 내역을 확인할 수 있습니다.

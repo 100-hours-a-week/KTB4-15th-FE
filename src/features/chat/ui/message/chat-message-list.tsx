@@ -15,6 +15,7 @@ import { formatKoreanDate } from "@/shared/utils/date-format";
 
 type ChatMessageListProps = {
   anchorMessageId?: number | null;
+  searchKeyword?: string;
   hasNewerMessages?: boolean;
   onLoadNewerMessages?: () => Promise<void>;
   hasPreviousMessages?: boolean;
@@ -29,6 +30,7 @@ type ChatMessageListProps = {
 
 export function ChatMessageList({
   anchorMessageId,
+  searchKeyword,
   hasNewerMessages = false,
   onLoadNewerMessages,
   hasPreviousMessages = false,
@@ -274,12 +276,17 @@ export function ChatMessageList({
           </time>
           {group.messages.map((message) => (
             <div
-              className={`${message.senderType === "AI" ? styles.reply : ""} ${message.messageId === anchorMessageId ? styles.anchor : ""}`}
+              className={message.senderType === "AI" ? styles.reply : undefined}
               data-message-id={message.messageId}
               key={message.messageId}
             >
               {message.senderType === "USER" ? (
                 <UserChatMessage
+                  highlightKeyword={
+                    message.messageId === anchorMessageId
+                      ? searchKeyword
+                      : undefined
+                  }
                   canRetry={
                     !hasNewerMessages &&
                     message.messageId === latestMessageId &&
@@ -290,7 +297,14 @@ export function ChatMessageList({
                   onRetryMessage={onRetryMessage}
                 />
               ) : (
-                <AIChatMessage message={message} />
+                <AIChatMessage
+                  message={message}
+                  highlightKeyword={
+                    message.messageId === anchorMessageId
+                      ? searchKeyword
+                      : undefined
+                  }
+                />
               )}
             </div>
           ))}

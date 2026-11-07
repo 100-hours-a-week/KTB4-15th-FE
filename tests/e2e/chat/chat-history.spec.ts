@@ -120,7 +120,9 @@ test.describe("검색 결과의 채팅 문맥", () => {
     );
     await page.goto("/chat/search?keyword=반바지");
     await page.getByRole("link", { name: /반바지로 알아봐줘/ }).click();
-    await expect(page).toHaveURL("/chat/25?messageId=381");
+    await expect(page).toHaveURL(
+      `/chat/25?messageId=381&keyword=${encodeURIComponent("반바지")}`,
+    );
     const log = page.getByRole("log", { name: "채팅 메시지" });
     await expect(log.getByText("반바지로 알아봐줘.")).toBeInViewport();
     await expect(log.getByRole("article")).toHaveCount(41);
@@ -147,7 +149,10 @@ test.describe("검색 결과의 채팅 문맥", () => {
     await expect(target).not.toBeInViewport();
     await page.goBack();
     await page.getByRole("link", { name: /반바지로 알아봐줘/ }).click();
-    await expect(page).toHaveURL("/chat/25?messageId=381");
+    await expect(page).toHaveURL(
+      `/chat/25?messageId=381&keyword=${encodeURIComponent("반바지")}`,
+    );
     await expect(target).toBeInViewport();
+    await expect(log.locator("mark")).toHaveText(["반바지"]);
   });
 });

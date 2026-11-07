@@ -60,24 +60,3 @@
   box-shadow: 0 2px 8px rgb(0 0 0 / 12%);
   pointer-events: auto;
 }
-
-.anchor {
-  border-radius: var(--radius-large);
-  animation: anchor-highlight 1800ms ease-out;
-}
-
-@keyframes anchor-highlight {
-  from {
-    background-color: var(--color-green-100);
-  }
-
-  to {
-    background-color: transparent;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .anchor {
-    animation-timing-function: steps(1, end);
-  }
-}

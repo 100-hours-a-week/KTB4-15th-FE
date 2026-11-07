@@ -6,7 +6,7 @@ import { PaginationStatus } from "@/shared/ui/pagination-status";
 import { getApiErrorMessage } from "@/shared/api/error";
 import { BackButton, Header, HeaderTitle } from "@/shared/ui/header";
 import { ChevronRightIcon, ClearIcon, SearchIcon } from "@/shared/ui/icon";
-import { splitByKeyword } from "./lib/chat-search";
+import { HighlightedChatText } from "./ui/message/highlighted-chat-text";
 import { useChatSearch } from "./model/use-chat-search";
 import styles from "./chat-search-screen.module.scss";
 
@@ -79,7 +79,7 @@ export function ChatSearchScreen() {
                 <li key={`${item.chatRoomId}-${item.messageId}`}>
                   <Link
                     className={styles.card}
-                    href={`/chat/${item.chatRoomId}?messageId=${item.messageId}`}
+                    href={`/chat/${item.chatRoomId}?messageId=${item.messageId}&keyword=${encodeURIComponent(debouncedKeyword)}`}
                     scroll={false}
                   >
                     <div className={styles.cardTitle}>
@@ -87,14 +87,10 @@ export function ChatSearchScreen() {
                       <ChevronRightIcon aria-hidden="true" />
                     </div>
                     <p className={styles.snippet}>
-                      {splitByKeyword(item.message, debouncedKeyword).map(
-                        (part, index) =>
-                          part.highlighted ? (
-                            <mark key={index}>{part.text}</mark>
-                          ) : (
-                            part.text
-                          ),
-                      )}
+                      <HighlightedChatText
+                        text={item.message}
+                        keyword={debouncedKeyword}
+                      />
                     </p>
                   </Link>
                 </li>

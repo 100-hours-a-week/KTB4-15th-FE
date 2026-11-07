@@ -30,9 +30,11 @@ function showSendChatMessageError(error: Error) {
 export function ChatRoomScreen({
   chatRoomId,
   anchorMessageId,
+  searchKeyword,
 }: {
   chatRoomId: number;
   anchorMessageId?: number;
+  searchKeyword?: string;
 }) {
   const router = useRouter();
   const { isNavigationVisible, keyboardInset } = useNavigationVisibility();
@@ -157,6 +159,7 @@ export function ChatRoomScreen({
     <>
       <ChatMessageList
         anchorMessageId={history.anchorMessageId}
+        searchKeyword={searchKeyword}
         hasNewerMessages={hasNewerMessages}
         hasPreviousMessages={history.hasPreviousMessages}
         onLoadNewerMessages={history.loadNewerMessages}
