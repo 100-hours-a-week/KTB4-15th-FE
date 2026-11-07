@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { searchChatRooms } from "../api/chat";
@@ -27,13 +27,30 @@ export function useChatSearch() {
   }, [trimmedKeyword]);
 
   const showResults = !!trimmedKeyword && trimmedKeyword === debouncedKeyword;
-  const query = useQuery({
+  const query = useInfiniteQuery({
     queryKey: ["chat", "search", debouncedKeyword],
-    queryFn: ({ signal }) => searchChatRooms(debouncedKeyword, signal),
+    queryFn: ({ pageParam, signal }) =>
+      searchChatRooms(debouncedKeyword, pageParam, signal),
+    initialPageParam: null as number | null,
+    getNextPageParam: (lastPage) =>
+      lastPage.hasNext ? lastPage.nextCursor : undefined,
     enabled: showResults,
     retry: false,
     refetchOnWindowFocus: false,
   });
 
-  return { keyword, setKeyword, debouncedKeyword, showResults, query };
+  const reachedLastPage =
+    showResults &&
+    query.isSuccess &&
+    query.data.pages.length > 1 &&
+    query.data.pages.at(-1)?.hasNext === false;
+
+  return {
+    keyword,
+    setKeyword,
+    debouncedKeyword,
+    showResults,
+    query,
+    reachedLastPage,
+  };
 }

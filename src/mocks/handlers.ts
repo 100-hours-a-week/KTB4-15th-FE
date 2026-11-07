@@ -185,6 +185,7 @@ const chatSearchItems = [
     "밝은 반바지를 입을 때 가방은 어떤 색이 좋을까?",
     "반바지에 로퍼를 신는 스타일도 추천해줘.",
     "비 오는 날에도 편하게 입을 수 있는 반바지 코디가 필요해요.",
+    "흰 반바지에 어울리는 가방을 추천해줘.",
   ].map((message, index) => ({
     chatRoomId: index % 2 === 0 ? 25 : 18,
     title: index % 2 === 0 ? "여름 반바지 코디" : "편한 주말 스타일링",
@@ -323,13 +324,35 @@ export const handlers: RequestHandler[] = [
     }
 
     const normalizedKeyword = keyword.toLocaleLowerCase("ko-KR");
-    const items = chatSearchItems.filter(({ message }) =>
+    const matches = chatSearchItems.filter(({ message }) =>
       message.toLocaleLowerCase("ko-KR").includes(normalizedKeyword),
     );
 
+    const cursor = searchParams.get("cursor");
+    const cursorIndex = matches.findIndex(
+      ({ messageId }) => String(messageId) === cursor,
+    );
+    if (cursor != null && cursorIndex === -1) {
+      return HttpResponse.json(
+        {
+          code: "INVALID_SEARCH_CURSOR",
+          data: null,
+          message: "잘못된 검색 커서입니다.",
+        },
+        { status: 400 },
+      );
+    }
+    const remaining = matches.slice(cursorIndex + 1);
+    const items = remaining.slice(0, Number(searchParams.get("size") ?? 20));
+    const hasNext = remaining.length > items.length;
+
     return HttpResponse.json({
       code: "CHAT_ROOM_SEARCH_SUCCESS",
-      data: { items },
+      data: {
+        items,
+        hasNext,
+        nextCursor: hasNext ? (items.at(-1)?.messageId ?? null) : null,
+      },
       message:
         items.length > 0
           ? "대화 검색 결과를 조회했습니다."

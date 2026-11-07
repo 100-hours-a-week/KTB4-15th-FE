@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { useScrollPagination } from "@/shared/hooks/use-scroll-pagination";
+import { PaginationStatus } from "@/shared/ui/pagination-status";
 import { getApiErrorMessage } from "@/shared/api/error";
 import { BackButton, Header, HeaderTitle } from "@/shared/ui/header";
 import { ChevronRightIcon, ClearIcon, SearchIcon } from "@/shared/ui/icon";
@@ -9,8 +11,20 @@ import { useChatSearch } from "./model/use-chat-search";
 import styles from "./chat-search-screen.module.scss";
 
 export function ChatSearchScreen() {
-  const { keyword, setKeyword, debouncedKeyword, showResults, query } =
-    useChatSearch();
+  const {
+    keyword,
+    setKeyword,
+    debouncedKeyword,
+    showResults,
+    query,
+    reachedLastPage,
+  } = useChatSearch();
+  const items = query.data?.pages.flatMap((page) => page.items) ?? [];
+  const loadMoreRef = useScrollPagination({
+    enabled: showResults && query.hasNextPage && !query.isFetchNextPageError,
+    isFetching: query.isFetching,
+    fetchNextPage: query.fetchNextPage,
+  });
 
   return (
     <>
@@ -45,23 +59,23 @@ export function ChatSearchScreen() {
         </div>
       </div>
       <main className={styles.main}>
-        {showResults && query.isFetching && (
+        {showResults && query.isLoading && (
           <p className={styles.message} role="status">
             대화를 검색하는 중...
           </p>
         )}
-        {showResults && query.isError && (
+        {showResults && query.isError && !query.data && (
           <p className={styles.message} role="alert">
             {getApiErrorMessage(query.error, "대화를 검색하지 못했어요.")}
           </p>
         )}
         {showResults &&
-          query.isSuccess &&
-          (query.data.items.length === 0 ? (
+          query.data &&
+          (items.length === 0 ? (
             <p className={styles.message}>일치하는 대화가 없습니다.</p>
           ) : (
             <ul aria-label="검색 결과" className={styles.results}>
-              {query.data.items.map((item) => (
+              {items.map((item) => (
                 <li key={`${item.chatRoomId}-${item.messageId}`}>
                   <Link
                     className={styles.card}
@@ -87,6 +101,22 @@ export function ChatSearchScreen() {
               ))}
             </ul>
           ))}
+        {showResults && (query.hasNextPage || query.isFetchNextPageError) && (
+          <div ref={loadMoreRef}>
+            <PaginationStatus
+              isLoading={query.isFetchingNextPage}
+              isError={query.isFetchNextPageError}
+              loadingLabel="검색 결과를 더 불러오는 중"
+              errorMessage="추가 검색 결과를 불러오지 못했어요."
+              onRetry={() => void query.fetchNextPage()}
+            />
+          </div>
+        )}
+        {reachedLastPage && (
+          <p className={styles.message} role="status">
+            모든 검색 결과를 확인했어요.
+          </p>
+        )}
       </main>
     </>
   );

@@ -128,9 +128,16 @@ export async function getChatRooms(cursor: number | null = null) {
   return parseResponse(response, chatRoomListResponse);
 }
 
-export async function searchChatRooms(keyword: string, signal?: AbortSignal) {
+export async function searchChatRooms(
+  keyword: string,
+  cursor: number | null,
+  signal?: AbortSignal,
+) {
   const response = await apiClient.get("chat-rooms/search", {
-    searchParams: { keyword },
+    searchParams: {
+      keyword,
+      ...(cursor != null && { cursor: String(cursor) }),
+    },
     signal,
   });
 

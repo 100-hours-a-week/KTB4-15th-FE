@@ -154,6 +154,8 @@ export type ChatRoomItem = z.infer<typeof chatRoomItem>;
 export type ChatRoomListResponse = z.infer<typeof chatRoomListResponse>;
 
 export const chatSearchResponse = z.object({
+  nextCursor: z.number().int().positive().nullable(),
+  hasNext: z.boolean(),
   items: z.array(
     z.object({
       chatRoomId: z.number().int().positive(),
