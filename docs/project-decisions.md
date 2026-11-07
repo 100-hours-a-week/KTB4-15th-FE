@@ -67,6 +67,8 @@
 - `NEXT_PUBLIC_*`는 Browser Bundle에 공개되는 값만 사용하고 Build Argument로 전달합니다.
 - 운영 배포는 GitHub Actions에서 ECR Image를 생성한 뒤 AWS SSM을 통해 요청합니다. 문서만 변경된 Commit은 자동 배포하지 않습니다.
 - Liveness는 외부 의존성을 조회하지 않는 `GET /health`로 확인합니다.
+- Next.js에 공통 응답 헤더 `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`을 설정합니다. HSTS는 하위 도메인을 포함해 2년으로 설정하고 `preload` 지시어를 보냅니다. `Permissions-Policy`로 카메라, 마이크, 위치 접근을 제한하고 `X-Powered-By`는 비활성화합니다.
+- 배포 후 공개 HTTPS의 최종 응답에서 각 보안 헤더가 한 번씩 반환되고 `X-Powered-By`가 빠져 있는지 확인합니다. Next.js 설정으로 처리하는 리다이렉트는 도착 경로에서 공통 헤더를 반환합니다.
 
 ## 보류 항목
 
