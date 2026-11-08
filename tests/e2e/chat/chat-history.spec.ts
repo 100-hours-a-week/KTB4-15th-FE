@@ -1,7 +1,7 @@
 import type { ChatMessageResponse } from "../../../src/features/chat/schema/chat";
 import { test, expect } from "../fixtures/test";
 import { configure } from "../helpers/mock-api";
-import { apiURL, createdAt, makeRoom } from "../data/chat";
+import { apiURL, createdAt, makeRoom, products } from "../data/chat";
 
 const history: ChatMessageResponse[] = Array.from(
   { length: 24 },
@@ -217,4 +217,107 @@ test("이전 내역 응답을 기다리며 이동한 스크롤 위치를 유지�
   await expect
     .poll(async () => Math.abs((await anchor.boundingBox())!.y - before))
     .toBeLessThan(3);
+});
+
+test.describe("가상화된 채팅 내역", () => {
+  test.use({
+    scenario: {
+      rooms: [
+        {
+          ...makeRoom(1),
+          messages: Array.from(
+            { length: 120 },
+            (_, index): ChatMessageResponse => ({
+              ...history[0],
+              senderType: "AI",
+              generationStatus: null,
+              messageId: index + 1,
+              recommendation:
+                index === 119 ? { recommendationId: 1, products } : null,
+            }),
+          ),
+        },
+      ],
+    },
+  });
+
+  test("같은 날짜의 이전 페이지를 추가해도 맨 위에서 연속 조회하지 않는다", async ({
+    page,
+  }) => {
+    const cursors: string[] = [];
+    page.on("request", (request) => {
+      const url = new URL(request.url());
+      const before = url.searchParams.get("before");
+      if (url.pathname.endsWith("/chat-rooms/1/messages") && before)
+        cursors.push(before);
+    });
+    await page.goto("/chat/1");
+    const log = page.getByRole("log", { name: "채팅 메시지" });
+    await expect(log).toHaveAttribute("data-loaded-message-count", "20");
+    await expect(log.locator('[data-message-id="120"]')).toBeInViewport();
+    await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
+    await expect(log).toHaveAttribute("data-loaded-message-count", "40");
+    await expect(log.locator('[data-message-id="101"]')).toBeInViewport();
+    await expect.poll(() => page.evaluate(() => scrollY)).toBeGreaterThan(200);
+    expect(cursors).toEqual(["101"]);
+  });
+
+  test("이전 내역 추가 후 읽던 위치와 다시 나타난 상품의 찜 상태를 유지한다", async ({
+    page,
+  }) => {
+    await page.route(
+      (url) =>
+        url.pathname.endsWith("/chat-rooms/1/messages") &&
+        !url.searchParams.has("before"),
+      async (route) => {
+        const url = new URL(route.request().url());
+        url.searchParams.set("size", "100");
+        await route.fulfill({ response: await route.fetch({ url: url.href }) });
+      },
+    );
+    let release!: () => void;
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    await page.route(
+      (url) =>
+        url.pathname.endsWith("/chat-rooms/1/messages") &&
+        url.searchParams.has("before"),
+      async (route) => {
+        await gate;
+        await route.continue();
+      },
+    );
+    await page.goto("/chat/1");
+    const log = page.getByRole("log", { name: "채팅 메시지" });
+    await expect(log).toHaveAttribute("data-loaded-message-count", "100");
+    const last = log.locator('[data-message-id="120"]');
+    await last
+      .getByRole("button", { name: `${products[0].productName} 찜 하기` })
+      .click();
+    await expect(
+      last.getByRole("button", { name: `${products[0].productName} 찜 해제` }),
+    ).toBeVisible();
+    await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
+    await expect(last).toHaveCount(0);
+    await page.evaluate(() =>
+      window.scrollTo({ top: 500, behavior: "instant" }),
+    );
+    const anchor = log.locator('[data-message-id="26"]');
+    const before = (await anchor.boundingBox())!.y;
+    release();
+    await expect(log).toHaveAttribute("data-loaded-message-count", "120");
+    await expect
+      .poll(async () => Math.abs((await anchor.boundingBox())!.y - before))
+      .toBeLessThan(3);
+    await page.evaluate(() =>
+      window.scrollTo({
+        top: document.documentElement.scrollHeight,
+        behavior: "instant",
+      }),
+    );
+    await expect(
+      last.getByRole("button", { name: `${products[0].productName} 찜 해제` }),
+    ).toBeVisible();
+  });
 });
