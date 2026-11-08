@@ -18,6 +18,7 @@ LOOK DDAK 프론트엔드의 구조와 개발 기준을 관리합니다.
 
 - [피팅 옷장 CSS graph 실험](./performance/fitting-wardrobe.md): 기본 설정과 graph의 CSS 용량·요청 수 및 간이 표시 시간 비교
 - [랜딩 화면](./screens/landing.md): 화면 구성, 스크롤 연출과 반응형 기준
+- [채팅 스크롤 성능 개선 기록](./performance/chat-scroll.md): CPU 4배 감속과 1,000개 누적 로딩에서 포맷터 재사용과 메시지 memo 전후 비교
 - [랭킹 성능 개선 기록](./performance/ranking.md): 단계별 측정 결과, 실험과 한계
 
 ## 관리 원칙
