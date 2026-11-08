@@ -100,6 +100,15 @@ export function ChatMessageList({
     return () => window.removeEventListener("resize", update);
   }, [firstDate?.label]);
 
+  const firstMessageId = messages[0]?.messageId;
+  const [previousFirstMessageId, setPreviousFirstMessageId] =
+    useState(firstMessageId);
+  const isPrepending =
+    previousFirstMessageId != null && firstMessageId !== previousFirstMessageId;
+  if (firstMessageId !== previousFirstMessageId) {
+    setPreviousFirstMessageId(firstMessageId);
+  }
+
   const virtualizer = useWindowVirtualizer({
     count: rows.length,
     getItemKey: (index) => rows[index].key,
@@ -110,7 +119,7 @@ export function ChatMessageList({
     },
     overscan: 16,
     scrollMargin,
-    anchorTo: "end",
+    anchorTo: isPrepending ? "end" : "start",
     rangeExtractor: (range) =>
       messages.length <= 80
         ? rows.map((_, index) => index)

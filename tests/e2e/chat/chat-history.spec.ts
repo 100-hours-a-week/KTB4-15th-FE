@@ -207,6 +207,7 @@ test("이전 내역 응답을 기다리며 이동한 스크롤 위치를 유지�
   );
   await page.goto("/chat/1");
   await expect(page.getByRole("log").getByRole("article")).toHaveCount(20);
+  await expect(page.locator('[data-message-id="24"]')).toBeInViewport();
   await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
   await requestStarted;
   await page.evaluate(() => window.scrollTo({ top: 500, behavior: "instant" }));
