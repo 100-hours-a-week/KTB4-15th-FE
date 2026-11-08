@@ -19,6 +19,8 @@ import { Spinner } from "@/shared/ui/spinner";
 import { Button } from "@/shared/ui/button";
 import { formatKoreanDate } from "@/shared/utils/date-format";
 
+const messageDateLabels = new WeakMap<ChatMessageResponse, string>();
+
 type ChatMessageListProps = {
   anchorMessageId?: number | null;
   searchKeyword?: string;
@@ -62,7 +64,11 @@ export function ChatMessageList({
     let firstDate: { label: string; createdAt: string } | undefined;
     let previousDate: string | undefined;
     for (const message of messages) {
-      const dateLabel = formatKoreanDate(message.createdAt);
+      let dateLabel = messageDateLabels.get(message);
+      if (dateLabel === undefined) {
+        dateLabel = formatKoreanDate(message.createdAt);
+        messageDateLabels.set(message, dateLabel);
+      }
       if (dateLabel !== previousDate) {
         // 맨 위에서는 날짜 구분선 대신 첫 메시지를 위치 보정 기준으로 삼는다.
         if (firstDate === undefined) {
