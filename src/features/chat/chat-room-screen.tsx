@@ -39,7 +39,7 @@ export function ChatRoomScreen({
   const router = useRouter();
   const { isNavigationVisible, keyboardInset } = useNavigationVisibility();
   const submissionLockRef = useRef(false);
-  const sendChatMessageMutation = useSendChatMessageMutation();
+  const sendChatMessageMutation = useSendChatMessageMutation(anchorMessageId);
   const history = useChatRoomHistory(chatRoomId, anchorMessageId);
   const { messages, hasNewerMessages } = history;
 
