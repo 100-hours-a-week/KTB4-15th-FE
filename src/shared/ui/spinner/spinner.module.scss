@@ -1,14 +1,15 @@
 .spinner {
   display: inline-block;
-  width: 20px;
-  height: 20px;
-  border: 2px solid var(--color-border-default);
-  border-top-color: var(--color-text-secondary);
-  border-radius: 50%;
-  animation: spin 800ms linear infinite;
+  width: var(--spinner-size, 24px);
+  height: var(--spinner-size, 24px);
+  flex: 0 0 auto;
+  border: 2px solid var(--spinner-track-color, var(--color-border-default));
+  border-top-color: var(--spinner-indicator-color, currentcolor);
+  border-radius: var(--radius-full);
+  animation: spinner-spin var(--duration-spinner) linear infinite;
 }
 
-@keyframes spin {
+@keyframes spinner-spin {
   to {
     transform: rotate(360deg);
   }
