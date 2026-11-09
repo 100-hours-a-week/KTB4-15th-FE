@@ -46,16 +46,20 @@ test("CPU 4배 감속에서 이전 메시지를 20개씩 불러오며 1000개까
           : down
             ? "loaded-down-cpu4"
             : "pagination-cpu4");
-  const counts = compareCpu
-    ? [2000, 2000]
-    : prepend
-      ? [2000, 10_000]
-      : scale
-        ? [2000, 5000, 10_000]
-        : down
-          ? [200, 1000, 2000]
-          : [1000];
-  const runs = prepend ? 3 : scale ? 1 : down ? 3 : 5;
+  const counts =
+    process.env.BENCH_20K === "1"
+      ? [20_000]
+      : compareCpu
+        ? [2000, 2000]
+        : prepend
+          ? [2000, 10_000]
+          : scale
+            ? [2000, 5000, 10_000]
+            : down
+              ? [200, 1000, 2000]
+              : [1000];
+  const runs =
+    process.env.BENCH_20K === "1" ? 5 : prepend ? 3 : scale ? 1 : down ? 3 : 5;
   const latestId =
     down || prepend
       ? Math.max(...counts) + (prepend ? 20 : 0)
@@ -151,6 +155,35 @@ test("CPU 4배 감속에서 이전 메시지를 20개씩 불러오며 1000개까
         )
         .toBeLessThan(2);
       if (prepend) {
+        await session.send("Tracing.start", {
+          categories:
+            "devtools.timeline,toplevel,disabled-by-default-devtools.timeline,cc,benchmark,disabled-by-default-devtools.timeline.frame",
+          transferMode: "ReturnAsStream",
+        });
+        await page.evaluate(
+          (anchorId) => {
+            window.__anchors = [];
+            window.__sampling = true;
+            const sample = () => {
+              if (!window.__sampling) return;
+              const row = document.querySelector(
+                `[data-message-id="${anchorId}"]`,
+              );
+              if (row)
+                window.__anchors.push({
+                  time: performance.now(),
+                  y: row.getBoundingClientRect().top,
+                  loaded: document
+                    .querySelector("[data-loaded-message-count]")
+                    ?.getAttribute("data-loaded-message-count"),
+                });
+              requestAnimationFrame(sample);
+            };
+            requestAnimationFrame(sample);
+          },
+          latestId - count + 1,
+        );
+
         await page.evaluate(
           (expected) => {
             const log = document.querySelector("[data-loaded-message-count]")!;
@@ -186,8 +219,76 @@ test("CPU 4배 감속에서 이전 메시지를 20개씩 불러오며 1000개까
             );
           return commit.startTime - response.responseEnd;
         });
+        await page.waitForTimeout(500);
+        const anchors = await page.evaluate(() => {
+          window.__sampling = false;
+          return window.__anchors as {
+            time: number;
+            y: number;
+            loaded: string;
+          }[];
+        });
+        const before = anchors
+          .filter((a) => a.loaded === String(count) && a.y >= 0 && a.y < 844)
+          .at(-1);
+        const after = anchors
+          .filter((a) => a.loaded === String(count + 20))
+          .at(-1);
+        expect(before).toBeDefined();
+        expect(after).toBeDefined();
+        const anchorDriftPx = after!.y - before!.y;
+        expect(Math.abs(anchorDriftPx)).toBeLessThan(3);
+        const complete = new Promise<{ stream?: string }>((resolve) =>
+          session.once("Tracing.tracingComplete", resolve),
+        );
+        await session.send("Tracing.end");
+        const { stream } = await complete;
+        let trace = "";
+        for (;;) {
+          const chunk = await session.send("IO.read", { handle: stream! });
+          trace += chunk.data;
+          if (chunk.eof) break;
+        }
+        await session.send("IO.close", { handle: stream! });
         if (run > 0) {
-          prependResults.push({ count, run, responseToCommitMs });
+          await writeFile(
+            resolve(directory, `prepend-${count}-run-${run}.json.gz`),
+            gzipSync(trace),
+          );
+          const events = JSON.parse(trace).traceEvents as {
+            name: string;
+            pid: number;
+            tid: number;
+            dur: number;
+            args?: { name?: string };
+          }[];
+          const main = events.find(
+            (e) =>
+              e.name === "thread_name" && e.args?.name === "CrRendererMain",
+          );
+          const tasks = events
+            .filter(
+              (e) =>
+                e.pid === main!.pid &&
+                e.tid === main!.tid &&
+                e.name === "RunTask" &&
+                e.dur > 50_000,
+            )
+            .map((e) => e.dur / 1000);
+          prependResults.push({
+            count,
+            run,
+            responseToCommitMs,
+            loadedMessageCount: count + 20,
+            mountedMessageCount: await messageRows.count(),
+            anchorDriftPx,
+            anchorBefore: before,
+            anchorAfter: after,
+            longTaskCount: tasks.length,
+            longTaskTotalMs: tasks.reduce((a: number, b: number) => a + b, 0),
+            maxLongTaskMs: Math.max(0, ...tasks),
+            anchors,
+          });
           console.log(
             `${count}개 + 20개: 응답 후 DOM 반영 ${responseToCommitMs.toFixed(1)}ms`,
           );

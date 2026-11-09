@@ -23,7 +23,10 @@ export default defineConfig({
     {
       ...config.webServer[1],
       cwd,
-      command: "pnpm build && pnpm start --hostname 127.0.0.1 --port 3100",
+      command:
+        process.env.BENCH_SKIP_BUILD === "1"
+          ? "pnpm start --hostname 127.0.0.1 --port 3100"
+          : "pnpm build && pnpm start --hostname 127.0.0.1 --port 3100",
       timeout: 240_000,
     },
   ],
