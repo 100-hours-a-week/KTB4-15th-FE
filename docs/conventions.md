@@ -56,12 +56,6 @@ pnpm check        # format, lint, type-check 일괄 실행
 
 ## 문서 변경
 
-### 로컬 성능 측정
-
-- `pnpm build --profile && pnpm start`로 React 프로파일링과 브라우저 소스맵을 활성화합니다. Chrome DevTools의 JavaScript source maps 설정을 켜면 원본 파일 위치를 확인할 수 있습니다.
-- 브라우저 소스맵은 `--profile` 인자가 있고 `CI` 환경 변수가 없는 빌드에서만 활성화합니다. 일반 `pnpm build`와 CI 빌드에서는 이 설정으로 공개 소스맵을 켜지 않습니다.
-- 실제 사용자 성능은 측정 오버헤드가 없는 일반 `pnpm build && pnpm start`에서도 확인합니다. 로컬 프로파일링 빌드는 원본 소스가 제공되므로 배포하지 않습니다.
-
 - 새로운 기술적 결정을 내리면 관련 코드와 문서를 같은 작업에서 수정합니다.
 - 현재 동작을 설명하는 상세 내용은 주제별 문서에 기록합니다.
 - 결정의 결과와 보류 항목은 [프로젝트 결정 사항](./project-decisions.md)에 기록합니다.

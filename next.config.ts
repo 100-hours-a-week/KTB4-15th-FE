@@ -2,8 +2,6 @@ import type { NextConfig } from "next";
 import { withSentryConfig } from "@sentry/nextjs/config";
 
 const nextConfig: NextConfig = {
-  productionBrowserSourceMaps:
-    process.argv.includes("--profile") && !process.env.CI,
   devIndicators: false,
   poweredByHeader: false,
   async headers() {

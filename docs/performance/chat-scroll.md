@@ -42,18 +42,4 @@
 
 상품 표시는 최신 AI 메시지 안의 기대한 카드 2개가 DOM에 표시되는 시각이며 이미지 decode·페인트 완료는 제외합니다. 상품이 없는 응답은 시각을 기록하지 않는 회귀 검증을 통과했습니다. 전송→상품 시간에는 목 스트림 완료 허용까지의 대기가 포함되며 실제 AI 지연이 아닙니다. 스와이프 관측 구간은 합성 제스처·300ms 정착 대기·위치 조회를 포함하고 trace 읽기·압축·저장은 제외합니다. 새 스와이프 5회에서도 세로 위치 변화는 모두 0px였습니다. 두 지표는 정의를 바로잡아 다시 측정한 것이므로 이전 값과 개선율로 비교하지 않습니다.
 
-상세 실험 기록, 노션용 문서·이미지와 원본 trace는 저장소 밖에 보관합니다. 벤치마크 코드는 `tests/performance/`에 유지합니다.
-
-## 재현
-
-[브라우저 테스트 실행 환경](../testing.md)을 준비하고 3100·3101 포트를 비운 뒤 실행합니다. 새 결과는 Git 제외 경로인 `performance-results/`에 생성됩니다.
-
-```sh
-pnpm bench:chat chat-scroll.spec.ts
-BENCH_SCROLL_DOWN=1 pnpm bench:chat chat-scroll.spec.ts
-BENCH_PREPEND=1 pnpm bench:chat chat-scroll.spec.ts
-BENCH_20K=1 BENCH_SCROLL_DOWN=1 BENCH_LABEL=runtime-218-loaded-20k pnpm bench:chat chat-scroll.spec.ts
-BENCH_20K=1 BENCH_PREPEND=1 BENCH_LABEL=runtime-218-prepend-20k pnpm bench:chat chat-scroll.spec.ts
-```
-
-상품·스와이프 재측정은 `pnpm bench:chat chat-runtime.spec.ts chat-runtime-extra.spec.ts`로 실행합니다. 이 두 시나리오는 `BENCH_OUTPUT_DIR`에 저장소 밖의 절대 경로를 지정하면 결과와 trace를 그곳에 직접 저장합니다.
+상세 실험 기록, 노션용 문서·이미지와 원본 trace는 저장소 밖에 보관합니다. 벤치마크와 실행 방법은 `test/chat-runtime-benchmarks` 브랜치에 있습니다.

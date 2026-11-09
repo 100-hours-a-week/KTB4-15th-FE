@@ -223,7 +223,6 @@ export const testHandlers = [
     if (!userMessage || userMessage.senderType !== "USER")
       return failure("메시지가 없습니다.");
     const encoder = new TextEncoder();
-    const tokenTimers: ReturnType<typeof setTimeout>[] = [];
     const stream = new ReadableStream<Uint8Array>({
       start(controller) {
         const emit = (event: string, data: object) =>
@@ -233,21 +232,10 @@ export const testHandlers = [
             ),
           );
         emit("connected", {});
-        if (scenario.streamTokenDelayMs) {
-          Array.from(partialReply).forEach((content, index) => {
-            tokenTimers.push(
-              setTimeout(
-                () => emit("token", { content }),
-                index * scenario.streamTokenDelayMs!,
-              ),
-            );
-          });
-        } else
-          emit(scenario.snapshot ? "snapshot" : "token", {
-            content: partialReply,
-          });
+        emit(scenario.snapshot ? "snapshot" : "token", {
+          content: partialReply,
+        });
         finishStream = () => {
-          tokenTimers.forEach(clearTimeout);
           finishStream = undefined;
           if (scenario.streamFailure) {
             userMessage.generationStatus = "FAILED";
@@ -287,7 +275,6 @@ export const testHandlers = [
         };
       },
       cancel() {
-        tokenTimers.forEach(clearTimeout);
         finishStream = undefined;
       },
     });
