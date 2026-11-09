@@ -109,12 +109,51 @@ export function ChatMessageList({
     setPreviousFirstMessageId(firstMessageId);
   }
 
+  const streamingReplyRef = useRef<HTMLDivElement>(null);
+  const streamingReplySize = useRef<{ userMessageId: number; height: number }>(
+    null,
+  );
+  const lastMessage = messages.at(-1);
+  const hasStreamingContent = streamingContent.length > 0;
+
+  useLayoutEffect(() => {
+    if (
+      !hasStreamingContent ||
+      onRetryStream ||
+      lastMessage?.senderType !== "USER"
+    )
+      return;
+    const element = streamingReplyRef.current;
+    if (!element) return;
+
+    const measure = () => {
+      streamingReplySize.current = {
+        userMessageId: lastMessage.messageId,
+        height: element.offsetHeight,
+      };
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [hasStreamingContent, lastMessage, onRetryStream]);
+
   const virtualizer = useWindowVirtualizer({
     count: rows.length,
     getItemKey: (index) => rows[index].key,
     estimateSize: (index) => {
       const row = rows[index];
       if (!("message" in row)) return 44;
+      const measuredReply = streamingReplySize.current;
+      // 완료 행은 스트리밍 중에 측정한 높이에서 시작한다.
+      if (
+        row.message === lastMessage &&
+        row.message.senderType === "AI" &&
+        measuredReply != null &&
+        measuredReply.userMessageId === messages.at(-2)?.messageId
+      ) {
+        return measuredReply.height;
+      }
       return row.message.recommendation?.products.length ? 600 : 100;
     },
     overscan: 16,
@@ -127,10 +166,13 @@ export function ChatMessageList({
   });
 
   const scrollToMessage = useCallback(
-    (messageId: number, align: "start" | "center") => {
+    (
+      messageId: number,
+      align: "start" | "center",
+      behavior: "instant" | "smooth" = "instant",
+    ) => {
       const index = rows.findIndex((row) => row.key === messageId);
-      if (index >= 0)
-        virtualizer.scrollToIndex(index, { align, behavior: "instant" });
+      if (index >= 0) virtualizer.scrollToIndex(index, { align, behavior });
     },
     [rows, virtualizer],
   );
@@ -141,6 +183,7 @@ export function ChatMessageList({
     loadNewerRef,
     latestMessageId,
     unreadReplyId,
+    dismissUnreadReply,
     scrollToReply,
   } = useChatMessageScroll({
     anchorMessageId,
@@ -151,6 +194,39 @@ export function ChatMessageList({
     onLoadPreviousMessages,
     scrollToMessage,
   });
+
+  const observeUnreadReply = useCallback(
+    (element: HTMLDivElement | null) => {
+      virtualizer.measureElement(element);
+      const reply = element?.querySelector("article");
+      if (!reply) return;
+
+      const style = getComputedStyle(reply);
+      const headerHeight = parseFloat(
+        style.getPropertyValue("--header-height"),
+      );
+      const composerHeight = parseFloat(
+        style.getPropertyValue("--chat-composer-height"),
+      );
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting) dismissUnreadReply();
+        },
+        {
+          rootMargin: `-${headerHeight || 0}px 0px -${composerHeight || 0}px 0px`,
+        },
+      );
+      observer.observe(reply);
+      return () => observer.disconnect();
+    },
+    [dismissUnreadReply, virtualizer],
+  );
+
+  const virtualRows = virtualizer.getVirtualItems();
+  const firstRow = virtualRows[0];
+  const lastRow = virtualRows.at(-1);
+  const unrenderedEnd =
+    virtualizer.getTotalSize() - (lastRow ? lastRow.end - scrollMargin : 0);
 
   return (
     <ChatProductState.Provider value={productState}>
@@ -185,61 +261,81 @@ export function ChatMessageList({
           <div
             ref={windowRef}
             className={styles.messageWindow}
-            style={{ height: virtualizer.getTotalSize() }}
+            style={{ paddingBlockEnd: Math.max(0, unrenderedEnd) }}
           >
-            {virtualizer.getVirtualItems().map((item) => {
-              const row = rows[item.index];
-              const message = "message" in row ? row.message : undefined;
-              return (
-                <div
-                  className={styles.virtualRow}
-                  data-index={item.index}
-                  data-message-id={message?.messageId}
-                  key={item.key}
-                  ref={virtualizer.measureElement}
-                  style={{
-                    transform: `translateY(${item.start - scrollMargin}px)`,
-                  }}
-                >
-                  {"dateLabel" in row && (
-                    <time
-                      className={styles.dateDivider}
-                      dateTime={row.createdAt}
-                    >
-                      {row.dateLabel}
-                    </time>
-                  )}
-                  {message &&
-                    (message.senderType === "USER" ? (
-                      <UserChatMessage
-                        highlightKeyword={
-                          message.messageId === anchorMessageId
-                            ? searchKeyword
-                            : undefined
-                        }
-                        canRetry={
-                          !hasNewerMessages &&
-                          message.messageId === latestMessageId &&
-                          message.generationStatus === "FAILED"
-                        }
-                        isRetryPending={isRetryPending}
-                        message={message}
-                        onRetryMessage={onRetryMessage}
-                      />
-                    ) : (
-                      <AIChatMessage
-                        message={message}
-                        highlightKeyword={
-                          message.messageId === anchorMessageId
-                            ? searchKeyword
-                            : undefined
-                        }
-                      />
-                    ))}
-                </div>
-              );
-            })}
+            <div
+              style={{
+                marginBlockStart: firstRow ? firstRow.start - scrollMargin : 0,
+              }}
+            >
+              {virtualRows.map((item) => {
+                const row = rows[item.index];
+                const message = "message" in row ? row.message : undefined;
+                return (
+                  <div
+                    className={styles.messageRow}
+                    data-index={item.index}
+                    data-message-id={message?.messageId}
+                    key={item.key}
+                    ref={
+                      unreadReplyId != null &&
+                      message?.messageId === unreadReplyId
+                        ? observeUnreadReply
+                        : virtualizer.measureElement
+                    }
+                  >
+                    {"dateLabel" in row && (
+                      <time
+                        className={styles.dateDivider}
+                        dateTime={row.createdAt}
+                      >
+                        {row.dateLabel}
+                      </time>
+                    )}
+                    {message &&
+                      (message.senderType === "USER" ? (
+                        <UserChatMessage
+                          highlightKeyword={
+                            message.messageId === anchorMessageId
+                              ? searchKeyword
+                              : undefined
+                          }
+                          canRetry={
+                            !hasNewerMessages &&
+                            message.messageId === latestMessageId &&
+                            message.generationStatus === "FAILED"
+                          }
+                          isRetryPending={isRetryPending}
+                          message={message}
+                          onRetryMessage={onRetryMessage}
+                        />
+                      ) : (
+                        <AIChatMessage
+                          message={message}
+                          highlightKeyword={
+                            message.messageId === anchorMessageId
+                              ? searchKeyword
+                              : undefined
+                          }
+                        />
+                      ))}
+                  </div>
+                );
+              })}
+            </div>
           </div>
+          {(streamingContent || isGenerating || onRetryStream) && (
+            <div className={styles.pendingReply} ref={streamingReplyRef}>
+              {streamingContent ? (
+                <StreamingAIChatMessage content={streamingContent} />
+              ) : (
+                isGenerating && <AIChatMessageLoading />
+              )}
+              {onRetryStream && (
+                <AIChatMessageLoading onRetry={onRetryStream} />
+              )}
+            </div>
+          )}
         </div>
         {hasNewerMessages && <div aria-hidden="true" ref={loadNewerRef} />}
         {unreadReplyId != null && (
@@ -255,12 +351,6 @@ export function ChatMessageList({
             </Button>
           </div>
         )}
-        {streamingContent ? (
-          <StreamingAIChatMessage content={streamingContent} />
-        ) : (
-          isGenerating && <AIChatMessageLoading />
-        )}
-        {onRetryStream && <AIChatMessageLoading onRetry={onRetryStream} />}
       </div>
     </ChatProductState.Provider>
   );
