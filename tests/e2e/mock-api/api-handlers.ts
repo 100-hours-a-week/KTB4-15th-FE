@@ -175,7 +175,11 @@ export const testHandlers = [
               ...item,
               recommendation: {
                 ...item.recommendation,
-                products: scenario.noProducts ? [] : currentProducts(),
+                products: scenario.noProducts
+                  ? []
+                  : scenario.preserveRecommendationProducts
+                    ? item.recommendation.products
+                    : currentProducts(),
               },
             }
           : item,
