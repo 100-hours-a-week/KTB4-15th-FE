@@ -73,6 +73,7 @@ export function makeRoom(chatRoomId: number): MockChatRoom {
 }
 
 export type Scenario = {
+  streamTokenDelayMs?: number;
   fittingCandidates?: FittingCandidate[];
   wishlistProducts?: RecommendedProductResponse[];
   memberStatus?:
