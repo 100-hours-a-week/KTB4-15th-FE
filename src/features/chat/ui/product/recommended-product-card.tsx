@@ -2,19 +2,19 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { getCurrentFittingJob } from "@/features/fitting/api/fitting-job";
 import {
   useCreateWishlistMutation,
   useDeleteWishlistMutation,
-} from "@/features/wishlist";
+} from "@/features/wishlist/model/wishlist-query";
 import { recordPurchaseLinkClick } from "@/features/product";
 import { ApiError, getApiErrorMessage } from "@/shared/api/error";
 import { Button, IconButton } from "@/shared/ui/button";
 import { HeartIcon } from "@/shared/ui/icon";
 import { showToast } from "@/shared/ui/toast";
 import { formatPrice } from "@/shared/utils/price-format";
-import { useCreateFittingCandidateMutation } from "@/features/fitting";
+import { useCreateFittingCandidateMutation } from "@/features/fitting/model/fitting-query";
 import { useFittingSelectionStore } from "@/features/fitting/store/fitting-selection-store";
 import type { RecommendedProductResponse } from "../../schema/chat";
 import { ChatProductState } from "./chat-product-state";
@@ -30,6 +30,24 @@ export function RecommendedProductCard({
   product,
 }: RecommendedProductCardProps) {
   const router = useRouter();
+  const imageAreaRef = useRef<HTMLDivElement>(null);
+  const [loadImage, setLoadImage] = useState(false);
+  useEffect(() => {
+    const area = imageAreaRef.current;
+    if (!area) return;
+    // 브라우저의 넓은 lazy-load 범위가 과거·옆 카드 이미지를 먼저 요청하지 않게 한다.
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setLoadImage(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "200px 0px" },
+    );
+    observer.observe(area);
+    return () => observer.disconnect();
+  }, []);
   const selectProduct = useFittingSelectionStore(
     (state) => state.selectProduct,
   );
@@ -164,14 +182,18 @@ export function RecommendedProductCard({
       aria-label={`추천 상품 ${index + 1}: ${product.productName}`}
       className={styles.card}
     >
-      <div className={styles.imageArea}>
-        <Image
-          alt={product.productName}
-          className={styles.productImage}
-          fill
-          sizes="(max-width: 480px) 75vw, 320px"
-          src={product.productImageUrl}
-        />
+      <div className={styles.imageArea} ref={imageAreaRef}>
+        {loadImage && (
+          <Image
+            alt={product.productName}
+            className={styles.productImage}
+            fill
+            loading="eager"
+            fetchPriority={index === 0 ? "high" : "auto"}
+            sizes="(max-width: 480px) 75vw, 320px"
+            src={product.productImageUrl}
+          />
+        )}
         <span className={styles.rank}>
           추천 {String(index + 1).padStart(2, "0")}
         </span>
