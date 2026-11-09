@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { getCurrentFittingJob } from "@/features/fitting/api/fitting-job";
 import {
   useCreateWishlistMutation,
@@ -17,6 +17,7 @@ import { formatPrice } from "@/shared/utils/price-format";
 import { useCreateFittingCandidateMutation } from "@/features/fitting";
 import { useFittingSelectionStore } from "@/features/fitting/store/fitting-selection-store";
 import type { RecommendedProductResponse } from "../../schema/chat";
+import { ChatProductState } from "./chat-product-state";
 import styles from "./recommended-product-card.module.scss";
 
 type RecommendedProductCardProps = {
@@ -32,32 +33,44 @@ export function RecommendedProductCard({
   const selectProduct = useFittingSelectionStore(
     (state) => state.selectProduct,
   );
-  const [isFittingCandidate, setIsFittingCandidate] = useState(
-    product.isFittingCandidate,
-  );
-  const [fittingCandidateId, setFittingCandidateId] = useState(
-    product.fittingCandidateId,
-  );
-  const [isWishlisted, setIsWishlisted] = useState(product.isWishlisted);
-  const [wishlistId, setWishlistId] = useState(product.wishlistId);
+  const shared = useContext(ChatProductState);
+  const [localState, setLocalState] = useState<
+    NonNullable<React.ContextType<typeof ChatProductState>>["products"][number]
+  >({});
+  const state = shared?.products[product.productId] ?? localState;
+  const { isFittingCandidate, fittingCandidateId, isWishlisted, wishlistId } = {
+    ...product,
+    ...state,
+  };
+  const updateState = (patch: typeof state) => {
+    if (shared) {
+      shared.setProducts((products) => ({
+        ...products,
+        [product.productId]: { ...products[product.productId], ...patch },
+      }));
+    } else {
+      setLocalState((current) => ({ ...current, ...patch }));
+    }
+  };
   const [isEnteringFitting, setIsEnteringFitting] = useState(false);
   const fittingCandidateMutation = useCreateFittingCandidateMutation();
   const createWishlistMutation = useCreateWishlistMutation();
   const deleteWishlistMutation = useDeleteWishlistMutation();
-  const isWishlistPending =
-    createWishlistMutation.isPending || deleteWishlistMutation.isPending;
+  const isWishlistPending = state.wishlistPending;
 
   const handleToggleWishlist = async () => {
+    updateState({ wishlistPending: true });
     if (isWishlisted) {
       try {
         if (!wishlistId) throw new Error("Wishlist not found");
         await deleteWishlistMutation.mutateAsync(wishlistId);
-        setWishlistId(null);
-        setIsWishlisted(false);
+        updateState({ wishlistId: null, isWishlisted: false });
       } catch (error) {
         showToast.error(getApiErrorMessage(error, "찜을 해제하지 못했어요."), {
           id: `delete-wishlist:${product.productId}`,
         });
+      } finally {
+        updateState({ wishlistPending: false });
       }
       return;
     }
@@ -66,8 +79,7 @@ export function RecommendedProductCard({
       const created = await createWishlistMutation.mutateAsync(
         product.productId,
       );
-      setWishlistId(created.wishlistId);
-      setIsWishlisted(true);
+      updateState({ wishlistId: created.wishlistId, isWishlisted: true });
       showToast.success("찜 목록에 추가했어요.", {
         id: `create-wishlist:${product.productId}`,
       });
@@ -84,30 +96,32 @@ export function RecommendedProductCard({
             : `create-wishlist:${product.productId}`,
         },
       );
+    } finally {
+      updateState({ wishlistPending: false });
     }
   };
 
-  const handleAddFittingCandidate = () => {
-    fittingCandidateMutation.mutate(product.productId, {
-      onSuccess: ({ fittingCandidateId }) => {
-        setFittingCandidateId(fittingCandidateId);
-        setIsFittingCandidate(true);
-        showToast.success("피팅 목록에 추가했어요.", {
-          id: `add-fitting-candidate:${product.productId}`,
-        });
-      },
-      onError: (error) => {
-        showToast.error(
-          error instanceof ApiError &&
-            error.code === "FITTING_CANDIDATE_LIMIT_EXCEEDED"
-            ? "피팅 후보 상품은 최대 300개까지 가능해요."
-            : getApiErrorMessage(error, "피팅 목록에 추가하지 못했어요."),
-          {
-            id: `add-fitting-candidate:${product.productId}`,
-          },
-        );
-      },
-    });
+  const handleAddFittingCandidate = async () => {
+    updateState({ fittingPending: true });
+    try {
+      const { fittingCandidateId } = await fittingCandidateMutation.mutateAsync(
+        product.productId,
+      );
+      updateState({ fittingCandidateId, isFittingCandidate: true });
+      showToast.success("피팅 목록에 추가했어요.", {
+        id: `add-fitting-candidate:${product.productId}`,
+      });
+    } catch (error) {
+      showToast.error(
+        error instanceof ApiError &&
+          error.code === "FITTING_CANDIDATE_LIMIT_EXCEEDED"
+          ? "피팅 후보 상품은 최대 300개까지 가능해요."
+          : getApiErrorMessage(error, "피팅 목록에 추가하지 못했어요."),
+        { id: `add-fitting-candidate:${product.productId}` },
+      );
+    } finally {
+      updateState({ fittingPending: false });
+    }
   };
 
   const handleEnterFitting = async () => {
@@ -212,7 +226,7 @@ export function RecommendedProductCard({
             <Button
               className={styles.fittingButton}
               fullWidth
-              isLoading={fittingCandidateMutation.isPending}
+              isLoading={state.fittingPending}
               onClick={handleAddFittingCandidate}
               size="small"
               variant="primary"

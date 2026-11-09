@@ -10,7 +10,7 @@ import {
   getChatGenerationStatus,
   sendChatMessage,
 } from "../api/chat";
-import { chatRoomQueryKeys } from "./chat-room-query";
+import { chatRoomQueryKeys, chatRoomQueryOptions } from "./chat-room-query";
 import { takeChatStreamChunk } from "./chat-stream-buffer";
 
 import { updateChatGenerationCache } from "./chat-message-cache";
@@ -258,7 +258,7 @@ export function useChatMessageStream(
   };
 }
 
-export function useSendChatMessageMutation() {
+export function useSendChatMessageMutation(anchorMessageId?: number) {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -269,9 +269,56 @@ export function useSendChatMessageMutation() {
       chatRoomId: number;
       content: string;
     }) => sendChatMessage(chatRoomId, { content }),
-    onSuccess: (_, { chatRoomId }) =>
-      queryClient.invalidateQueries({
-        queryKey: chatRoomQueryKeys.detail(chatRoomId),
-      }),
+    onSuccess: async (sent, { chatRoomId }) => {
+      if (anchorMessageId != null) {
+        await queryClient.invalidateQueries({
+          queryKey: chatRoomQueryKeys.detail(chatRoomId),
+        });
+        return;
+      }
+
+      const { queryKey } = chatRoomQueryOptions(chatRoomId);
+      const filters = { queryKey, exact: true };
+      const query = queryClient.getQueryCache().find(filters);
+      // Keep an older page already requested by the user before updating the cache.
+      if (query?.state.fetchMeta?.fetchMore && query.promise) {
+        await Promise.allSettled([query.promise]);
+      }
+      await queryClient.cancelQueries(filters);
+      queryClient.setQueryData<InfiniteData<ChatMessageContextResponse>>(
+        queryKey,
+        (data) => {
+          const latestPage = data?.pages[0];
+          if (
+            !data ||
+            !latestPage ||
+            latestPage.messages.some(
+              (message) => message.messageId === sent.messageId,
+            )
+          )
+            return data;
+          return {
+            ...data,
+            pages: [
+              {
+                ...latestPage,
+                messages: [
+                  ...latestPage.messages,
+                  {
+                    messageId: sent.messageId,
+                    content: sent.content,
+                    createdAt: sent.createdAt,
+                    senderType: "USER",
+                    generationStatus: "PENDING",
+                    recommendation: null,
+                  },
+                ],
+              },
+              ...data.pages.slice(1),
+            ],
+          };
+        },
+      );
+    },
   });
 }

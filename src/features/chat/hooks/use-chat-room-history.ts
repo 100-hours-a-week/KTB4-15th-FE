@@ -1,5 +1,6 @@
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
+import type { ChatMessageResponse } from "../schema/chat";
 import { showToast } from "@/shared/ui/toast";
 import {
   chatRoomOlderQueryOptions,
@@ -22,20 +23,19 @@ export function useChatRoomHistory(
     chatRoomOlderQueryOptions(chatRoomId, olderCursor),
   );
   const hasNewerMessages = anchorMessageId != null && chatRoomQuery.hasNextPage;
-  const pages =
-    anchorMessageId == null
-      ? (chatRoomQuery.data?.pages.toReversed() ?? [])
-      : [
-          ...(olderQuery.data?.pages.toReversed() ?? []),
-          ...(chatRoomQuery.data?.pages ?? []),
-        ];
-  const messages = [
-    ...new Map(
-      pages.flatMap((page) =>
-        page.messages.map((message) => [message.messageId, message] as const),
-      ),
-    ).values(),
-  ];
+  const roomPages = chatRoomQuery.data?.pages;
+  const olderPages = olderQuery.data?.pages;
+  const messages = useMemo(() => {
+    const pages =
+      anchorMessageId == null
+        ? (roomPages?.toReversed() ?? [])
+        : [...(olderPages?.toReversed() ?? []), ...(roomPages ?? [])];
+    const byId = new Map<number, ChatMessageResponse>();
+    for (const page of pages) {
+      for (const message of page.messages) byId.set(message.messageId, message);
+    }
+    return [...byId.values()];
+  }, [anchorMessageId, roomPages, olderPages]);
 
   const previousQuery = anchorMessageId == null ? chatRoomQuery : olderQuery;
   const { fetchNextPage: fetchPreviousMessages, data: previousData } =

@@ -1,6 +1,12 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import type { ChatMessageResponse } from "../schema/chat";
 
 type ChatMessageScrollOptions = {
@@ -8,6 +14,7 @@ type ChatMessageScrollOptions = {
   hasNewerMessages: boolean;
   hasPreviousMessages: boolean;
   messages: ChatMessageResponse[];
+  scrollToMessage: (id: number, align: "start" | "center") => void;
   onLoadNewerMessages?: () => Promise<void>;
   onLoadPreviousMessages?: () => Promise<boolean>;
 };
@@ -17,15 +24,11 @@ export function useChatMessageScroll({
   hasNewerMessages,
   hasPreviousMessages,
   messages,
+  scrollToMessage,
   onLoadNewerMessages,
   onLoadPreviousMessages,
 }: ChatMessageScrollOptions) {
-  const pendingPrependRef = useRef<{ element: Element; top: number } | null>(
-    null,
-  );
-  const firstMessageId = messages[0]?.messageId;
   const listRef = useRef<HTMLDivElement>(null);
-  const isNearBottomRef = useRef(true);
   const [unreadReplyId, setUnreadReplyId] = useState<number | null>(null);
   const loadMoreRef = useRef<HTMLDivElement>(null);
   const loadNewerRef = useRef<HTMLDivElement>(null);
@@ -36,30 +39,13 @@ export function useChatMessageScroll({
   const latestMessageId = messages.at(-1)?.messageId;
   const previousLatestMessageIdRef = useRef<number | undefined>(undefined);
 
-  const scrollToReply = (messageId: number) => {
-    listRef.current
-      ?.querySelector<HTMLElement>(`[data-message-id="${messageId}"]`)
-      ?.scrollIntoView({
-        block: "start",
-        behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
-          ? "instant"
-          : "smooth",
-      });
-    setUnreadReplyId(null);
-  };
-
-  useEffect(() => {
-    const updatePosition = () => {
-      isNearBottomRef.current =
-        document.documentElement.scrollHeight -
-          window.scrollY -
-          window.innerHeight <
-        120;
-      if (isNearBottomRef.current) setUnreadReplyId(null);
-    };
-    window.addEventListener("scroll", updatePosition, { passive: true });
-    return () => window.removeEventListener("scroll", updatePosition);
-  }, []);
+  const scrollToReply = useCallback(
+    (messageId: number) => {
+      scrollToMessage(messageId, "start");
+      setUnreadReplyId(null);
+    },
+    [scrollToMessage],
+  );
 
   useLayoutEffect(() => {
     return () => {
@@ -76,15 +62,7 @@ export function useChatMessageScroll({
     hadNewerMessagesRef.current = hasNewerMessages;
 
     if (previousId == null && anchorMessageId != null) {
-      const target = listRef.current?.querySelector<HTMLElement>(
-        `[data-message-id="${anchorMessageId}"]`,
-      );
-      target?.scrollIntoView({ block: "center", behavior: "instant" });
-      isNearBottomRef.current =
-        document.documentElement.scrollHeight -
-          window.scrollY -
-          window.innerHeight <
-        120;
+      scrollToMessage(anchorMessageId, "center");
       previousLatestMessageIdRef.current = latestMessageId;
       didInitialScrollRef.current = true;
       return;
@@ -98,41 +76,26 @@ export function useChatMessageScroll({
 
     const latestMessage = messages.at(-1)!;
     const initial = previousId == null;
-    const shouldFollow =
-      initial || latestMessage.senderType === "USER" || isNearBottomRef.current;
     const frameId = requestAnimationFrame(() => {
       previousLatestMessageIdRef.current = latestMessageId;
-      if (initial || latestMessage.senderType === "USER") {
-        setUnreadReplyId(null);
+      if (initial) {
         window.scrollTo({
           top: document.documentElement.scrollHeight,
-          behavior:
-            initial ||
-            window.matchMedia("(prefers-reduced-motion: reduce)").matches
-              ? "instant"
-              : "smooth",
+          behavior: "instant",
         });
-      } else if (shouldFollow) {
-        scrollToReply(latestMessageId);
-      } else {
+      } else if (latestMessage.senderType === "AI") {
         setUnreadReplyId(latestMessageId);
       }
       didInitialScrollRef.current = true;
     });
     return () => cancelAnimationFrame(frameId);
-  }, [anchorMessageId, hasNewerMessages, latestMessageId, messages]);
-
-  useLayoutEffect(() => {
-    const pending = pendingPrependRef.current;
-    if (!pending) return;
-    pendingPrependRef.current = null;
-    if (!pending.element.isConnected) return;
-    const addedHeight =
-      pending.element.getBoundingClientRect().top +
-      window.scrollY -
-      pending.top;
-    window.scrollTo({ top: window.scrollY + addedHeight, behavior: "instant" });
-  }, [firstMessageId]);
+  }, [
+    anchorMessageId,
+    hasNewerMessages,
+    latestMessageId,
+    messages,
+    scrollToMessage,
+  ]);
 
   useEffect(() => {
     const loadMoreElement = loadMoreRef.current;
@@ -155,22 +118,10 @@ export function useChatMessageScroll({
           return;
         }
 
-        const firstMessage =
-          listRef.current?.querySelector("[data-message-id]");
-        if (!firstMessage) return;
-        pendingPrependRef.current = {
-          element: firstMessage,
-          top: firstMessage.getBoundingClientRect().top + window.scrollY,
-        };
-
         isLoadingPreviousMessagesRef.current = true;
-        void onLoadPreviousMessages()
-          .then((succeeded) => {
-            if (!succeeded) pendingPrependRef.current = null;
-          })
-          .finally(() => {
-            isLoadingPreviousMessagesRef.current = false;
-          });
+        void onLoadPreviousMessages().finally(() => {
+          isLoadingPreviousMessagesRef.current = false;
+        });
       },
       {
         rootMargin: "200px 0px 0px",

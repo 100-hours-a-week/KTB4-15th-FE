@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import {
   useChatMessageStream,
@@ -39,7 +39,7 @@ export function ChatRoomScreen({
   const router = useRouter();
   const { isNavigationVisible, keyboardInset } = useNavigationVisibility();
   const submissionLockRef = useRef(false);
-  const sendChatMessageMutation = useSendChatMessageMutation();
+  const sendChatMessageMutation = useSendChatMessageMutation(anchorMessageId);
   const history = useChatRoomHistory(chatRoomId, anchorMessageId);
   const { messages, hasNewerMessages } = history;
 
@@ -90,23 +90,26 @@ export function ChatRoomScreen({
     }
   };
 
-  const handleRetry = (content: string) => {
-    if (submissionLockRef.current || sendChatMessageMutation.isPending) {
-      return;
-    }
+  const { mutateAsync, isPending } = sendChatMessageMutation;
+  const handleRetry = useCallback(
+    (content: string) => {
+      if (submissionLockRef.current || isPending) {
+        return;
+      }
 
-    submissionLockRef.current = true;
+      submissionLockRef.current = true;
 
-    void sendChatMessageMutation
-      .mutateAsync(
+      void mutateAsync(
         { chatRoomId, content },
         { onError: showSendChatMessageError },
       )
-      .catch(() => undefined)
-      .finally(() => {
-        submissionLockRef.current = false;
-      });
-  };
+        .catch(() => undefined)
+        .finally(() => {
+          submissionLockRef.current = false;
+        });
+    },
+    [chatRoomId, isPending, mutateAsync],
+  );
 
   const isSubmitting = sendChatMessageMutation.isPending || isGenerating;
   const { initialError } = history;
