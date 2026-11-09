@@ -10,21 +10,19 @@
 }
 
 .messageWindow {
-  position: relative;
+  display: flow-root;
 }
 
-.virtualRow {
-  position: absolute;
-  top: 0;
-  width: 100%;
+.messageRow,
+.pendingReply {
   padding-bottom: 28px;
 }
 
 .firstDate,
-.virtualRow:has(.dateDivider) {
+.messageRow:has(.dateDivider) {
   display: flex;
   justify-content: center;
-  padding-bottom: 12px;
+  padding-bottom: 16px;
 }
 
 .dateDivider {
