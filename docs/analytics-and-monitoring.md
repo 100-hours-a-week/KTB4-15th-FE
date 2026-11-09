@@ -30,6 +30,7 @@ Sentry는 배포된 Next.js 애플리케이션의 브라우저, Node.js 서버�
 - `NEXT_PUBLIC_SENTRY_DSN`이 설정된 프로덕션 빌드에서만 오류를 전송합니다.
 - 사용자 정보, 쿠키, HTTP 헤더·본문·URL 쿼리, 로컬 변수 등 자동 데이터 수집을 비활성화합니다.
 - 성능 추적과 Session Replay는 활성화하지 않습니다.
+- Turbopack 일반 빌드에서도 사용하지 않는 tracing 코드를 제거하도록 `next.config.ts`의 `compiler.define`에 `__SENTRY_TRACING__: false`를 지정합니다. 성능 추적 도입 시 이 정의도 재검토합니다. 로컬 Chrome Performance 기록과는 별개입니다.
 - App Router의 전역 렌더링 오류와 서버 요청 오류를 함께 수집합니다.
 - 소스맵 업로드는 운영 빌드에서만 수행하며 인증 토큰은 Docker BuildKit secret으로 전달합니다.
 
