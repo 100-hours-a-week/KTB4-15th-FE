@@ -74,3 +74,52 @@ for (const readingHistory of [false, true]) {
     },
   );
 }
+
+test("진입과 일반 새로고침의 첫 대화 프레임에 최신 메시지가 보인다", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.addInitScript(() => {
+    const capture = () => {
+      const log = document.querySelector('[role="log"]');
+      const visible = log && getComputedStyle(log).visibility === "visible";
+      const ids = visible
+        ? Array.from(log.querySelectorAll<HTMLElement>("[data-message-id]"))
+            .filter((element) => {
+              const rect = element.getBoundingClientRect();
+              return rect.bottom > 56 && rect.top < innerHeight - 80;
+            })
+            .map((element) => element.dataset.messageId)
+        : [];
+      if (ids.length) {
+        Object.assign(window, { firstChatFrame: ids });
+      } else requestAnimationFrame(capture);
+    };
+    requestAnimationFrame(capture);
+  });
+  await page.goto("/chat/1");
+  const frames = [];
+  for (const reload of [false, true]) {
+    if (reload) await page.reload();
+    await expect(page.locator('[data-message-id="12"]')).toBeInViewport();
+    await expect
+      .poll(() =>
+        page.evaluate(
+          () =>
+            (window as unknown as { firstChatFrame?: string[] }).firstChatFrame
+              ?.length ?? 0,
+        ),
+      )
+      .toBeGreaterThan(0);
+    frames.push(
+      await page.evaluate(
+        () =>
+          (window as unknown as { firstChatFrame: string[] }).firstChatFrame,
+      ),
+    );
+  }
+  expect(frames).toEqual([
+    expect.arrayContaining(["12"]),
+    expect.arrayContaining(["12"]),
+  ]);
+});

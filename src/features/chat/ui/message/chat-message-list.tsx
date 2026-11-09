@@ -137,6 +137,7 @@ export function ChatMessageList({
 
   const {
     listRef,
+    isInitialPositioned,
     loadMoreRef,
     loadNewerRef,
     latestMessageId,
@@ -160,6 +161,7 @@ export function ChatMessageList({
         ref={listRef}
         role="log"
         data-loaded-message-count={messages.length}
+        data-initial-positioned={isInitialPositioned}
       >
         <div
           aria-hidden="true"

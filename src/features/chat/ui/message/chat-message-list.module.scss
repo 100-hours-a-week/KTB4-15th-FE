@@ -9,6 +9,10 @@
   padding-top: 4px;
 }
 
+.list[data-initial-positioned="false"] {
+  visibility: hidden;
+}
+
 .messageWindow {
   position: relative;
 }
