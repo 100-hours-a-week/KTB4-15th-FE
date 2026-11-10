@@ -21,9 +21,9 @@ LOOK DDAK 프론트엔드의 구조와 개발 기준을 관리합니다.
 - [채팅 런타임 성능 요약](./performance/chat-scroll.md): 포맷터·memo·가상화 및 20,000개 검증의 핵심 결과와 측정 조건
 - [랭킹 성능 개선 기록](./performance/ranking.md): 단계별 측정 결과, 실험과 한계
 
-- [채팅방 초기 로딩 LCP](./performance/chat-lcp.md): 프로덕션 빌드와 고정 모바일 조건에서 5회 측정한 초기 기준선
+- [채팅방 초기 로딩 LCP](./performance/chat-lcp.md): 현재 채택 상태, 단계별 실험과 최종 통합 검증
 
-- [239번 채팅방 상품 이미지 로딩](./performance/chat-room239-images.md): 실제 메시지와 이미지 고정 후 요청 경쟁 전후 비교
+- [239번 채팅방 상품 이미지 로딩](./performance/chat-room239-images.md): 로컬 고정 자료 준비 조건과 이미지 요청 경쟁 실험
 
 ## 관리 원칙
 

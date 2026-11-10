@@ -1,5 +1,44 @@
 # 239번 채팅방 상품 이미지 초기 로딩
 
+이 문서는 239번 방 고정 데이터를 사용한 단계별 실험 기록이다. 현재 채택 구현과 최종 통합 결과는 [초기 로딩 개선 기록](./chat-lcp.md#현재-채택-상태)을 참고한다. 아래 CSR trace와 브라우저 preload 결과는 해당 실험 당시 구현을 대상으로 한다.
+
+## 239번 측정 자료 준비
+
+`BENCH_ROOM239=1`은 실제 백엔드를 호출해 자료를 수집하는 옵션이 아니다. 미리 저장한 응답을 모의 API에서 재생한다. 다음 파일은 Git에서 제외돼 있으므로 저장소를 새로 받은 환경에는 별도로 준비해야 한다.
+
+| 경로                                                               | 용도와 준비 조건                                                                                                             |
+| ------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------- |
+| `performance-results/chat-lcp/room239-fixture/fixed-response.json` | 러너가 직접 읽는 필수 파일. `data.messages`가 있는 응답이며 상품 이미지 URL을 `/bench-chat239/<파일명>.webp`로 치환한 고정본 |
+| `public/bench-chat239/`                                            | 고정 응답에서 참조하는 WebP 이미지 전체. 파일명과 바이트를 기존 원본과 동일하게 보존                                         |
+| `performance-results/chat-lcp/room239-fixture/manifest.json`       | 응답·이미지 SHA-256과 개수의 수동 검증 근거. 러너가 자동 검증하는 파일은 아님                                                |
+| `performance-results/chat-lcp/room239-fixture/response.json`       | 최초 응답 보관본. 러너 실행에는 필요하지 않으며 원본 대조용으로 별도 보관                                                    |
+
+기존 자료를 복원할 때는 고정 응답·manifest·이미지를 같은 스냅샷 묶음에서 가져온다. 고정 응답의 SHA-256을 manifest의 `fixedResponseSha256`과 대조하고, 각 로컬 이미지 참조의 파일 존재 여부와 이미지 해시를 확인한다. 원래 응답도 검증할 경우 `responseSha256`을 사용한다. 메시지 20개·이미지 30개는 이 문서의 기존 스냅샷 조건이다. 다른 데이터를 사용하면 새 스냅샷과 label로 구분한다.
+
+러너는 재설정한 모의 API의 메시지 응답 전체를 고정 응답과 비교한다. 이미지 해시와 누락 여부는 자동 검사하지 않으므로 준비 단계에서 확인한다. 고정 응답이 없으면 파일 읽기에서 실패하고, 이미지 누락은 이미지 로딩 결과에 영향을 준다.
+
+준비 후 실행 예시는 다음과 같다. 기본 설정이 모의 API와 일반 빌드 서버를 시작하므로 3100·3101번 포트를 비워 둔다.
+
+```bash
+BENCH_ROOM239=1 BENCH_VITALS=1 BENCH_CAROUSEL_INTERACTION=1 \
+BENCH_EXPECT_NOTIFICATION_SSE=1 BENCH_LABEL=room239-prepared-check \
+pnpm bench:chat chat-lcp.spec.ts
+```
+
+이 예시는 고정 모의 API·모바일·trace OFF 조건이다. `BENCH_DESKTOP=1`은 별도 데스크톱 조건이고 `BENCH_TRACE=1`은 기록 부하를 추가한다. 각 결과는 해당 조건끼리 비교한다. 기존 label의 파일을 덮어쓰지 않도록 실행마다 새 label을 정한다.
+
+### 과거 preload 실험의 추가 자료
+
+`BENCH_IMAGE_PRELOAD=0|1`은 위 자료 외에 `performance-results/chat-lcp/room239-product-actions-after/results.json`이 필요하다. 러너는 이 파일의 다섯 회차 최종 LCP 이미지 URL이 동일한지 확인한 뒤 선요청 대상을 결정한다. 원래 실험의 결과와 스냅샷을 함께 준비하고 해당 실험 코드 버전에서 재현한다. 최종 통합본의 일반 측정에서는 이 옵션을 지정하지 않는다.
+
+`BENCH_ERROR_PRELOAD=0|1`은 빌드 청크에서 오류 화면 문구를 포함한 파일이 정확히 하나라는 조건에 의존한다. 코드나 빌드가 달라지면 검증이 실패할 수 있다. 두 preload 옵션은 측정용 HTML 개입 실험이며 현재 앱의 채택 동작과 구분한다.
+
+### 실제 로컬 백엔드 측정과 자료 보관
+
+실제 백엔드의 `/chat/239`를 직접 여는 측정은 별도 프로덕션 서버에서 `API_BASE_URL`과 `NEXT_PUBLIC_API_BASE_URL`, 인증 상태와 해당 방의 접근 권한을 준비한다. 이때 실제 응답·외부 이미지·서버 지연이 사용되므로 고정 재생 결과와 직접 비교하지 않는다. 환경 파일과 인증 정보는 Git 외부에 보관한다.
+
+실제 메시지가 포함된 응답, 원본 trace·스크린샷과 Lighthouse HTML은 별도 보관하고 공유 전에 개인정보를 확인한다. 저장소에는 측정 코드와 조건·집계 설명을 포함한다. 개인 채팅 내용이나 토큰을 문서에 복사하지 않는다.
+
 ## 데이터와 조건 고정
 
 - 로그인된 로컬 브라우저에서 239번 방의 `messages?size=20` 응답을 읽기 전용으로 저장했다. DB는 변경하지 않았다.
@@ -95,7 +134,7 @@ BENCH_ROOM239=1 BENCH_LABEL=room239-images-after pnpm bench:chat chat-lcp.spec.t
 
 분리 후 LCP는 3,640ms, 3,176ms, 3,192ms, 3,176ms, 3,168ms였다. 초기 청크에서 피팅 결과 API 참조는 빠졌지만 전체 전송량은 줄지 않았고, LCP 개선도 확인되지 않아 분리 코드를 되돌렸다. 실험 코드에서 `pnpm check`와 상품·알림 브라우저 테스트 12개를 통과했다. 원본은 `performance-results/chat-lcp/room239-fitting-split/results.json`에 있다.
 
-## 현재 CSR의 Chrome Performance trace
+## CSR 단계의 Chrome Performance trace
 
 `BENCH_ROOM239=1 BENCH_TRACE=1 BENCH_LABEL=room239-csr-trace pnpm bench:chat chat-lcp.spec.ts`로 5회 기록했다. 239번 방의 같은 고정 응답과 이미지, 일반 빌드, CPU 4배 감속과 1.6Mbps 설정을 사용했다. 직전 실험의 피팅 분리는 되돌린 상태다.
 
@@ -123,7 +162,7 @@ BENCH_ROOM239=1 BENCH_LABEL=room239-images-after pnpm bench:chat chat-lcp.spec.t
 
 ## CSR 메시지 요청을 브라우저에서 먼저 시작
 
-일반 채팅방의 프로덕션 HTML에 최근 20개 API의 `rel="preload" as="fetch"`를 추가했다. API 클라이언트와 같은 쿠키 전송 설정을 사용한다. 메시지는 기존 클라이언트 쿼리가 받아서 표시한다. 검색 메시지 주변 조회에는 이 링크를 넣지 않는다.
+이 실험 당시 일반 채팅방의 프로덕션 HTML에 최근 20개 API의 `rel="preload" as="fetch"`를 추가했다. API 클라이언트와 같은 쿠키 전송 설정을 사용한다. 메시지는 기존 클라이언트 쿼리가 받아서 표시한다. 검색 메시지 주변 조회에는 이 링크를 넣지 않는다.
 
 `BENCH_ROOM239=1 BENCH_LABEL=room239-browser-preload pnpm bench:chat chat-lcp.spec.ts`로 일반 빌드에서 5회 측정했다. 기준선은 같은 239번 방 스냅샷, 화면, CPU, 네트워크 조건의 `room239-initial-flow-before`다. 두 측정 모두 trace 기록을 끈 상태다.
 

@@ -1,6 +1,26 @@
-# 채팅방 초기 로딩 LCP 기준선
+# 채팅방 초기 로딩 개선 기록
 
-현재 구현은 **CSR 메시지 조회 유지 + 직접 import**다. 아래 서버 선조회/trace 기록은 중간 실험이며 서버 선조회는 철회했다.
+## 현재 채택 상태
+
+`perf/chat-detail-cwv-integration`은 `9dead3e`의 스크롤 수정 위에 초기 로딩 개선을 통합했다. 일반 채팅방은 서버에서 인증 쿠키를 전달해 최근 메시지 20개를 `cache: "no-store"`로 조회하고, `initialPage`를 클라이언트 쿼리의 `initialData`로 전달한다. 같은 초기 페이지로 마운트할 때 중복 조회를 억제한다. 현재 구현은 QueryClient/HydrationBoundary를 사용했던 초기 실험과 구성이 다르다.
+
+최신 메시지의 실제 목록 행과 상품 이미지를 초기 HTML에 출력하고 hydration 이후에도 같은 DOM을 유지한다. 최신 행은 처음부터 일반 흐름에 두며 초기 위치 확정 전까지만 하단에 붙인다. 화면 밖 상품 이미지는 영역 진입까지 생성을 지연한다. 직접 import와 Sentry tracing 코드의 빌드 제외도 유지한다.
+
+검색 결과의 유효한 `messageId`로 진입하면 기존 클라이언트 주변 메시지 조회를 사용한다. 서버 초기 조회가 실패하면 클라이언트 조회로 돌아간다. 프로덕션의 일반 진입에서 초기 데이터가 없고 `NEXT_PUBLIC_API_BASE_URL`이 설정돼 있으면 최근 메시지 API fetch preload를 출력한다.
+
+최종 통합본의 고정 모의 API 결과와 한계는 문서 마지막의 develop 통합 기록에 있다. 아래 기준선부터 각 실험 절까지는 당시 구현과 측정 조건의 기록이다. 서버 데이터만 전달했던 초기 실험은 한 차례 철회했고, 이후 초기 HTML 표시와 DOM 유지를 함께 적용해 서버 조회를 다시 채택했다. 실험별 개선량은 합산하지 않으며 실제 백엔드·Lighthouse·운영 방문 결과와 구분한다.
+
+## 측정 실행과 로컬 자료
+
+기본 모의 데이터 측정은 저장소의 fixture와 이미지로 실행할 수 있다. 다음은 실행 예시다.
+
+```bash
+BENCH_LABEL=synthetic-check pnpm bench:chat chat-lcp.spec.ts
+```
+
+러너가 모의 API(3101번 포트)와 일반 프로덕션 빌드 서버(3100번 포트)를 시작한다. 서버·브라우저 API 주소도 테스트 설정에서 모의 API로 지정한다. 해당 포트는 비어 있어야 하며 실제 로컬 백엔드나 로그인 계정은 필요하지 않다. 결과는 Git에서 제외된 `performance-results/chat-lcp/<label>/`에 저장한다. 기존 결과를 보존하려면 새 label을 사용한다.
+
+`BENCH_ROOM239=1`은 실제 응답을 고정해 모의 API로 재생하는 별도 모드다. Git 외부의 고정 응답과 이미지가 필요하다. 준비 파일·검증 조건·실험 옵션의 추가 의존성은 [239번 측정 자료 준비](./chat-room239-images.md#239번-측정-자료-준비)를 따른다. 실제 로컬 백엔드의 `/chat/239`를 직접 측정하는 방식과 구분한다.
 
 ## 측정 조건
 
@@ -30,15 +50,15 @@
 - 이미지 전송 크기는 약 14KB이며, 이미지 요청부터 LCP까지 약 0.3초(첫 회 약 0.4초).
 - 회차별 JS 전송 합계 372,673바이트. 이 값에는 다운로드와 실행 비용이 섞여 있지 않으며, 실행 비용은 별도 trace로 확인해야 함.
 
-## 해석과 다음 순서
+## 기준선 당시 해석과 다음 순서
 
-1. 이미지보다 앞선 약 2.8초 구간을 먼저 확인한다. 현재 메시지 조회는 클라이언트 `ChatRoomScreen`의 `useChatRoomHistory` → `useInfiniteQuery`에서 시작한다. JS 다운로드·실행·hydration 이후에 조회가 시작되는 구조와 측정 결과가 일치한다. 각 작업의 정확한 기여도는 아직 분리하지 않았다.
+1. 이미지보다 앞선 약 2.8초 구간을 먼저 확인한다. 기준선 당시 메시지 조회는 클라이언트 `ChatRoomScreen`의 `useChatRoomHistory` → `useInfiniteQuery`에서 시작한다. JS 다운로드·실행·hydration 이후에 조회가 시작되는 구조와 측정 결과가 일치한다. 각 작업의 정확한 기여도는 아직 분리하지 않았다.
 2. 서버에서 최초 메시지 조회 및 query hydration이 가능한지 검토한다. 인증·오류 처리·검색 문맥 경로를 유지하며 요청 시작을 앞당기는 것이 우선 후보다.
 3. 실제 보이는 상품 이미지의 로딩 우선순위를 확인한다. 모든 과거 이미지에 일괄 eager/preload를 적용하지 않는다.
 
 실제 백엔드·외부 상품 이미지·운영 서버 TTFB·다른 메시지 구성·채팅 목록에서의 클라이언트 이동은 이번 측정에 포함하지 않았다. 이 결과는 배포 환경 점수나 실제 사용자의 p75가 아닌, 이후 전후 비교용 로컬 기준선이다.
 
-## 서버 최초 메시지 조회 적용 후
+## 초기 서버 데이터 전달 실험 — 이후 철회
 
 일반 채팅방 페이지의 Server Component에서 인증 쿠키를 전달해 최근 20개를 `cache: no-store`로 조회한다. 요청별 QueryClient에 첫 페이지를 넣고 HydrationBoundary로 클라이언트에 전달한다. 쿼리의 staleTime은 10초로 두어 전달 직후 중복 조회를 막는다. 서버 조회 실패 시 데이터를 주입하지 않고 기존 클라이언트 조회·인증 갱신·오류 UI로 돌아간다. 검색 문맥의 around 조회는 기존 클라이언트 경로를 유지한다.
 
@@ -62,7 +82,7 @@
 
 ## Chrome Performance trace 분석
 
-현재 서버 선조회 구현에 `BENCH_LABEL=server-history-trace BENCH_TRACE=1 pnpm bench:chat chat-lcp.spec.ts`를 실행했다. 기존과 같은 프로덕션 빌드, CPU 4배, 390×844, 1.6Mbps/150ms, 새 컨텍스트/캐시 비활성화, 같은 20개 메시지로 5회 기록했다. React profiling 빌드나 소스맵 설정은 변경하지 않았다.
+초기 서버 데이터 전달 실험 구현에 `BENCH_LABEL=server-history-trace BENCH_TRACE=1 pnpm bench:chat chat-lcp.spec.ts`를 실행했다. 기존과 같은 프로덕션 빌드, CPU 4배, 390×844, 1.6Mbps/150ms, 새 컨텍스트/캐시 비활성화, 같은 20개 메시지로 5회 기록했다. React profiling 빌드나 소스맵 설정은 변경하지 않았다.
 
 ### 원본과 열기
 
@@ -95,7 +115,7 @@ trace의 JS FunctionCall에는 React scheduler의 최소화된 `O` 같은 이름
 
 **이번 조건의 주 병목은 서버 메시지 조회나 이미지 압축보다는, 초기 JS가 준비된 뒤에야 가상 목록과 상품 이미지가 나타나는 경로다.**
 
-`ChatMessageList`는 `virtualizer.getVirtualItems()`로 메시지를 출력한다. 현재 initialRect는 지정하지 않아 라이브러리 기본값(높이 0)을 쓰며, virtual-core는 표시 range가 없으면 빈 indexes를 반환한다. 따라서 서버에 메시지 데이터가 있어도 메시지 행/상품 이미지가 초기 HTML의 표시 요소로 먼저 출력되지 않고, 브라우저에서 영역 측정 후 표시된다. trace에서 이미지 요청이 JS 완료 뒤 발생하는 현상과 일치한다.
+`ChatMessageList`는 `virtualizer.getVirtualItems()`로 메시지를 출력한다. 해당 실험에서는 initialRect를 지정하지 않아 라이브러리 기본값(높이 0)을 쓰며, virtual-core는 표시 range가 없으면 빈 indexes를 반환한다. 따라서 서버에 메시지 데이터가 있어도 메시지 행/상품 이미지가 초기 HTML의 표시 요소로 먼저 출력되지 않고, 브라우저에서 영역 측정 후 표시된다. trace에서 이미지 요청이 JS 완료 뒤 발생하는 현상과 일치한다.
 
 다음 실험의 우선순위는 (1) 실제 첫 화면의 메시지/상품 이미지를 JS 전체 초기화 전에 발견할 수 있도록 초기 가상 목록 출력을 검토하고, (2) 최초 경로의 JS 구성과 불필요한 초기 의존성을 분석하는 것이다. 이미지에 eager만 붙여도 요소 자체가 늦게 생성되는 문제는 남는다. 전체 JS를 무조건 동적 import하거나 모든 과거 이미지를 preload하는 변경은 이번 분석에 포함하지 않았다.
 
@@ -105,7 +125,7 @@ trace의 JS FunctionCall에는 React scheduler의 최소화된 `O` 같은 이름
 
 프로덕션 LCP 측정 5회와 `pnpm check`를 통과했다. 앱 구현은 이번 trace 분석에서 변경하지 않았다. 실제 백엔드/외부 이미지, 운영 환경, 서버 선조회 이전 코드의 trace 비교는 포함하지 않았다.
 
-## CSR 유지: 초기 import 범위 축소
+## CSR 복귀 당시 초기 import 범위 축소
 
 서버 메시지 API, QueryClient/HydrationBoundary와 staleTime 10초 설정을 모두 되돌렸다. 메시지 조회와 서버 조회 실패 fallback도 원래 CSR 경로로 돌아갔다. 서버 선조회 전용 테스트는 제거했고 기존 이전 내역 테스트도 원복했다. 서버 선조회 결과는 비교용 실험 기록으로 남긴다.
 
@@ -274,7 +294,7 @@ BENCH_ROOM239=1 BENCH_TRACE=1 BENCH_EXPECT_NOTIFICATION_SSE=1 BENCH_LABEL=room23
 
 원본은 `performance-results/chat-lcp/room239-sentry-defaults-before/`와 `room239-sentry-defaults-after/`의 `results.json`, `run-N.trace.json`, `run-N.png`, 실험군 `bundle-evidence.json` 및 `performance-results/chat-lcp/sentry-defaults-comparison.json`에 있다. 원복 전후 `pnpm check`와 전후 일반 빌드/각 5회 측정을 통과했다. 순차 측정이며 통계적 유의성 검정, 운영 오류 수신, Lighthouse 재측정은 하지 않았다.
 
-## Sentry 디버그 빌드 플래그 적용 (2026-11-09)
+## Sentry 디버그 빌드 플래그 실험 — 미채택 (2026-11-09)
 
 `next.config.ts`의 기존 `compiler.define`에 `__SENTRY_DEBUG__: false`를 추가했다. tracing 제거는 유지하고 SDK 초기 import·오류 경계·Console breadcrumb·기본 integrations·개인정보 제한은 바꾸지 않았다. 이 정의는 클라이언트·서버·Edge와 개발 빌드에도 적용되므로 SDK 내부 디버그 진단을 조사하려면 재검토해야 한다. 앱 자체의 console 출력이나 오류 전송을 끄는 설정은 아니다.
 
@@ -393,7 +413,7 @@ BENCH_ROOM239=1 BENCH_TRACE=1 BENCH_EXPECT_NOTIFICATION_SSE=1 BENCH_IMAGE_PRELOA
 
 ### develop 통합에서 관측한 레이아웃 이동
 
-기존 스크롤 수정(`9dead3e`) 위에 통합한 첫 후보는 모바일 실험실 p75가 LCP 2,604ms, INP 56ms, CLS 0.5962였다. `BENCH_LAYOUT_SHIFTS=1`로 재실행한 결과 첫 화면 고정 행을 일반 목록에 편입하는 구간에서 0.5801의 이동 항목이 관측됐다. 한 회차에서 상품 이미지는 556ms에 처음 표시됐고, 초기 행의 위치가 바뀐 뒤 2,576ms에 더 큰 최종 LCP 후보로 다시 잡혔다. 고정 행을 일반 흐름으로 바꾸는 대신 같은 목록 기준에 배치하고 해당 높이를 예약하는 후보를 검증 중이다. 로컬 라벨은 `cwv-develop-mobile` 및 `cwv-develop-layout-shifts`다.
+기존 스크롤 수정(`9dead3e`) 위에 통합한 첫 후보는 모바일 실험실 p75가 LCP 2,604ms, INP 56ms, CLS 0.5962였다. `BENCH_LAYOUT_SHIFTS=1`로 재실행한 결과 첫 화면 고정 행을 일반 목록에 편입하는 구간에서 0.5801의 이동 항목이 관측됐다. 한 회차에서 상품 이미지는 556ms에 처음 표시됐고, 초기 행의 위치가 바뀐 뒤 2,576ms에 더 큰 최종 LCP 후보로 다시 잡혔다. 이후 같은 목록 기준에 배치하고 높이를 예약하는 후보를 검증했으며, 최종적으로 아래 일반 흐름 방식을 채택했다. 로컬 라벨은 `cwv-develop-mobile` 및 `cwv-develop-layout-shifts`다.
 
 최신 행을 같은 목록 기준에 절대 배치하고 화면을 즉시 맞춘 실험은 LCP 기준을 충족했지만 CLS p75 0.5882가 남았다. `cwv-develop-in-flow`에서는 최신 행을 처음부터 일반 흐름에 두고 초기 위치 확정 전까지만 하단에 붙게 했다. 고정 위치에서 일반 행으로 편입하거나 최신 행의 높이를 따로 예약하는 경로가 사라졌다. 모바일 5회 p75는 LCP 688ms, INP 64ms, CLS 0.0091이며 0.58 수준의 이동은 재현되지 않았다.
 
