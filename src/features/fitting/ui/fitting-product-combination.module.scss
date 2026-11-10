@@ -83,6 +83,12 @@
 
   .products {
     gap: 0;
+
+    &:has(.productCard:only-child) strong {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
   }
 
   .productCard {
