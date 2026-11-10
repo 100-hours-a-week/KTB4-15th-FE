@@ -265,17 +265,9 @@ test.describe("가상화된 채팅 내역", () => {
 
   test("이전 내역 추가 후 읽던 위치와 다시 나타난 상품의 찜 상태를 유지한다", async ({
     page,
+    request,
   }) => {
-    await page.route(
-      (url) =>
-        url.pathname.endsWith("/chat-rooms/1/messages") &&
-        !url.searchParams.has("before"),
-      async (route) => {
-        const url = new URL(route.request().url());
-        url.searchParams.set("size", "100");
-        await route.fulfill({ response: await route.fetch({ url: url.href }) });
-      },
-    );
+    await configure(request, { initialChatPageSize: 100 });
     let release!: () => void;
     const gate = new Promise<void>((resolve) => {
       release = resolve;

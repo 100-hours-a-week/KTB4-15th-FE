@@ -85,7 +85,7 @@ test("기존 페이지가 있어도 전송 성공 후 내역을 재조회하지 
   await expect(log.locator('[data-message-id="40"]')).toBeInViewport();
   await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
   await expect(log).toHaveAttribute("data-loaded-message-count", "40");
-  expect(reads).toHaveLength(2);
+  expect(reads).toHaveLength(1);
   await input(page).fill(message);
   await input(page).press("Enter");
   await expect(log.getByText(message, { exact: true })).toBeVisible();
@@ -97,7 +97,7 @@ test("기존 페이지가 있어도 전송 성공 후 내역을 재조회하지 
   await expect(log.getByText(reply, { exact: true })).toBeVisible();
   await expect(input(page)).toBeEnabled();
   await expect(log).toHaveAttribute("data-loaded-message-count", "42");
-  expect(reads).toHaveLength(2);
+  expect(reads).toHaveLength(1);
 });
 
 test("공백 메시지는 전송하지 않고 전송 중 연속 클릭은 채팅방을 중복 생성하지 않는다", async ({
@@ -288,7 +288,7 @@ test("SSE 단절 후 완료 상태이면 해당 답변만 캐시에 반영한다
   await input(page).press("Enter");
   await expect(page.getByText(reply, { exact: true })).toHaveCount(1);
   await expect(input(page)).toBeEnabled();
-  expect(historyRequests).toHaveLength(1);
+  expect(historyRequests).toHaveLength(0);
 });
 
 test("상태 조회 실패 후 같은 답변의 연결을 다시 시도할 수 있다", async ({
@@ -368,7 +368,7 @@ test("늦게 도착한 내역 응답이 status의 완료 결과를 덮어쓰지 
 
   await page.route("**/chat-rooms/1/messages?*", async (route) => {
     const response = await route.fetch();
-    if (++historyRequests === 1) return route.fulfill({ response });
+    historyRequests++;
     const staleBody = await response.json();
     expect(staleBody.data.messages[0].generationStatus).toBe("PENDING");
     lateRequestUrl = route.request().url();
@@ -415,7 +415,7 @@ test("늦게 도착한 내역 응답이 status의 완료 결과를 덮어쓰지 
       window.dispatchEvent(new Event("offline"));
       window.dispatchEvent(new Event("online"));
     });
-    await expect.poll(() => historyRequests).toBe(2);
+    await expect.poll(() => historyRequests).toBe(1);
     await historyPending;
     releaseStatus();
     await expect(page.getByText(reply, { exact: true })).toHaveCount(1);
@@ -435,7 +435,7 @@ test("늦게 도착한 내역 응답이 status의 완료 결과를 덮어쓰지 
     );
     await expect(page.getByText(reply, { exact: true })).toHaveCount(1);
     await expect(input(page)).toBeEnabled();
-    expect(historyRequests).toBe(2);
+    expect(historyRequests).toBe(1);
     expect(streamRequests).toBe(1);
   } finally {
     releaseStatus();
@@ -445,6 +445,7 @@ test("늦게 도착한 내역 응답이 status의 완료 결과를 덮어쓰지 
 
 test("답변 완료와 이전 페이지 응답이 겹쳐도 둘 다 표시한다", async ({
   page,
+  request,
 }) => {
   let releasePrevious!: () => void;
   const previousGate = new Promise<void>((resolve) => {
@@ -455,30 +456,33 @@ test("답변 완료와 이전 페이지 응답이 겹쳐도 둘 다 표시한다
     previousStarted = resolve;
   });
   const olderText = "이전 페이지에 있는 메시지";
-  await page.route("**/chat-rooms/1/messages?*", async (route) => {
-    const response = await route.fetch();
-    const body = await response.json();
-    const isPrevious = new URL(route.request().url()).searchParams.has(
-      "before",
-    );
-    if (isPrevious) {
+  const room = makeRoom(1);
+  const reset = await request.post(`${apiURL}/__test/reset`, {
+    data: {
+      rooms: [
+        {
+          ...room,
+          messages: Array.from({ length: 22 }, (_, index) => ({
+            ...room.messages[0],
+            messageId: index + 1,
+            content: index === 0 ? olderText : `대화 ${index + 1}`,
+          })),
+        },
+      ],
+    },
+  });
+  expect(reset.ok()).toBeTruthy();
+  await page.route(
+    (url) =>
+      url.pathname.endsWith("/chat-rooms/1/messages") &&
+      url.searchParams.has("before"),
+    async (route) => {
+      const response = await route.fetch();
       previousStarted();
       await previousGate;
-      body.data.messages = [
-        {
-          messageId: 3,
-          senderType: "USER",
-          content: olderText,
-          generationStatus: "COMPLETED",
-          recommendation: null,
-          createdAt: "2026-10-23T09:00:00",
-        },
-      ];
-    }
-    body.data.hasPrevious = !isPrevious;
-    body.data.previousCursor = isPrevious ? null : 1;
-    await route.fulfill({ response, json: body });
-  });
+      await route.fulfill({ response });
+    },
+  );
   await page.route("**/messages/*/stream", (route) =>
     route.fulfill({ contentType: "text/event-stream", body: "" }),
   );
@@ -491,7 +495,7 @@ test("답변 완료와 이전 페이지 응답이 겹쳐도 둘 다 표시한다
         data: {
           generationStatus: "COMPLETED",
           message: {
-            messageId: 2,
+            messageId: 24,
             senderType: "AI",
             content: reply,
             generationStatus: null,
@@ -504,10 +508,14 @@ test("답변 완료와 이전 페이지 응답이 겹쳐도 둘 다 표시한다
   });
 
   try {
-    await page.goto("/chat");
+    await page.goto("/chat/1");
     const statusResponse = page.waitForResponse("**/messages/*/status");
     await input(page).fill(message);
     await input(page).press("Enter");
+    await expect(
+      page.getByRole("log").getByText(message, { exact: true }),
+    ).toBeVisible();
+    await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
     await (await statusResponse).finished();
     await page.evaluate(
       () =>

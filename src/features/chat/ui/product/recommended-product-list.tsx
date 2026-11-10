@@ -7,6 +7,7 @@ import styles from "./recommended-product-list.module.scss";
 
 type RecommendedProductListProps = {
   products: RecommendedProductResponse[];
+  initialImages?: boolean;
 };
 
 function getProductScrollLeft(list: HTMLDivElement, card: HTMLElement) {
@@ -21,6 +22,7 @@ function getProductScrollLeft(list: HTMLDivElement, card: HTMLElement) {
 
 export function RecommendedProductList({
   products,
+  initialImages,
 }: RecommendedProductListProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const listRef = useRef<HTMLDivElement>(null);
@@ -70,6 +72,7 @@ export function RecommendedProductList({
         {products.map((product, index) => (
           <RecommendedProductCard
             index={index}
+            initialImage={initialImages && index < 2}
             key={product.productId}
             product={product}
           />

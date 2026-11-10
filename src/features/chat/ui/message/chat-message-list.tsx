@@ -23,6 +23,7 @@ const messageDateLabels = new WeakMap<ChatMessageResponse, string>();
 
 type ChatMessageListProps = {
   anchorMessageId?: number | null;
+  initialMessageId?: number;
   searchKeyword?: string;
   hasNewerMessages?: boolean;
   onLoadNewerMessages?: () => Promise<void>;
@@ -39,6 +40,7 @@ type ChatMessageListProps = {
 
 export function ChatMessageList({
   anchorMessageId,
+  initialMessageId,
   searchKeyword,
   hasNewerMessages = false,
   onLoadNewerMessages,
@@ -179,6 +181,7 @@ export function ChatMessageList({
 
   const {
     listRef,
+    isInitialPositioned,
     loadMoreRef,
     loadNewerRef,
     latestMessageId,
@@ -225,8 +228,17 @@ export function ChatMessageList({
   const virtualRows = virtualizer.getVirtualItems();
   const firstRow = virtualRows[0];
   const lastRow = virtualRows.at(-1);
-  const unrenderedEnd =
-    virtualizer.getTotalSize() - (lastRow ? lastRow.end - scrollMargin : 0);
+  const unrenderedEnd = lastRow
+    ? virtualizer.getTotalSize() - (lastRow.end - scrollMargin)
+    : 0;
+  const initialIndex =
+    !isInitialPositioned && initialMessageId != null
+      ? rows.findIndex((row) => row.key === initialMessageId)
+      : -1;
+  const visibleRows =
+    initialIndex >= 0 && virtualRows.length === 0
+      ? [{ index: initialIndex, key: rows[initialIndex].key, start: 0 }]
+      : virtualRows;
 
   return (
     <ChatProductState.Provider value={productState}>
@@ -236,6 +248,7 @@ export function ChatMessageList({
         ref={listRef}
         role="log"
         data-loaded-message-count={messages.length}
+        data-initial-positioned={isInitialPositioned}
       >
         <div
           aria-hidden="true"
@@ -261,20 +274,28 @@ export function ChatMessageList({
           <div
             ref={windowRef}
             className={styles.messageWindow}
-            style={{ paddingBlockEnd: Math.max(0, unrenderedEnd) }}
+            style={{
+              paddingBlockEnd: Math.max(0, unrenderedEnd),
+            }}
           >
             <div
+              data-chat-server-fallback={
+                initialIndex >= 0 && !firstRow ? "" : undefined
+              }
               style={{
                 marginBlockStart: firstRow ? firstRow.start - scrollMargin : 0,
               }}
             >
-              {virtualRows.map((item) => {
+              {visibleRows.map((item) => {
                 const row = rows[item.index];
                 const message = "message" in row ? row.message : undefined;
                 return (
                   <div
                     className={styles.messageRow}
                     data-index={item.index}
+                    data-chat-initial-message={
+                      item.index === initialIndex ? "" : undefined
+                    }
                     data-message-id={message?.messageId}
                     key={item.key}
                     ref={
@@ -312,6 +333,7 @@ export function ChatMessageList({
                       ) : (
                         <AIChatMessage
                           message={message}
+                          initialImages={message.messageId === initialMessageId}
                           highlightKeyword={
                             message.messageId === anchorMessageId
                               ? searchKeyword

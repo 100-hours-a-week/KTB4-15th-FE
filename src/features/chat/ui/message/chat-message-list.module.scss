@@ -9,6 +9,10 @@
   padding-top: 4px;
 }
 
+.list[data-initial-positioned="false"] {
+  visibility: hidden;
+}
+
 .messageWindow {
   display: flow-root;
 }
@@ -16,6 +20,21 @@
 .messageRow,
 .pendingReply {
   padding-bottom: 28px;
+}
+
+.list:has([data-chat-server-fallback]) {
+  --initial-chat-height: calc(
+    100dvh - var(--header-height) - var(--chat-composer-height)
+  );
+
+  min-height: calc(var(--initial-chat-height) - 2 * var(--space-xl));
+  justify-content: flex-end;
+}
+
+.messageRow[data-chat-initial-message] {
+  position: sticky;
+  bottom: calc(var(--chat-composer-height) + var(--space-xl));
+  visibility: visible;
 }
 
 .firstDate,

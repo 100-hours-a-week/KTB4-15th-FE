@@ -21,6 +21,7 @@ type UserChatMessageProps = {
 type AIChatMessageProps = {
   highlightKeyword?: string;
   message: AIMessageResponse;
+  initialImages?: boolean;
 };
 
 export function StreamingAIChatMessage({ content }: { content: string }) {
@@ -111,6 +112,7 @@ export const UserChatMessage = memo(function UserChatMessage({
 
 export const AIChatMessage = memo(function AIChatMessage({
   message,
+  initialImages,
   highlightKeyword,
 }: AIChatMessageProps) {
   return (
@@ -139,7 +141,10 @@ export const AIChatMessage = memo(function AIChatMessage({
           />
         </p>
         {message.recommendation && (
-          <RecommendedProductList products={message.recommendation.products} />
+          <RecommendedProductList
+            products={message.recommendation.products}
+            initialImages={initialImages}
+          />
         )}
       </div>
     </article>

@@ -73,6 +73,8 @@ export function makeRoom(chatRoomId: number): MockChatRoom {
 }
 
 export type Scenario = {
+  preserveRecommendationProducts?: boolean;
+  initialChatPageSize?: number;
   fittingCandidates?: FittingCandidate[];
   wishlistProducts?: RecommendedProductResponse[];
   memberStatus?:

@@ -8,6 +8,7 @@
     "start": "next start",
     "test": "node --test tests/unit/*.test.ts",
     "test:e2e": "playwright test",
+    "bench:chat": "playwright test --config tests/performance/playwright.config.ts",
     "lint": "pnpm lint:js && pnpm lint:styles",
     "lint:js": "eslint .",
     "lint:styles": "stylelint \"src/**/*.scss\"",

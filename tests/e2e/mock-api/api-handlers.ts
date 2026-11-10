@@ -165,6 +165,14 @@ export const testHandlers = [
       (searchParams.has("before") && scenario.failHistory)
     )
       return failure("메시지 조회 실패");
+    if (
+      scenario.initialChatPageSize &&
+      !["before", "after", "aroundMessageId"].some((key) =>
+        searchParams.has(key),
+      )
+    ) {
+      searchParams.set("size", String(scenario.initialChatPageSize));
+    }
     const page = chatHistoryPage(room, searchParams);
     if (!page) return failure("메시지 없음", 404, "CHAT_MESSAGE_NOT_FOUND");
     return success({
@@ -175,7 +183,11 @@ export const testHandlers = [
               ...item,
               recommendation: {
                 ...item.recommendation,
-                products: scenario.noProducts ? [] : currentProducts(),
+                products: scenario.noProducts
+                  ? []
+                  : scenario.preserveRecommendationProducts
+                    ? item.recommendation.products
+                    : currentProducts(),
               },
             }
           : item,

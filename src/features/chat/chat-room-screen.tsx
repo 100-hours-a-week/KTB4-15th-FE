@@ -7,6 +7,7 @@ import {
   useSendChatMessageMutation,
 } from "./model/chat-message-query";
 import { useChatRoomHistory } from "./hooks/use-chat-room-history";
+import type { ChatMessageContextResponse } from "./schema/chat";
 import styles from "./chat-room-screen.module.scss";
 import { ChatComposer } from "./ui/composer/chat-composer";
 import { ChatMessageList } from "./ui/message/chat-message-list";
@@ -30,17 +31,19 @@ function showSendChatMessageError(error: Error) {
 export function ChatRoomScreen({
   chatRoomId,
   anchorMessageId,
+  initialPage,
   searchKeyword,
 }: {
   chatRoomId: number;
   anchorMessageId?: number;
+  initialPage?: ChatMessageContextResponse;
   searchKeyword?: string;
 }) {
   const router = useRouter();
   const { isNavigationVisible, keyboardInset } = useNavigationVisibility();
   const submissionLockRef = useRef(false);
   const sendChatMessageMutation = useSendChatMessageMutation(anchorMessageId);
-  const history = useChatRoomHistory(chatRoomId, anchorMessageId);
+  const history = useChatRoomHistory(chatRoomId, anchorMessageId, initialPage);
   const { messages, hasNewerMessages } = history;
 
   const generatingMessageId =
@@ -164,6 +167,7 @@ export function ChatRoomScreen({
     <>
       <ChatMessageList
         anchorMessageId={history.anchorMessageId}
+        initialMessageId={initialPage?.messages.at(-1)?.messageId}
         searchKeyword={searchKeyword}
         hasNewerMessages={hasNewerMessages}
         hasPreviousMessages={history.hasPreviousMessages}

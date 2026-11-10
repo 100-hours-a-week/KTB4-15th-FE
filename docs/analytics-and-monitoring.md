@@ -22,6 +22,8 @@ NEXT_PUBLIC_CLARITY_PROJECT_ID=<Clarity project ID>
 
 Clarity의 쿠키, 동의 모드와 마스킹 설정은 실제 수집 전에 서비스의 개인정보 처리 정책에 맞게 검토합니다.
 
+채팅방 초기 로딩의 운영 검증은 배포 이후 구간의 실제 방문을 사용합니다. Clarity가 연결된 경우 [Performance 위젯의 URL Performance](https://learn.microsoft.com/en-us/clarity/insights/performance-widget)에서 채팅방 상세 페이지를 확인하고 [기기 필터](https://learn.microsoft.com/en-us/clarity/filters/clarity-filters)로 모바일과 데스크톱을 나눕니다. 방 번호별 p75만 제공되는 경우 그 값들을 평균해 상세 경로 전체의 p75로 해석하지 않습니다. 해당 경로군의 방문 단위 집계가 있어야 전체를 판정할 수 있습니다. 배포 버전, 기간, 기기, 각 지표의 표본 수와 p75를 기록합니다. 검증 기록에는 방 번호, 계정 정보, 세션 녹화 링크를 포함하지 않습니다.
+
 ## Sentry
 
 Sentry는 배포된 Next.js 애플리케이션의 브라우저, Node.js 서버와 Edge Runtime 오류를 수집하는 데 사용합니다.
@@ -30,6 +32,7 @@ Sentry는 배포된 Next.js 애플리케이션의 브라우저, Node.js 서버�
 - `NEXT_PUBLIC_SENTRY_DSN`이 설정된 프로덕션 빌드에서만 오류를 전송합니다.
 - 사용자 정보, 쿠키, HTTP 헤더·본문·URL 쿼리, 로컬 변수 등 자동 데이터 수집을 비활성화합니다.
 - 성능 추적과 Session Replay는 활성화하지 않습니다.
+- Turbopack 일반 빌드에서도 사용하지 않는 tracing 코드를 제거하도록 `next.config.ts`의 `compiler.define`에 `__SENTRY_TRACING__: false`를 지정합니다. 성능 추적 도입 시 이 정의도 재검토합니다. 로컬 Chrome Performance 기록과는 별개입니다.
 - App Router의 전역 렌더링 오류와 서버 요청 오류를 함께 수집합니다.
 - 소스맵 업로드는 운영 빌드에서만 수행하며 인증 토큰은 Docker BuildKit secret으로 전달합니다.
 

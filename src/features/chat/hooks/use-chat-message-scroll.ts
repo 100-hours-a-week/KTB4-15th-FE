@@ -42,6 +42,7 @@ export function useChatMessageScroll({
   onLoadPreviousMessages,
 }: ChatMessageScrollOptions) {
   const listRef = useRef<HTMLDivElement>(null);
+  const [isInitialPositioned, setIsInitialPositioned] = useState(false);
   const [unreadReplyId, setUnreadReplyId] = useState<number | null>(null);
   const loadMoreRef = useRef<HTMLDivElement>(null);
   const loadNewerRef = useRef<HTMLDivElement>(null);
@@ -89,7 +90,8 @@ export function useChatMessageScroll({
       scrollToMessage(anchorMessageId, "center");
       previousLatestMessageIdRef.current = latestMessageId;
       didInitialScrollRef.current = true;
-      return;
+      const frameId = requestAnimationFrame(() => setIsInitialPositioned(true));
+      return () => cancelAnimationFrame(frameId);
     }
 
     if (previousId != null && hadNewerMessages) {
@@ -100,17 +102,27 @@ export function useChatMessageScroll({
 
     const latestMessage = messages.at(-1)!;
     const initial = previousId == null;
+    let revealFrameId: number | undefined;
     const frameId = requestAnimationFrame(() => {
-      previousLatestMessageIdRef.current = latestMessageId;
       if (initial) {
         scrollToBottom();
-        followBottomRef.current = true;
-      } else if (latestMessage.senderType === "AI") {
-        setUnreadReplyId(followBottomRef.current ? null : latestMessageId);
+        revealFrameId = requestAnimationFrame(() => {
+          scrollToBottom();
+          followBottomRef.current = true;
+          previousLatestMessageIdRef.current = latestMessageId;
+          didInitialScrollRef.current = true;
+          setIsInitialPositioned(true);
+        });
+        return;
       }
-      didInitialScrollRef.current = true;
+      previousLatestMessageIdRef.current = latestMessageId;
+      if (latestMessage.senderType === "AI")
+        setUnreadReplyId(followBottomRef.current ? null : latestMessageId);
     });
-    return () => cancelAnimationFrame(frameId);
+    return () => {
+      cancelAnimationFrame(frameId);
+      if (revealFrameId != null) cancelAnimationFrame(revealFrameId);
+    };
   }, [
     anchorMessageId,
     hasNewerMessages,
@@ -174,6 +186,7 @@ export function useChatMessageScroll({
     const loadMoreElement = loadMoreRef.current;
 
     if (
+      !isInitialPositioned ||
       loadMoreElement == null ||
       !hasPreviousMessages ||
       onLoadPreviousMessages == null
@@ -206,11 +219,17 @@ export function useChatMessageScroll({
     return () => {
       observer.disconnect();
     };
-  }, [hasPreviousMessages, onLoadPreviousMessages]);
+  }, [hasPreviousMessages, isInitialPositioned, onLoadPreviousMessages]);
 
   useEffect(() => {
     const trigger = loadNewerRef.current;
-    if (!hasNewerMessages || !trigger || !onLoadNewerMessages) return;
+    if (
+      !isInitialPositioned ||
+      !hasNewerMessages ||
+      !trigger ||
+      !onLoadNewerMessages
+    )
+      return;
 
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -229,10 +248,16 @@ export function useChatMessageScroll({
     );
     observer.observe(trigger);
     return () => observer.disconnect();
-  }, [hasNewerMessages, latestMessageId, onLoadNewerMessages]);
+  }, [
+    hasNewerMessages,
+    isInitialPositioned,
+    latestMessageId,
+    onLoadNewerMessages,
+  ]);
 
   return {
     listRef,
+    isInitialPositioned,
     loadMoreRef,
     loadNewerRef,
     latestMessageId,

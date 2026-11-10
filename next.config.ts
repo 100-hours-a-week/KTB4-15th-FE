@@ -4,6 +4,10 @@ import { withSentryConfig } from "@sentry/nextjs/config";
 const nextConfig: NextConfig = {
   devIndicators: false,
   poweredByHeader: false,
+  compiler: {
+    // Turbopack에서도 사용하지 않는 Sentry 성능 추적 코드를 제거한다.
+    define: { __SENTRY_TRACING__: false },
+  },
   async headers() {
     return [
       {

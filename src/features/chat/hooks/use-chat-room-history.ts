@@ -1,6 +1,9 @@
 import { useCallback, useMemo } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import type { ChatMessageResponse } from "../schema/chat";
+import type {
+  ChatMessageContextResponse,
+  ChatMessageResponse,
+} from "../schema/chat";
 import { showToast } from "@/shared/ui/toast";
 import {
   chatRoomOlderQueryOptions,
@@ -10,10 +13,13 @@ import {
 export function useChatRoomHistory(
   chatRoomId: number,
   anchorMessageId?: number,
+  initialPage?: ChatMessageContextResponse,
 ) {
-  const chatRoomQuery = useInfiniteQuery(
-    chatRoomQueryOptions(chatRoomId, anchorMessageId),
-  );
+  const chatRoomQuery = useInfiniteQuery({
+    ...chatRoomQueryOptions(chatRoomId, anchorMessageId),
+    initialData: initialPage && { pages: [initialPage], pageParams: [null] },
+    refetchOnMount: (query) => query.state.data?.pages[0] !== initialPage,
+  });
   const anchorPage = chatRoomQuery.data?.pages[0];
   const olderCursor =
     anchorMessageId != null && anchorPage?.hasPrevious
