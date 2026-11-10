@@ -23,7 +23,6 @@ export function ServiceAccessGuard({
   const memberQuery = useQuery({
     ...memberMeQueryOptions,
     initialData: initialMember,
-    retry: false,
   });
   const isProfileSetupPage = pathname === PROFILE_SETUP_PATH;
   const isUnauthenticated =

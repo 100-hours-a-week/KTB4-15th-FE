@@ -1,0 +1,43 @@
+.footer {
+  background: #faf9f6;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px 24px;
+  padding: 36px 6% 28px;
+}
+
+.footerLogo {
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.6px;
+}
+
+.footer > p {
+  width: 100%;
+  margin: 8px 0 0;
+  padding-top: 18px;
+  border-top: 1px solid #cfd8ca;
+  color: var(--color-text-secondary);
+  font-size: 10px;
+}
+
+@media (width <= 700px) {
+  .footer {
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 32px 24px;
+  }
+}
+
+.contactLink {
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  text-underline-offset: 3px;
+
+  &:hover {
+    color: var(--color-action-primary-default);
+    text-decoration: underline;
+  }
+}

@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { forwardAuthRequest } from "../_lib/forward-auth-request";
 import { getSafeReturnTo, isSecureRequest } from "../_lib/return-to";
 
@@ -21,18 +21,25 @@ export async function POST(request: Request) {
   return forwardAuthRequest(request, "auth/refresh");
 }
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
+  const returnTo = getSafeReturnTo(request.url);
+  const loginQuery = new URLSearchParams({ returnTo });
+  if (!request.cookies.get("refreshToken")?.value) {
+    return redirectTo(`/login?${loginQuery}`);
+  }
+
   const refreshResponse = await forwardAuthRequest(request, "auth/refresh");
 
   if (!refreshResponse.ok) {
     if (refreshResponse.status !== 401) return refreshResponse;
 
-    const loginResponse = redirectTo("/login?reason=session-expired");
+    loginQuery.set("reason", "session-expired");
+    const loginResponse = redirectTo(`/login?${loginQuery}`);
     appendSetCookies(refreshResponse, loginResponse);
     return loginResponse;
   }
 
-  const response = redirectTo(getSafeReturnTo(request.url));
+  const response = redirectTo(returnTo);
   response.cookies.set(REFRESH_ATTEMPT_COOKIE, "1", {
     httpOnly: true,
     secure: isSecureRequest(request),

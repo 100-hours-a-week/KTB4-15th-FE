@@ -58,7 +58,7 @@ export function ProfilePhotoSection({
           )}
         </button>
         <input
-          accept=".jpg,.jpeg,.png,image/jpeg,image/png"
+          accept=".jpg,.jpeg,.png,.heic,.heif,image/jpeg,image/png,image/heic,image/heif,image/heic-sequence,image/heif-sequence"
           className={styles.fileInput}
           onChange={handlePhotoChange}
           ref={fileInputRef}
@@ -112,7 +112,8 @@ export function ProfilePhotoSection({
           </div>
         </div>
         <p className={styles.photoTip}>
-          * JPG·PNG / 최대 10MB / 짧은 변 480px 이상 / 전체 2,500만 픽셀 이하
+          * JPG·PNG·HEIC·HEIF / 최대 10MB / 짧은 변 480px 이상 / 전체 2,500만
+          픽셀 이하
         </p>
       </div>
       <BottomSheet

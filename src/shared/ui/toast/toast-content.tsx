@@ -1,12 +1,16 @@
 import { CloseIcon } from "@/shared/ui/icon";
+import { Button } from "@/shared/ui/button";
 import styles from "./toast.module.scss";
 
 type ToastType = "success" | "error";
+
+export type ToastAction = { label: string; onClick: () => void };
 
 type ToastContentProps = {
   message: string;
   onClose: () => void;
   type: ToastType;
+  action?: ToastAction;
 };
 
 function StatusIcon({ type }: { type: ToastType }) {
@@ -36,13 +40,33 @@ function StatusIcon({ type }: { type: ToastType }) {
   );
 }
 
-export function ToastContent({ message, onClose, type }: ToastContentProps) {
+export function ToastContent({
+  message,
+  onClose,
+  type,
+  action,
+}: ToastContentProps) {
   return (
-    <div className={`${styles.toast} ${styles[type]}`}>
+    <div
+      className={`${styles.toast} ${styles[type]} ${action ? styles.withAction : ""}`}
+    >
       <span className={styles.statusIcon}>
         <StatusIcon type={type} />
       </span>
       <p>{message}</p>
+      {action && (
+        <Button
+          className={styles.actionButton}
+          onClick={() => {
+            action.onClick();
+            onClose();
+          }}
+          size="small"
+          variant="text"
+        >
+          {action.label}
+        </Button>
+      )}
       <button
         aria-label="알림 닫기"
         className={styles.closeButton}

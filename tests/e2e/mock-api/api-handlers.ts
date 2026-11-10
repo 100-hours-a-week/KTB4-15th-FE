@@ -1,4 +1,5 @@
 import { http, HttpResponse } from "msw";
+import { chatHistoryPage } from "../../../src/mocks/chat-history.ts";
 import { handlers } from "../../../src/mocks/handlers.ts";
 import {
   createdAt,
@@ -64,11 +65,31 @@ function currentProducts() {
 }
 
 export const testHandlers = [
+  http.get("*/members/me", ({ request }) => {
+    if (!scenario.memberStatus) return;
+    if (scenario.memberStatus === "unavailable")
+      return failure("인증 서버 오류");
+    return scenario.memberStatus === "unauthenticated" ||
+      (scenario.memberStatus === "refreshable" &&
+        !request.headers.get("cookie")?.includes("accessToken=refreshed"))
+      ? failure("로그인 필요", 401, "UNAUTHORIZED")
+      : success({ profileCompleted: scenario.memberStatus !== "incomplete" });
+  }),
   http.get("*/health", () => new HttpResponse("OK")),
   http.post("*/auth/refresh", () =>
     scenario.expiredRefresh
       ? failure("세션 만료", 401, "UNAUTHORIZED")
-      : success(null),
+      : scenario.memberStatus === "refreshable"
+        ? HttpResponse.json(
+            { code: "SUCCESS", data: null, message: "성공" },
+            {
+              headers: {
+                "Set-Cookie":
+                  "accessToken=refreshed; Path=/; HttpOnly; SameSite=Lax",
+              },
+            },
+          )
+        : success(null),
   ),
   http.post("*/__test/reset", async ({ request }) => {
     finishStream?.();
@@ -94,7 +115,8 @@ export const testHandlers = [
     return success(null);
   }),
   http.get("*/chat-rooms", ({ request }) => {
-    const cursor = Number(new URL(request.url).searchParams.get("cursor"));
+    const searchParams = new URL(request.url).searchParams;
+    const cursor = Number(searchParams.get("cursor"));
     if (scenario.failRoomList || (cursor && scenario.failRoomListPage))
       return failure("목록 조회 실패");
     const sorted = [...rooms.values()]
@@ -132,22 +154,22 @@ export const testHandlers = [
     const { content } = (await request.json()) as { content: string };
     return success(addMessage(content, chatRoomId));
   }),
-  http.get("*/chat-rooms/:roomId", ({ request, params }) => {
+  http.get("*/chat-rooms/:roomId/messages", ({ request, params }) => {
     if (scenario.deniedRoom)
       return failure("접근 불가", 403, "CHAT_ROOM_ACCESS_DENIED");
     const room = rooms.get(Number(params.roomId));
     if (!room) return failure("채팅방 없음", 404, "CHAT_ROOM_NOT_FOUND");
-    const cursor = Number(new URL(request.url).searchParams.get("cursor"));
-    if (scenario.failRoomDetail || (cursor && scenario.failHistory))
+    const searchParams = new URL(request.url).searchParams;
+    if (
+      scenario.failRoomDetail ||
+      (searchParams.has("before") && scenario.failHistory)
+    )
       return failure("메시지 조회 실패");
-    const all = room.messages.filter(
-      (item) => !cursor || item.messageId < cursor,
-    );
-    const page = all.slice(-20);
+    const page = chatHistoryPage(room, searchParams);
+    if (!page) return failure("메시지 없음", 404, "CHAT_MESSAGE_NOT_FOUND");
     return success({
-      chatRoomId: room.chatRoomId,
-      title: room.title,
-      messages: page.map((item) =>
+      ...page,
+      messages: page.messages.map((item) =>
         item.senderType === "AI" && item.recommendation
           ? {
               ...item,
@@ -158,8 +180,6 @@ export const testHandlers = [
             }
           : item,
       ),
-      nextCursor: all.length > 20 ? page[0].messageId : null,
-      hasNext: all.length > 20,
     });
   }),
   http.patch("*/chat-rooms/:roomId", async ({ request, params }) => {
@@ -176,6 +196,24 @@ export const testHandlers = [
     if (!rooms.delete(Number(params.roomId)))
       return failure("채팅방 없음", 404);
     return new HttpResponse(null, { status: 204 });
+  }),
+  http.get("*/chat-rooms/:roomId/messages/:messageId/status", ({ params }) => {
+    const messages = rooms.get(Number(params.roomId))?.messages ?? [];
+    const user = messages.find(
+      (message) => message.messageId === Number(params.messageId),
+    );
+    if (!user || user.senderType !== "USER") return failure("메시지 없음", 404);
+    return success({
+      generationStatus: user.generationStatus,
+      message:
+        user.generationStatus === "COMPLETED"
+          ? (messages.find(
+              (message) =>
+                message.messageId > user.messageId &&
+                message.senderType === "AI",
+            ) ?? null)
+          : null,
+    });
   }),
   http.get("*/chat-rooms/:roomId/messages/:messageId/stream", ({ params }) => {
     const messages = rooms.get(Number(params.roomId))?.messages ?? [];
@@ -268,21 +306,30 @@ export const testHandlers = [
       return failure("찜한 상품이 없습니다.", 404);
     return new HttpResponse(null, { status: 204 });
   }),
-  http.get("*/wishlists", () => {
-    const items = products
-      .filter((item) => wishlistProductIds.has(item.productId))
-      .map((product) => ({
-        ...product,
-        wishlistId: product.productId + 1000,
-        wishedPrice: product.currentPrice,
-        priceChangeRate: 0,
-        wishedAt: createdAt,
-      }));
+  http.get("*/wishlists", ({ request }) => {
+    const params = new URL(request.url).searchParams;
+    const size = Number(params.get("size") ?? 20);
+    const cursor = Number(params.get("cursor"));
+    const items = (
+      scenario.wishlistProducts ??
+      products.filter((item) => wishlistProductIds.has(item.productId))
+    ).map((product) => ({
+      ...product,
+      wishlistId: product.productId + 1000,
+      wishedPrice: product.currentPrice,
+      priceChangeRate: 0,
+      wishedAt: createdAt,
+    }));
+    const start = cursor
+      ? items.findIndex((item) => item.wishlistId === cursor) + 1
+      : 0;
+    const page = items.slice(start, start + size);
+    const hasNext = start + page.length < items.length;
     return success({
-      items,
+      items: page,
       totalCount: items.length,
-      nextCursor: null,
-      hasNext: false,
+      nextCursor: hasNext ? page.at(-1)!.wishlistId : null,
+      hasNext,
     });
   }),
   http.post("*/fitting-candidates", async ({ request }) => {
@@ -294,18 +341,39 @@ export const testHandlers = [
     fittingProductIds.add(productId);
     return success({ fittingCandidateId: productId, productId });
   }),
-  http.get("*/fitting-candidates", () => {
-    const items = products
-      .filter((item) => fittingProductIds.has(item.productId))
+  http.delete("*/fitting-candidates", async ({ request }) => {
+    const { fittingCandidateIds } = (await request.json()) as {
+      fittingCandidateIds: number[];
+    };
+    const deletedCount = fittingCandidateIds.filter((id) =>
+      fittingProductIds.delete(id),
+    ).length;
+    return success({ deletedCount });
+  }),
+  http.get("*/fitting-candidates", ({ request }) => {
+    const params = new URL(request.url).searchParams;
+    const itemType = params.get("itemType");
+    const size = Number(params.get("size") ?? 20);
+    const cursor = Number(params.get("cursor"));
+    const items = (
+      scenario.fittingCandidates ??
+      products.filter((item) => fittingProductIds.has(item.productId))
+    )
+      .filter((item) => !itemType || item.itemType === itemType)
       .map((product) => ({
         ...product,
         fittingCandidateId: product.productId,
       }));
+    const start = cursor
+      ? items.findIndex((item) => item.fittingCandidateId === cursor) + 1
+      : 0;
+    const page = items.slice(start, start + size);
+    const hasNext = start + page.length < items.length;
     return success({
-      items,
+      items: page,
       totalCount: items.length,
-      nextCursor: null,
-      hasNext: false,
+      nextCursor: hasNext ? page.at(-1)!.fittingCandidateId : null,
+      hasNext,
     });
   }),
   http.get("*/fitting-jobs/current", () =>
@@ -324,7 +392,16 @@ export const testHandlers = [
         ),
   ),
   http.post("*/products/:productId/purchase-link-clicks", () => success(null)),
-  http.get("*/notifications/unread", () => success({ hasUnread: false })),
+  http.get("*/notifications/unread", async () => {
+    if (scenario.notificationUnreadDelayMs) {
+      await new Promise((resolve) =>
+        setTimeout(resolve, scenario.notificationUnreadDelayMs),
+      );
+    }
+    return scenario.failNotificationUnread
+      ? failure("알림 여부 조회 실패")
+      : success({ hasUnread: scenario.hasUnreadNotifications ?? false });
+  }),
   http.get(
     "*/notifications/stream",
     () =>

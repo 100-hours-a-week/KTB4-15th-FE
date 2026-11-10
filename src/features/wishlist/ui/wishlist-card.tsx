@@ -28,7 +28,6 @@ export function WishlistCard({
         product={product}
       />
       <WishlistProductLink
-        className={styles.productLink}
         productId={product.productId}
         productName={product.productName}
         purchaseUrl={product.purchaseUrl}
@@ -54,7 +53,7 @@ export function WishlistCard({
           </span>
         </span>
       </WishlistProductLink>
-      <WishlistToggle className={styles.deleteButton} product={product} />
+      <WishlistToggle product={product} />
     </article>
   );
 }

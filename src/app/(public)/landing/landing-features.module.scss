@@ -1,0 +1,310 @@
+.eyebrow {
+  margin: 0 0 22px;
+  color: var(--color-action-primary-default);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+
+.details h2 {
+  margin: 0;
+  font-size: 58px;
+  font-weight: 700;
+  line-height: 1.18;
+  letter-spacing: -3px;
+  word-break: keep-all;
+}
+
+.details {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 650px;
+
+  // ScrollTrigger의 고정 높이보다 Safari 주소창 변화에 따른 화면 높이를 우선합니다.
+  height: 100dvh !important;
+  padding: 40px 0 24px;
+  background: #f0f3ec;
+
+  &::before,
+  &::after {
+    position: absolute;
+    right: 0;
+    left: 0;
+    height: 80px;
+    content: "";
+    pointer-events: none;
+  }
+
+  &::before {
+    top: 0;
+    z-index: -1;
+    background: linear-gradient(to bottom, #faf9f6, #f0f3ec);
+  }
+
+  &::after {
+    top: 100%;
+    background: linear-gradient(to bottom, #f0f3ec, #faf9f6);
+  }
+}
+
+.details[data-pinned] {
+  z-index: 1;
+
+  &::after {
+    height: 100lvh;
+    background: inherit;
+  }
+}
+
+.detailsHeading {
+  width: 100%;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 40px;
+}
+
+.details h2 {
+  font-size: 38px;
+  letter-spacing: -2px;
+}
+
+.featureViewport {
+  width: 100%;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+}
+
+.features {
+  display: flex;
+  width: 100%;
+}
+
+.featureSlide {
+  display: flex;
+  flex: 0 0 100%;
+  gap: 60px;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  padding: 20px 40px;
+  scroll-snap-align: start;
+}
+
+.featureArt {
+  display: grid;
+  place-items: center;
+  position: relative;
+  flex: 0 1 440px;
+  height: min(44svh, 440px);
+  min-height: 240px;
+}
+
+.featureArt[data-bell] {
+  transform-origin: 50% 20%;
+}
+
+.featureArt img {
+  object-fit: contain;
+  transform: scale(0.85);
+}
+
+.featureArt[data-bell] img {
+  transform: scale(0.73);
+}
+
+.featureComposition {
+  position: relative;
+  height: 100%;
+  max-width: 100%;
+  aspect-ratio: 1;
+  transform: scale(0.85);
+}
+
+.featureComposition img {
+  transform: none;
+}
+
+.crownLayer {
+  position: absolute;
+  top: 4%;
+  left: 44%;
+  width: 25%;
+  height: 23%;
+}
+
+.featureCopy {
+  flex: 0 1 410px;
+}
+
+.featureCopy > span {
+  color: #637866;
+  font-size: 10px;
+  letter-spacing: 2px;
+}
+
+.featureCopy h3 {
+  margin: 22px 0;
+  font-size: 40px;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: -1.8px;
+  white-space: pre-line;
+  word-break: keep-all;
+}
+
+.featureCopy p {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 16px;
+  line-height: 1.8;
+  white-space: pre-line;
+}
+
+.slideProgress {
+  display: flex;
+  gap: 6px;
+  margin-top: 28px;
+}
+
+.slideProgress i {
+  width: 6px;
+  height: 6px;
+  border-radius: 10px;
+  background: #c8d3c5;
+}
+
+.slideProgress .currentStep {
+  width: 28px;
+  background: var(--color-action-primary-default);
+}
+
+.featureHint {
+  margin: 16px 0 0;
+  color: #637866;
+  font-size: 11px;
+  text-align: center;
+}
+
+.featureHint span {
+  margin-left: 16px;
+}
+
+@media (width <= 700px) {
+  .eyebrow {
+    margin-bottom: 18px;
+    font-size: 9px;
+  }
+
+  .details {
+    padding: 28px 0 20px;
+  }
+
+  .detailsHeading {
+    padding: 0 24px;
+  }
+
+  .details h2 {
+    font-size: 28px;
+    letter-spacing: -1.3px;
+  }
+
+  .featureSlide {
+    flex-direction: column;
+    gap: 8px;
+    padding: 8px 24px 12px;
+  }
+
+  .featureArt {
+    flex: none;
+    width: 100%;
+    height: clamp(200px, 30svh, 300px);
+    min-height: 0;
+  }
+
+  .featureCopy {
+    flex: none;
+    width: 100%;
+    max-width: 340px;
+    text-align: center;
+  }
+
+  .featureCopy h3 {
+    margin: 12px 0;
+    font-size: 28px;
+    letter-spacing: -1px;
+  }
+
+  .featureCopy p {
+    font-size: 14px;
+  }
+
+  .slideProgress {
+    justify-content: center;
+    margin-top: 20px;
+  }
+}
+
+@media (height < 650px) {
+  .details {
+    min-height: 0;
+    padding-block: 16px;
+  }
+
+  .details .eyebrow {
+    margin-bottom: 10px;
+  }
+
+  .details h2 {
+    font-size: 24px;
+  }
+
+  .featureArt {
+    min-height: 0;
+    height: 28svh;
+  }
+
+  .featureCopy h3 {
+    margin-block: 8px;
+    font-size: 24px;
+  }
+
+  .featureCopy p {
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .slideProgress {
+    margin-top: 12px;
+  }
+
+  .featureHint {
+    margin-top: 8px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .details {
+    height: auto !important;
+  }
+
+  .features {
+    flex-direction: column;
+  }
+
+  .featureSlide {
+    flex-basis: auto;
+    padding-block: 32px;
+  }
+
+  .featureViewport {
+    overflow: visible;
+  }
+
+  .featureHint,
+  .slideProgress {
+    display: none;
+  }
+}

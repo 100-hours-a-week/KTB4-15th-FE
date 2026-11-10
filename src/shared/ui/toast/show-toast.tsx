@@ -1,5 +1,5 @@
 import { toast } from "sonner";
-import { ToastContent } from "./toast-content";
+import { ToastContent, type ToastAction } from "./toast-content";
 import styles from "./toast.module.scss";
 
 export type ToastId = string | number;
@@ -7,6 +7,7 @@ export type ToastId = string | number;
 export type ToastOptions = {
   duration?: number;
   id?: ToastId;
+  action?: ToastAction;
 };
 
 type ToastType = "success" | "error";
@@ -20,6 +21,7 @@ function show(type: ToastType, message: string, options?: ToastOptions) {
   return toast.custom(
     (toastId) => (
       <ToastContent
+        action={options?.action}
         message={message}
         onClose={() => toast.dismiss(toastId)}
         type={type}

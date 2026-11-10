@@ -1,3 +1,4 @@
+import type { FittingCandidate } from "../../../src/features/fitting/schema/fitting-candidate";
 import type {
   ChatMessageResponse,
   RecommendedProductResponse,
@@ -12,7 +13,7 @@ export const products: RecommendedProductResponse[] = [
   {
     productId: 101,
     productName: "베이직 셔츠",
-    productImageUrl: "/images/onboarding/virtual-fitting.png",
+    productImageUrl: "/images/fixtures/virtual-fitting.png",
     currentPrice: 39000,
     color: "화이트",
     itemType: "TOP",
@@ -26,7 +27,7 @@ export const products: RecommendedProductResponse[] = [
   {
     productId: 205,
     productName: "블랙 테이퍼드 슬랙스",
-    productImageUrl: "/images/onboarding/virtual-fitting.png",
+    productImageUrl: "/images/fixtures/virtual-fitting.png",
     currentPrice: 49000,
     color: "블랙",
     itemType: "BOTTOM",
@@ -72,6 +73,17 @@ export function makeRoom(chatRoomId: number): MockChatRoom {
 }
 
 export type Scenario = {
+  fittingCandidates?: FittingCandidate[];
+  wishlistProducts?: RecommendedProductResponse[];
+  memberStatus?:
+    | "unauthenticated"
+    | "incomplete"
+    | "complete"
+    | "refreshable"
+    | "unavailable";
+  hasUnreadNotifications?: boolean;
+  notificationUnreadDelayMs?: number;
+  failNotificationUnread?: boolean;
   rooms?: MockChatRoom[];
   wishlistCount?: number;
   failWishlistCount?: boolean;

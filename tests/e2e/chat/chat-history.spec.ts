@@ -1,7 +1,7 @@
 import type { ChatMessageResponse } from "../../../src/features/chat/schema/chat";
 import { test, expect } from "../fixtures/test";
 import { configure } from "../helpers/mock-api";
-import { apiURL, createdAt, makeRoom } from "../data/chat";
+import { apiURL, createdAt, makeRoom, products } from "../data/chat";
 
 const history: ChatMessageResponse[] = Array.from(
   { length: 24 },
@@ -50,8 +50,8 @@ test("이전 대화 조회 실패는 현재 대화를 유지하고 안내한 뒤
   let requests = 0;
   page.on("request", (req) => {
     if (
-      req.url().startsWith(`${apiURL}/chat-rooms/1?`) &&
-      new URL(req.url()).searchParams.has("cursor")
+      req.url().startsWith(`${apiURL}/chat-rooms/1/messages?`) &&
+      new URL(req.url()).searchParams.has("before")
     )
       requests += 1;
   });
@@ -66,7 +66,12 @@ test("이전 대화 조회 실패는 현재 대화를 유지하고 안내한 뒤
     { exact: true },
   );
   await expect(notice).toBeVisible();
-  expect(requests).toBe(2);
+  await expect(notice).toHaveCSS("white-space", "pre-line");
+  await expect(notice).toHaveText(
+    "이전 메시지를 불러오지 못했어요.\n잠시 후 다시 시도해 주세요.",
+    { useInnerText: true },
+  );
+  expect(requests).toBe(3);
   await expect(notice).toBeInViewport({ ratio: 1 });
   const screenshotPath = test
     .info()
@@ -84,4 +89,236 @@ test("이전 대화 조회 실패는 현재 대화를 유지하고 안내한 뒤
   ).toBeInViewport();
   await page.mouse.wheel(0, -10000);
   await expect(page.getByRole("log").getByRole("article")).toHaveCount(24);
+});
+
+test.describe("검색 결과의 채팅 문맥", () => {
+  const roomHistory: ChatMessageResponse[] = Array.from(
+    { length: 65 },
+    (_, index) => ({
+      ...history[0],
+      messageId: 350 + index,
+      content:
+        index === 31 ? "반바지로 알아봐줘." : `문맥 메시지 ${350 + index}`,
+    }),
+  );
+
+  test.use({
+    scenario: { rooms: [{ ...makeRoom(25), messages: roomHistory }] },
+  });
+
+  test("검색 위치에서 시작해 과거와 최신 내역을 각각 이어 붙인다", async ({
+    page,
+  }) => {
+    await page.route(
+      (url) => url.pathname === "/chat/25" && url.searchParams.has("_rsc"),
+      async (route) => {
+        const response = await route.fetch();
+        // Let the search debounce finish while the destination is loading.
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        await route.fulfill({ response });
+      },
+    );
+    const searchRequests: string[] = [];
+    page.on("request", (request) => {
+      if (new URL(request.url()).pathname.endsWith("/chat-rooms/search")) {
+        searchRequests.push(request.url());
+      }
+    });
+    await page.goto("/chat/search?keyword=반바지");
+    await page.getByRole("link", { name: /반바지로 알아봐줘/ }).click();
+    await expect(page).toHaveURL(
+      `/chat/25?messageId=381&keyword=${encodeURIComponent("반바지")}`,
+    );
+    const log = page.getByRole("log", { name: "채팅 메시지" });
+    await expect(log.getByText("반바지로 알아봐줘.")).toBeInViewport();
+    await expect(log.getByRole("article")).toHaveCount(41);
+
+    await page.mouse.wheel(0, -10000);
+    await expect(log.getByText("문맥 메시지 350", { exact: true })).toHaveCount(
+      1,
+    );
+    await expect(log.getByText("문맥 메시지 414", { exact: true })).toHaveCount(
+      0,
+    );
+
+    await page.mouse.wheel(0, 10000);
+    await expect(log.getByText("문맥 메시지 414", { exact: true })).toHaveCount(
+      1,
+    );
+    const contents = await log.getByRole("article").allTextContents();
+    expect(contents).toHaveLength(roomHistory.length);
+    contents.forEach((text, index) =>
+      expect(text).toContain(roomHistory[index].content),
+    );
+
+    await page.route(
+      (url) =>
+        url.pathname.endsWith("/chat-rooms/25/messages") &&
+        url.searchParams.has("before"),
+      async (route) => {
+        const response = await route.fetch();
+        const body = await response.json();
+        body.data.messages = body.data.messages.map(
+          (message: ChatMessageResponse) =>
+            message.messageId === 350
+              ? { ...message, content: "갱신된 이전 메시지" }
+              : message,
+        );
+        await route.fulfill({ response, json: body });
+      },
+    );
+    const target = log.getByText("반바지로 알아봐줘.");
+    await expect(target).not.toBeInViewport();
+    await page.goBack();
+    await page.getByRole("link", { name: /반바지로 알아봐줘/ }).click();
+    await expect(page).toHaveURL(
+      `/chat/25?messageId=381&keyword=${encodeURIComponent("반바지")}`,
+    );
+    await expect(target).toBeInViewport();
+    await expect(log.locator("mark")).toHaveText(["반바지"]);
+    await expect(
+      log.getByText("갱신된 이전 메시지", { exact: true }),
+    ).toHaveCount(1);
+    expect(searchRequests).toHaveLength(1);
+  });
+});
+
+test("이전 내역 응답을 기다리며 이동한 스크롤 위치를 유지한다", async ({
+  page,
+}) => {
+  let releaseResponse: (() => void) | undefined;
+  const responseGate = new Promise<void>((resolve) => {
+    releaseResponse = resolve;
+  });
+  let requested: (() => void) | undefined;
+  const requestStarted = new Promise<void>((resolve) => {
+    requested = resolve;
+  });
+  await page.route(
+    (url) =>
+      url.pathname.endsWith("/chat-rooms/1/messages") &&
+      url.searchParams.has("before"),
+    async (route) => {
+      const response = await route.fetch();
+      requested?.();
+      await responseGate;
+      await route.fulfill({ response });
+    },
+  );
+  await page.goto("/chat/1");
+  await expect(page.getByRole("log").getByRole("article")).toHaveCount(20);
+  await expect(page.locator('[data-message-id="24"]')).toBeInViewport();
+  await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
+  await requestStarted;
+  await page.evaluate(() => window.scrollTo({ top: 500, behavior: "instant" }));
+  const anchor = page.locator('[data-message-id="10"]');
+  const before = (await anchor.boundingBox())!.y;
+  releaseResponse?.();
+  await expect(page.getByRole("log").getByRole("article")).toHaveCount(24);
+  await expect
+    .poll(async () => Math.abs((await anchor.boundingBox())!.y - before))
+    .toBeLessThan(3);
+});
+
+test.describe("가상화된 채팅 내역", () => {
+  test.use({
+    scenario: {
+      rooms: [
+        {
+          ...makeRoom(1),
+          messages: Array.from(
+            { length: 120 },
+            (_, index): ChatMessageResponse => ({
+              ...history[0],
+              senderType: "AI",
+              generationStatus: null,
+              messageId: index + 1,
+              recommendation:
+                index === 119 ? { recommendationId: 1, products } : null,
+            }),
+          ),
+        },
+      ],
+    },
+  });
+
+  test("같은 날짜의 이전 페이지를 추가해도 맨 위에서 연속 조회하지 않는다", async ({
+    page,
+  }) => {
+    const cursors: string[] = [];
+    page.on("request", (request) => {
+      const url = new URL(request.url());
+      const before = url.searchParams.get("before");
+      if (url.pathname.endsWith("/chat-rooms/1/messages") && before)
+        cursors.push(before);
+    });
+    await page.goto("/chat/1");
+    const log = page.getByRole("log", { name: "채팅 메시지" });
+    await expect(log).toHaveAttribute("data-loaded-message-count", "20");
+    await expect(log.locator('[data-message-id="120"]')).toBeInViewport();
+    await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
+    await expect(log).toHaveAttribute("data-loaded-message-count", "40");
+    await expect(log.locator('[data-message-id="101"]')).toBeInViewport();
+    await expect.poll(() => page.evaluate(() => scrollY)).toBeGreaterThan(200);
+    expect(cursors).toEqual(["101"]);
+  });
+
+  test("이전 내역 추가 후 읽던 위치와 다시 나타난 상품의 찜 상태를 유지한다", async ({
+    page,
+  }) => {
+    await page.route(
+      (url) =>
+        url.pathname.endsWith("/chat-rooms/1/messages") &&
+        !url.searchParams.has("before"),
+      async (route) => {
+        const url = new URL(route.request().url());
+        url.searchParams.set("size", "100");
+        await route.fulfill({ response: await route.fetch({ url: url.href }) });
+      },
+    );
+    let release!: () => void;
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    await page.route(
+      (url) =>
+        url.pathname.endsWith("/chat-rooms/1/messages") &&
+        url.searchParams.has("before"),
+      async (route) => {
+        await gate;
+        await route.continue();
+      },
+    );
+    await page.goto("/chat/1");
+    const log = page.getByRole("log", { name: "채팅 메시지" });
+    await expect(log).toHaveAttribute("data-loaded-message-count", "100");
+    const last = log.locator('[data-message-id="120"]');
+    await last
+      .getByRole("button", { name: `${products[0].productName} 찜 하기` })
+      .click();
+    await expect(
+      last.getByRole("button", { name: `${products[0].productName} 찜 해제` }),
+    ).toBeVisible();
+    await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
+    await expect(last).toHaveCount(0);
+    await page.evaluate(() =>
+      window.scrollTo({ top: 500, behavior: "instant" }),
+    );
+    const anchor = log.locator('[data-message-id="26"]');
+    const before = (await anchor.boundingBox())!.y;
+    release();
+    await expect(log).toHaveAttribute("data-loaded-message-count", "120");
+    await expect
+      .poll(async () => Math.abs((await anchor.boundingBox())!.y - before))
+      .toBeLessThan(3);
+    await page.evaluate(() =>
+      window.scrollTo({
+        top: document.documentElement.scrollHeight,
+        behavior: "instant",
+      }),
+    );
+    await expect(
+      last.getByRole("button", { name: `${products[0].productName} 찜 해제` }),
+    ).toBeVisible();
+  });
 });

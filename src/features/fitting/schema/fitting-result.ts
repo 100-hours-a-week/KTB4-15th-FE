@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod";
 import { productItemTypeSchema } from "@/shared/schema/product";
 
 export const FITTING_OUTFIT_NAME_MAX_LENGTH = 20;

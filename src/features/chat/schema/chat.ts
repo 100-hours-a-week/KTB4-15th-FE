@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod";
 import { productItemTypeSchema } from "@/shared/schema/product";
 
 export const CHAT_ROOM_TITLE_MAX_LENGTH = 20;
@@ -96,15 +96,37 @@ export const chatMessageResponse = z.discriminatedUnion("senderType", [
 
 export type ChatMessageResponse = z.infer<typeof chatMessageResponse>;
 
-export const chatRoomDetailResponse = z.object({
+export const chatMessageContextResponse = z.object({
   chatRoomId: z.number().int().positive(),
   title: z.string(),
   messages: z.array(chatMessageResponse),
   nextCursor: z.number().int().positive().nullable(),
   hasNext: z.boolean(),
+  anchorMessageId: z.number().int().positive().nullable(),
+  previousCursor: z.number().int().positive().nullable(),
+  hasPrevious: z.boolean(),
 });
 
-export type ChatRoomDetailResponse = z.infer<typeof chatRoomDetailResponse>;
+export const chatGenerationStatusResponse = z.discriminatedUnion(
+  "generationStatus",
+  [
+    z.object({
+      generationStatus: z.literal("COMPLETED"),
+      message: aiMessageResponse,
+    }),
+    z.object({
+      generationStatus: z.enum(["PENDING", "GENERATING", "FAILED"]),
+      message: z.null(),
+    }),
+  ],
+);
+
+export type ChatGenerationStatusResponse = z.infer<
+  typeof chatGenerationStatusResponse
+>;
+export type ChatMessageContextResponse = z.infer<
+  typeof chatMessageContextResponse
+>;
 
 export const chatStreamEvent = z.discriminatedUnion("type", [
   z.object({
@@ -151,6 +173,21 @@ export const chatRoomListResponse = z.object({
 
 export type ChatRoomItem = z.infer<typeof chatRoomItem>;
 export type ChatRoomListResponse = z.infer<typeof chatRoomListResponse>;
+
+export const chatSearchResponse = z.object({
+  nextCursor: z.number().int().positive().nullable(),
+  hasNext: z.boolean(),
+  items: z.array(
+    z.object({
+      chatRoomId: z.number().int().positive(),
+      title: z.string(),
+      messageId: z.number().int().positive(),
+      message: z.string(),
+    }),
+  ),
+});
+
+export type ChatSearchResponse = z.infer<typeof chatSearchResponse>;
 
 export const renameChatRoomRequest = z.object({
   title: z.string().trim().min(1).max(CHAT_ROOM_TITLE_MAX_LENGTH),

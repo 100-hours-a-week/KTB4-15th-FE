@@ -14,7 +14,7 @@ import {
   useDeleteWishlistMutation,
 } from "../model/wishlist-query";
 import type { WishlistItem } from "../schema/wishlist";
-import styles from "./wishlist-card.module.scss";
+import styles from "./wishlist-card-actions.module.scss";
 
 const ImageViewerDialog = dynamic(() =>
   import("@/shared/ui/dialog").then((module) => module.ImageViewerDialog),
@@ -56,7 +56,7 @@ export function WishlistImage({
           fill
           onError={() => setImageFailed(true)}
           preload={preload}
-          sizes="96px"
+          sizes="72px"
           src={product.productImageUrl}
         />
       </button>
@@ -75,13 +75,11 @@ export function WishlistImage({
 
 export function WishlistProductLink({
   children,
-  className,
   productId,
   productName,
   purchaseUrl,
 }: {
   children: ReactNode;
-  className: string;
   productId: number;
   productName: string;
   purchaseUrl: string;
@@ -89,7 +87,7 @@ export function WishlistProductLink({
   return (
     <a
       aria-label={`${productName} 구매 페이지로 이동`}
-      className={className}
+      className={styles.productLink}
       href={purchaseUrl}
       onClick={() => {
         void recordPurchaseLinkClick(productId).catch(() => undefined);
@@ -102,13 +100,7 @@ export function WishlistProductLink({
   );
 }
 
-export function WishlistToggle({
-  className,
-  product,
-}: {
-  className: string;
-  product: WishlistItem;
-}) {
+export function WishlistToggle({ product }: { product: WishlistItem }) {
   const [wishlistId, setWishlistId] = useState<number | null>(
     product.wishlistId,
   );
@@ -146,10 +138,10 @@ export function WishlistToggle({
     <IconButton
       aria-label={`${product.productName} 찜 ${isWishlisted ? "해제" : "하기"}`}
       aria-pressed={isWishlisted}
-      className={className}
+      className={styles.deleteButton}
       disabled={isPending}
       onClick={handleToggleWishlist}
-      size="medium"
+      size="small"
       variant="standard"
     >
       <HeartIcon filled={isWishlisted} />

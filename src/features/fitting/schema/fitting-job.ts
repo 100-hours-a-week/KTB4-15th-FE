@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod";
 import { productItemTypeSchema } from "@/shared/schema/product";
 import { fittingResultProductSchema } from "./fitting-result";
 

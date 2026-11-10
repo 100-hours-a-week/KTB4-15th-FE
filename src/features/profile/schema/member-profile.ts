@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod";
 import { NAME_PATTERN } from "@/shared/utils/profile-validation";
 
 export const memberProfileSchema = z.object({

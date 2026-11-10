@@ -6,22 +6,26 @@ function toDate(value: DateInput) {
   return value instanceof Date ? value : new Date(value);
 }
 
+const koreanDateFormatter = new Intl.DateTimeFormat("ko-KR", {
+  timeZone: KOREA_TIME_ZONE,
+  year: "numeric",
+  month: "long",
+  day: "numeric",
+  weekday: "long",
+});
+
+const koreanTimeFormatter = new Intl.DateTimeFormat("ko-KR", {
+  hour: "numeric",
+  minute: "2-digit",
+  timeZone: KOREA_TIME_ZONE,
+});
+
 export function formatKoreanDate(value: DateInput) {
-  return new Intl.DateTimeFormat("ko-KR", {
-    timeZone: KOREA_TIME_ZONE,
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    weekday: "long",
-  }).format(toDate(value));
+  return koreanDateFormatter.format(toDate(value));
 }
 
 export function formatKoreanTime(value: DateInput) {
-  return new Intl.DateTimeFormat("ko-KR", {
-    hour: "numeric",
-    minute: "2-digit",
-    timeZone: KOREA_TIME_ZONE,
-  }).format(toDate(value));
+  return koreanTimeFormatter.format(toDate(value));
 }
 
 export function formatKoreanNumericDateTime(value: string) {

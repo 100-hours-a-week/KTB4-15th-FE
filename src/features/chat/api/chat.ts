@@ -2,13 +2,15 @@ import { apiClient } from "@/shared/api/client";
 import { parseResponse } from "@/shared/api/response";
 import { extractSseEvents } from "@/shared/api/sse";
 import {
+  chatSearchResponse,
   chatRoomListResponse,
   chatStreamEvent,
+  chatGenerationStatusResponse,
   createChatRoomResponse,
   renameChatRoomRequest,
   renameChatRoomResponse,
   sendChatMessageResponse,
-  chatRoomDetailResponse,
+  chatMessageContextResponse,
   type CreateChatRoomRequest,
   type RenameChatRoomRequest,
   type SendChatMessageRequest,
@@ -31,6 +33,18 @@ export async function sendChatMessage(
   });
 
   return parseResponse(response, sendChatMessageResponse);
+}
+
+export async function getChatGenerationStatus(
+  chatRoomId: number,
+  messageId: number,
+  signal: AbortSignal,
+) {
+  const response = await apiClient.get(
+    `chat-rooms/${chatRoomId}/messages/${messageId}/status`,
+    { signal },
+  );
+  return parseResponse(response, chatGenerationStatusResponse);
 }
 
 export async function* connectChatStream(
@@ -93,17 +107,28 @@ export async function* connectChatStream(
 
 export async function getChatRoom(
   chatRoomId: number,
-  cursor: number | null = null,
+  query:
+    { before: number } | { after: number } | { aroundMessageId: number } | null,
 ) {
-  const searchParams = new URLSearchParams();
-  if (cursor !== null) {
-    searchParams.set("cursor", cursor.toString());
-  }
-  searchParams.set("size", "20");
-  const response = await apiClient.get(
-    `chat-rooms/${chatRoomId}?${searchParams.toString()}`,
+  const searchParams = new URLSearchParams(
+    query && "aroundMessageId" in query
+      ? {
+          aroundMessageId: String(query.aroundMessageId),
+          beforeSize: "20",
+          afterSize: "20",
+        }
+      : {
+          size: "20",
+          ...(query &&
+            ("before" in query
+              ? { before: String(query.before) }
+              : { after: String(query.after) })),
+        },
   );
-  return parseResponse(response, chatRoomDetailResponse);
+  const response = await apiClient.get(
+    `chat-rooms/${chatRoomId}/messages?${searchParams}`,
+  );
+  return parseResponse(response, chatMessageContextResponse);
 }
 
 export async function getChatRooms(cursor: number | null = null) {
@@ -114,6 +139,22 @@ export async function getChatRooms(cursor: number | null = null) {
   searchParams.set("size", "20");
   const response = await apiClient.get(`chat-rooms?${searchParams.toString()}`);
   return parseResponse(response, chatRoomListResponse);
+}
+
+export async function searchChatRooms(
+  keyword: string,
+  cursor: number | null,
+  signal?: AbortSignal,
+) {
+  const response = await apiClient.get("chat-rooms/search", {
+    searchParams: {
+      keyword,
+      ...(cursor != null && { cursor: String(cursor) }),
+    },
+    signal,
+  });
+
+  return parseResponse(response, chatSearchResponse);
 }
 
 export async function renameChatRoom(

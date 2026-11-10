@@ -14,7 +14,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 - 작업 전에 `README.md`와 `docs/README.md`에서 작업과 관련된 문서를 확인한다.
 - 확정되지 않은 기술이나 정책을 임의로 도입하지 않는다.
-- 새로운 결정을 내리면 코드, 관련 주제 문서와 `docs/project-decisions.md`를 함께 갱신한다.
+- 구현 변경은 관련 주제 문서를 갱신한다. 프로젝트 전반의 기술·아키텍처·보안·운영 정책을 결정하거나 변경할 때만 `docs/project-decisions.md`도 갱신한다. 개별 UI 수치와 성능 실험은 해당 주제·성능 문서에 기록한다.
 
 ## 프로젝트 규칙
 

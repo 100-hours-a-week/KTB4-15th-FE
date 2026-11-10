@@ -1,12 +1,26 @@
 const MAX_PHOTO_BYTES = 10 * 1024 * 1024;
-const SUPPORTED_PHOTO_EXTENSIONS = new Set(["jpg", "jpeg", "png"]);
-const SUPPORTED_PHOTO_TYPES = new Set(["image/jpeg", "image/png"]);
+const SUPPORTED_PHOTO_EXTENSIONS = new Set([
+  "jpg",
+  "jpeg",
+  "png",
+  "heic",
+  "heif",
+]);
+const SUPPORTED_PHOTO_TYPES = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/heic",
+  "image/heif",
+  "image/heic-sequence",
+  "image/heif-sequence",
+]);
 
 const PHOTO_INPUT_ERROR_MESSAGES: Record<string, string> = {
   INVALID_REQUEST: "사진 등록 요청이 올바르지 않아요. 다시 시도해 주세요.",
   IMAGE_EMPTY: "이미지 파일을 첨부해 주세요.",
   INVALID_IMAGE: "정상적인 이미지 파일을 등록해 주세요.",
-  IMAGE_FORMAT_UNSUPPORTED: "JPG, JPEG 또는 PNG 이미지만 등록해 주세요.",
+  IMAGE_FORMAT_UNSUPPORTED:
+    "JPG, JPEG, PNG, HEIC 또는 HEIF 이미지만 등록해 주세요.",
   IMAGE_DECODE_FAILED:
     "이미지 파일을 읽을 수 없어요. 다른 이미지를 선택해 주세요.",
   IMAGE_TOO_LARGE: "이미지 크기는 10MB 이하여야 합니다.",
@@ -83,4 +97,35 @@ export function getPhotoValidationMessage(code: string): string {
   if (systemMessage) return systemMessage;
 
   return "사진을 검증하지 못했어요. 다른 사진으로 다시 시도해 주세요.";
+}
+
+export async function preparePhotoForUpload(file: File): Promise<File> {
+  const inputError = getLocalPhotoErrorMessage(file);
+  if (inputError) throw new Error(inputError);
+
+  if (
+    !/\.(heic|heif)$/i.test(file.name) &&
+    !/^image\/hei[cf]/i.test(file.type)
+  ) {
+    return file;
+  }
+
+  let jpeg: Blob;
+  try {
+    // HEIC를 선택한 경우에만 브라우저 전용 디코더를 로드한다.
+    const { heicTo } = await import("heic-to/csp");
+    jpeg = await heicTo({ blob: file, type: "image/jpeg", quality: 0.9 });
+  } catch {
+    throw new Error(
+      "사진을 JPG로 변환하지 못했어요. 다른 사진을 선택해 주세요.",
+    );
+  }
+
+  const converted = new File([jpeg], file.name.replace(/\.[^.]+$/, ".jpg"), {
+    type: "image/jpeg",
+    lastModified: file.lastModified,
+  });
+  const outputError = getLocalPhotoErrorMessage(converted);
+  if (outputError) throw new Error(outputError);
+  return converted;
 }
