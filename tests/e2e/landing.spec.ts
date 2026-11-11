@@ -152,7 +152,11 @@ test("landing login shows feedback while navigation is pending", async ({
 for (const [memberStatus, expiredRefresh, destination] of [
   ["complete", false, /\/chat$/],
   ["refreshable", false, /\/chat$/],
-  ["unauthenticated", true, /\/login\?returnTo=%2Fchat$/],
+  [
+    "unauthenticated",
+    true,
+    /\/login\?returnTo=%2Fchat&reason=session-expired$/,
+  ],
 ] as const) {
   test(`landing login handles a ${memberStatus} session`, async ({
     page,
@@ -189,6 +193,42 @@ for (const [memberStatus, expiredRefresh, destination] of [
     }
   });
 }
+
+test("opens chat on the first click after access token expiry", async ({
+  page,
+  request,
+  context,
+}) => {
+  await request.post("http://127.0.0.1:3101/__test/reset", {
+    data: { memberStatus: "refreshable" },
+  });
+  await context.addCookies([
+    { name: "accessToken", value: "refreshed", domain: "127.0.0.1", path: "/" },
+    {
+      name: "refreshToken",
+      value: "session",
+      domain: "127.0.0.1",
+      path: "/bff/auth",
+    },
+  ]);
+  await page.goto("/mypage");
+  const chatLink = page.getByRole("link", { name: "채팅", exact: true });
+  await expect(chatLink).toBeVisible();
+  await context.clearCookies({ name: "accessToken" });
+  const refresh = page.waitForResponse(
+    (response) =>
+      new URL(response.url()).pathname === "/bff/auth/refresh" &&
+      response.status() === 303 &&
+      response.request().isNavigationRequest(),
+  );
+  await chatLink.click();
+  await refresh;
+
+  await expect(page).toHaveURL(/\/chat$/);
+  await expect(
+    page.getByRole("textbox", { name: "메시지, 최대 500자" }),
+  ).toBeVisible();
+});
 
 test("reduced motion shows the result without pinning", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });

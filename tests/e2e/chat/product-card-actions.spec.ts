@@ -23,15 +23,23 @@ test("추천 상품 버튼은 카드가 좁으면 문구를 줄이고 아주 좁
       { useInnerText: true },
     );
     const product = card.getByRole("link", { name: "상품 보기" });
-    const productBox = (await product.boundingBox())!;
-    const fittingBox = (await fitting.boundingBox())!;
-    if (stacked) {
-      expect(fittingBox.y).toBeGreaterThanOrEqual(
-        productBox.y + productBox.height,
-      );
-    } else {
-      expect(Math.abs(fittingBox.y - productBox.y)).toBeLessThan(1);
-    }
+    await expect
+      .poll(
+        async () => {
+          const [productBox, fittingBox] = await Promise.all([
+            product.boundingBox(),
+            fitting.boundingBox(),
+          ]);
+          if (!productBox || !fittingBox) return false;
+          return stacked
+            ? fittingBox.y >= productBox.y + productBox.height
+            : Math.abs(fittingBox.y - productBox.y) < 1;
+        },
+        {
+          message: `뷰포트 ${width}px에서 버튼이 예상한 방향으로 배치되어야 함`,
+        },
+      )
+      .toBe(true);
     for (const control of [product, fitting]) {
       expect(
         await control.evaluate(
