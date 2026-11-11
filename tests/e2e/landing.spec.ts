@@ -667,3 +667,32 @@ for (const direction of [1, -1]) {
       .toBeCloseTo(target, 0);
   });
 }
+
+test("기능 소개에서 방향키로 슬라이드를 바꾸고 Tab으로 빠져나간다", async ({
+  page,
+}) => {
+  await page.goto("/");
+  const section = page.locator("[data-details]");
+  await expect(section.locator("xpath=..")).toHaveClass(/pin-spacer/);
+  await section.evaluate((element) => {
+    window.scrollTo(
+      0,
+      element.getBoundingClientRect().top + window.scrollY + 200,
+    );
+  });
+  const viewport = page.getByRole("group", { name: "기능 소개 슬라이드" });
+  await viewport.press("ArrowRight");
+  const slide = viewport.locator("article").nth(1);
+  await expect
+    .poll(() =>
+      slide.evaluate((element) =>
+        Math.abs(
+          element.getBoundingClientRect().left -
+            element.closest("[data-viewport]")!.getBoundingClientRect().left,
+        ),
+      ),
+    )
+    .toBeLessThan(2);
+  await page.keyboard.press("Tab");
+  await expect(page.locator("summary").first()).toBeFocused();
+});

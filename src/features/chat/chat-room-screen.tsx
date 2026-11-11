@@ -125,10 +125,10 @@ export function ChatRoomScreen({
 
   if (initialError != null) {
     return (
-      <main className={styles.errorState} role="alert">
+      <div className={styles.errorState}>
         <div className={styles.errorContent}>
           <h1>채팅방을 확인하지 못했어요</h1>
-          <p>
+          <p role="alert">
             {isChatRoomMissingOrForbidden
               ? "존재하지 않거나 접근할 수 없는 채팅방이에요."
               : isAnchorMissing
@@ -156,7 +156,7 @@ export function ChatRoomScreen({
                 : "다시 시도"}
           </Button>
         </div>
-      </main>
+      </div>
     );
   }
 

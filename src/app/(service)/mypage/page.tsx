@@ -8,6 +8,10 @@ import {
 import { Header, HeaderTitle, NotificationLink } from "@/shared/ui/header";
 import styles from "../page-layout.module.scss";
 
+export const metadata = {
+  title: "마이페이지 | LOOK DDAK",
+};
+
 export default function MyPage() {
   return (
     <>

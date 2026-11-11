@@ -17,10 +17,19 @@ test("추천 상품 페이지 버튼으로 상품을 전환하고 현재 위치�
     exact: true,
   });
   await expect(first).toHaveAttribute("aria-pressed", "true");
+  const firstCard = page
+    .getByRole("region", { name: "AI 추천 상품" })
+    .getByRole("article")
+    .first();
+  const firstLeft = (await firstCard.boundingBox())!.x;
   await second.click();
   await expect(second).toHaveAttribute("aria-pressed", "true");
   await expect(first).toHaveAttribute("aria-pressed", "false");
-  await expect(productCard(page)).toBeInViewport();
+  await expect
+    .poll(async () =>
+      Math.abs((await productCard(page).boundingBox())!.x - firstLeft),
+    )
+    .toBeLessThan(1);
   await first.click();
   await expect(first).toHaveAttribute("aria-pressed", "true");
 });

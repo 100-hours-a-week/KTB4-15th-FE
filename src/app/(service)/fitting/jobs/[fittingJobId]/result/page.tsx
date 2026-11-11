@@ -3,6 +3,15 @@ import { FittingTempResultScreen } from "@/features/fitting";
 import { Header, HeaderIconLink, HeaderTitle } from "@/shared/ui/header";
 import { BackIcon } from "@/shared/ui/icon";
 
+export async function generateMetadata({
+  params,
+}: PageProps<"/fitting/jobs/[fittingJobId]/result">) {
+  const id = Number((await params).fittingJobId);
+  const title =
+    Number.isInteger(id) && id > 0 ? "가상 피팅 결과" : "페이지를 찾을 수 없음";
+  return { title: `${title} | LOOK DDAK` };
+}
+
 export default async function FittingTempResultPage({
   params,
   searchParams,

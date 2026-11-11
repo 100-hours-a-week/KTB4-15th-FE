@@ -46,8 +46,8 @@
 
   // Text
   --color-text-primary: var(--color-gray-900);
-  --color-text-secondary: var(--color-gray-500);
-  --color-text-placeholder: var(--color-gray-400);
+  --color-text-secondary: #626d7b;
+  --color-text-placeholder: #626d7b;
   --color-text-disabled: var(--color-gray-400);
   --color-text-inverse: var(--color-white);
   --color-text-brand: var(--color-green-700);
@@ -57,8 +57,8 @@
   --color-border-default: var(--color-gray-200);
   --color-border-strong: var(--color-gray-300);
   --color-border-brand: var(--color-green-700);
-  --color-focus-ring: var(--color-green-300);
-  --color-focus-ring-danger: var(--color-red-300);
+  --color-focus-ring: var(--color-green-600);
+  --color-focus-ring-danger: var(--color-red-600);
 
   // Primary action
   --color-action-primary-default: var(--color-green-700);

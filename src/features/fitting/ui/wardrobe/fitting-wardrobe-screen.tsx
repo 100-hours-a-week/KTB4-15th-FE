@@ -84,7 +84,7 @@ export function FittingWardrobeScreen({
           </button>
         }
       />
-      <div className={`${styles.screen} ${isEditing ? styles.editing : ""}`}>
+      <main className={`${styles.screen} ${isEditing ? styles.editing : ""}`}>
         <div className={styles.intro}>
           <h2>
             {isEditing ? "정리할 옷을 골라주세요" : "입어볼 옷을 선택해 주세요"}
@@ -96,16 +96,15 @@ export function FittingWardrobeScreen({
           </p>
         </div>
 
-        <div aria-label="상품 종류" className={styles.filters} role="tablist">
+        <div aria-label="상품 종류" className={styles.filters} role="group">
           {FILTERS.map((item) => (
             <button
-              aria-selected={filter === item.value}
+              aria-pressed={filter === item.value}
               className={
                 filter === item.value ? styles.activeFilter : undefined
               }
               key={item.value}
               onClick={() => changeFilter(item.value)}
-              role="tab"
               type="button"
             >
               {item.label}
@@ -228,7 +227,7 @@ export function FittingWardrobeScreen({
             <p className={styles.deleteError}>상품을 삭제하지 못했어요.</p>
           )}
         </div>
-      </div>
+      </main>
     </>
   );
 }
