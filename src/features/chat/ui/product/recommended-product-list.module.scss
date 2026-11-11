@@ -13,6 +13,11 @@
   scroll-snap-type: x mandatory;
   scrollbar-width: none;
 
+  &:has(> :nth-child(2))::after {
+    flex: 0 0 calc(28px - var(--space-md));
+    content: "";
+  }
+
   &::-webkit-scrollbar {
     display: none;
   }

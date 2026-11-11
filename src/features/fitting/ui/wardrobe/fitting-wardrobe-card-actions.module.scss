@@ -4,13 +4,10 @@
   text-align: left;
 }
 
-.button.emptyCandidate {
-  grid-template-columns: 56px minmax(0, 1fr) 22px;
-}
-
-.emptyCandidate .emptyCandidateImage {
-  width: 56px;
-  height: 56px;
+.button .emptyCandidateImage {
+  width: 68px;
+  height: 68px;
+  justify-self: center;
   border-radius: var(--radius-medium);
   background: #65768a;
   color: var(--color-white);
