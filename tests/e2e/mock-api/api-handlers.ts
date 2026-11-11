@@ -282,11 +282,17 @@ export const testHandlers = [
       headers: { "Content-Type": "text/event-stream" },
     });
   }),
-  http.get("*/wishlists/count", () =>
-    scenario.failWishlistCount
+  http.get("*/wishlists/count", ({ request }) => {
+    if (
+      scenario.memberStatus === "refreshable" &&
+      !request.headers.get("cookie")?.includes("accessToken=refreshed")
+    ) {
+      return failure("로그인 필요", 401, "UNAUTHORIZED");
+    }
+    return scenario.failWishlistCount
       ? failure("찜 개수 조회 실패")
-      : success({ count: scenario.wishlistCount ?? wishlistProductIds.size }),
-  ),
+      : success({ count: scenario.wishlistCount ?? wishlistProductIds.size });
+  }),
   http.post("*/wishlists", async ({ request }) => {
     if (scenario.wishlistLimit)
       return failure("찜 한도 초과", 400, "WISHLIST_LIMIT_EXCEEDED");
