@@ -102,7 +102,7 @@ HEIC/HEIF는 선택 시에만 `heic-to/csp`를 지연 로드해 브라우저에�
 
 - `src/features/member`: 회원 상태 API와 Schema
 - `src/features/profile`: Profile 등록·조회와 화면 UI
-- `src/features/profile`: Profile 등록과 전신 사진 선택·검증·촬영 가이드
+- `src/features/profile/ui`: 등록 폼, 전신 사진 섹션과 등록 완료 화면의 UI 및 컴포넌트별 SCSS 모듈
 - `src/shared/utils/profile-validation.ts`: Profile 입력 검증
 - `src/app/(service)/profile/setup`: 등록 Route
 - `src/app/(service)/mypage`: 조회 Route
