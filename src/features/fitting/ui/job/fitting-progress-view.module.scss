@@ -199,6 +199,18 @@
   }
 }
 
+@media (width <= 480px) {
+  .floatingVisual {
+    width: 120px;
+    height: 120px;
+  }
+
+  .floatingImage {
+    width: 112px;
+    height: 112px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .floatingImage,
   .floatingVisual::after {

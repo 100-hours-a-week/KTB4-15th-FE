@@ -104,11 +104,13 @@ export function EmptyCandidateCard({
   return (
     <button
       aria-pressed={isSelected}
-      className={`${styles.productCard} ${actionStyles.button} ${isSelected ? actionStyles.selected : ""}`}
+      className={`${styles.productCard} ${actionStyles.button} ${actionStyles.emptyCandidate} ${isSelected ? actionStyles.selected : ""}`}
       onClick={() => clearProduct(itemType)}
       type="button"
     >
-      <span className={`${styles.imageArea} ${styles.emptyImageArea}`}>
+      <span
+        className={`${styles.imageArea} ${styles.emptyImageArea} ${actionStyles.emptyCandidateImage}`}
+      >
         <ProductIcon />
       </span>
       <span className={styles.productDetails}>
