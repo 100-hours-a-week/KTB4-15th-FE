@@ -38,7 +38,8 @@ export function LandingFeatures() {
         </p>
       </div>
       <div
-        aria-label="룩딱 기능 소개, 스크롤하여 다음 소개 보기"
+        aria-label="기능 소개 슬라이드"
+        role="group"
         className={styles.featureViewport}
         data-viewport
         tabIndex={0}

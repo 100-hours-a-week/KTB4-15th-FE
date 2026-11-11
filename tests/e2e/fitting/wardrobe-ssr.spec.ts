@@ -55,7 +55,7 @@ test("옷장 초기 HTML에 상품과 우선 이미지를 포함하고 중복 �
     page.getByRole("button", { name: "0개 삭제하기" }),
   ).toBeDisabled();
   await page.getByRole("button", { name: "완료", exact: true }).click();
-  await page.getByRole("tab", { name: "하의", exact: true }).click();
+  await page.getByRole("button", { name: "하의", exact: true }).press("Enter");
   await expect(
     page.getByRole("button", { name: new RegExp(products[1].productName) }),
   ).toBeVisible();
@@ -63,13 +63,15 @@ test("옷장 초기 HTML에 상품과 우선 이미지를 포함하고 중복 �
   await expect(page).toHaveURL(/\/fitting\/wardrobe\?itemType=BOTTOM$/);
   await page.reload();
   await expect(
-    page.getByRole("tab", { name: "하의", exact: true }),
-  ).toHaveAttribute("aria-selected", "true");
+    page.getByRole("button", { name: "하의", exact: true }),
+  ).toHaveAttribute("aria-pressed", "true");
 });
 
 test("서버의 빈 옷장 응답은 빈 상태로 표시한다", async ({ page }) => {
   await page.goto("/fitting/wardrobe?itemType=TOP");
-  await expect(page.getByText("담아둔 상품이 아직 없어요.")).toBeVisible();
+  await expect(
+    page.getByRole("main").getByText("담아둔 상품이 아직 없어요."),
+  ).toBeVisible();
   await expect(
     page.getByRole("status", { name: "옷장을 불러오고 있어요" }),
   ).toHaveCount(0);
@@ -138,7 +140,7 @@ test("추가 페이지 카드도 선택·편집을 지원한다", async ({ page,
     route.fulfill({ status: 404, body: "unavailable" }),
   );
   await page.goto("/fitting/wardrobe?itemType=TOP");
-  await page.getByRole("tab", { name: "하의", exact: true }).click();
+  await page.getByRole("button", { name: "하의", exact: true }).click();
   await page.locator('[class*="loadMore"]').scrollIntoViewIfNeeded();
   const card = page.getByRole("button", { name: /추가 하의/ });
   await expect(card).toBeVisible();
@@ -209,10 +211,10 @@ test("API·초기 HTML을 10개로 맞추고 다음 페이지와 전체 선택�
     listRequests.map((url) => new URL(url).searchParams.get("cursor")),
   ).toEqual(["1009", "1019"]);
   await page.getByRole("button", { name: "완료", exact: true }).click();
-  await page.getByRole("tab", { name: "하의", exact: true }).click();
+  await page.getByRole("button", { name: "하의", exact: true }).click();
   await expect(cards).toHaveCount(0);
   await expect(page).toHaveURL(/itemType=BOTTOM/);
-  await page.getByRole("tab", { name: "상의", exact: true }).click();
+  await page.getByRole("button", { name: "상의", exact: true }).click();
   await expect(page).toHaveURL(/itemType=TOP/);
   await expect(cards).toHaveCount(25);
 });
