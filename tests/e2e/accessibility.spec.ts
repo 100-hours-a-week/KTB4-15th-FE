@@ -182,6 +182,7 @@ test("추천 상품 페이지는 작은 점을 유지하며 클릭 영역과 대
   expect(contrast(colors[0], colors[1])).toBeGreaterThanOrEqual(3);
   await second.click();
   await expect(second).toHaveAttribute("aria-pressed", "true");
+  await expect(dot).toHaveCSS("width", "16px");
 });
 
 test("랜딩 영어 구절은 부분 언어를 제공한다", async ({ page }) => {
