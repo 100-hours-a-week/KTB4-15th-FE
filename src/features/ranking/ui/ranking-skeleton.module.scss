@@ -1,0 +1,34 @@
+@use "@/styles/skeleton";
+
+.skeleton {
+  @include skeleton.delayed-reveal;
+}
+
+.image,
+.line,
+.short {
+  @include skeleton.shimmer;
+
+  display: block;
+  opacity: 0.75;
+  border-radius: var(--radius-small);
+}
+
+.image {
+  height: 72px;
+}
+
+.details {
+  display: grid;
+  gap: var(--space-xs);
+}
+
+.line {
+  width: 80%;
+  height: 14px;
+}
+
+.short {
+  width: min(100%, 48px);
+  height: 14px;
+}

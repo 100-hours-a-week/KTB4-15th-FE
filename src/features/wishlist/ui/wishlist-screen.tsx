@@ -5,10 +5,10 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { useScrollPagination } from "@/shared/hooks/use-scroll-pagination";
 import { PaginationStatus } from "@/shared/ui/pagination-status";
 import { Button } from "@/shared/ui/button";
-import { LoadingMessage } from "@/shared/ui/loading-message";
 import { wishlistListQueryOptions } from "../model/wishlist-query";
 import type { WishlistList } from "../schema/wishlist";
 import { WishlistCard } from "./wishlist-card";
+import { WishlistSkeleton } from "./wishlist-skeleton";
 import styles from "./wishlist-screen.module.scss";
 
 export function WishlistScreen({
@@ -57,11 +57,7 @@ export function WishlistScreen({
 
   return (
     <>
-      {isPending && (
-        <LoadingMessage className={styles.state}>
-          찜 목록을 불러오고 있어요
-        </LoadingMessage>
-      )}
+      {isPending && <WishlistSkeleton />}
       {isInitialError && (
         <div className={styles.state} role="alert">
           <p>찜 목록을 불러오지 못했어요.</p>

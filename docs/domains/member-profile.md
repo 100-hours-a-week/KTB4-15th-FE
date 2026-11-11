@@ -102,7 +102,7 @@ HEIC/HEIF는 선택 시에만 `heic-to/csp`를 지연 로드해 브라우저에�
 
 - `src/features/member`: 회원 상태 API와 Schema
 - `src/features/profile`: Profile 등록·조회와 화면 UI
-- `src/features/profile`: Profile 등록과 전신 사진 선택·검증·촬영 가이드
+- `src/features/profile/ui`: 등록 폼, 전신 사진 섹션과 등록 완료 화면의 UI 및 컴포넌트별 SCSS 모듈
 - `src/shared/utils/profile-validation.ts`: Profile 입력 검증
 - `src/app/(service)/profile/setup`: 등록 Route
 - `src/app/(service)/mypage`: 조회 Route
@@ -115,4 +115,4 @@ HEIC/HEIF는 선택 시에만 `heic-to/csp`를 지연 로드해 브라우저에�
 
 ## 회원 탈퇴 안내
 
-마이페이지 계정 카드 아래 오른쪽의 작은 회원 탈퇴 버튼으로 공통 Dialog를 엽니다. `master@lookddak.com` 문의와 가입 이메일 기재를 안내하며, 메일 링크는 메일 앱을 엽니다. 화면에서 탈퇴 API를 호출하거나 계정을 삭제하지 않습니다.
+프로필 기능의 [회원 탈퇴 버튼](../../src/features/profile/ui/account-deletion.tsx)은 마이페이지 계정 카드 아래 오른쪽에 배치하며, 누르면 공통 Dialog를 엽니다. `master@lookddak.com` 문의와 가입 이메일 기재를 안내하며, 메일 링크는 메일 앱을 엽니다. 화면에서 탈퇴 API를 호출하거나 계정을 삭제하지 않습니다.

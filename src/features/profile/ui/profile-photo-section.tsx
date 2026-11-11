@@ -5,7 +5,7 @@ import { Button } from "@/shared/ui/button";
 import { InfoIcon } from "@/shared/ui/icon";
 import { useFullBodyPhoto } from "../hooks/use-full-body-photo";
 import { FullBodyImageGuide } from "./full-body-image-guide";
-import styles from "./profile-setup-form.module.scss";
+import styles from "./profile-photo-section.module.scss";
 
 type ProfilePhotoSectionProps = {
   onPendingChange: (isPending: boolean) => void;
