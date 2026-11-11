@@ -118,11 +118,9 @@ export function FittingProgressView({
           </div>
         </section>
 
-        {products.length > 0 && (
-          <div className={styles.productsArea}>
-            <FittingProductCombination compact products={products} />
-          </div>
-        )}
+        <div className={styles.productsArea}>
+          <FittingProductCombination compact products={products} />
+        </div>
 
         <aside className={styles.tipCard}>
           <span aria-hidden="true" className={styles.tipIcon}>

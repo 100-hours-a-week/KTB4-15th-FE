@@ -213,6 +213,7 @@ export function RecommendedProductCard({
           </a>
           {isFittingCandidate ? (
             <Button
+              aria-label="피팅룸에서 입어보기"
               className={styles.fittingLink}
               fullWidth
               isLoading={isEnteringFitting}
@@ -220,7 +221,13 @@ export function RecommendedProductCard({
               size="small"
               variant="primary"
             >
-              피팅룸에서 입어보기 <span aria-hidden="true">→</span>
+              <span aria-hidden="true" className={styles.fittingLabelFull}>
+                피팅룸에서 입어보기
+              </span>
+              <span aria-hidden="true" className={styles.fittingLabelShort}>
+                입어보기
+              </span>{" "}
+              <span aria-hidden="true">→</span>
             </Button>
           ) : (
             <Button

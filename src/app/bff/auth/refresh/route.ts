@@ -7,7 +7,7 @@ const REFRESH_ATTEMPT_COOKIE = "lookddakRefreshAttempted";
 function redirectTo(path: string) {
   return new NextResponse(null, {
     status: 303,
-    headers: { Location: path },
+    headers: { Location: path, "Cache-Control": "no-store" },
   });
 }
 
@@ -22,6 +22,13 @@ export async function POST(request: Request) {
 }
 
 export async function GET(request: NextRequest) {
+  // 갱신 후 화면을 처음부터 로드하도록 문서 요청에서만 토큰을 갱신한다.
+  if (request.headers.get("rsc") === "1") {
+    return new Response("Continue with document navigation", {
+      headers: { "Cache-Control": "no-store" },
+    });
+  }
+
   const returnTo = getSafeReturnTo(request.url);
   const loginQuery = new URLSearchParams({ returnTo });
   if (!request.cookies.get("refreshToken")?.value) {

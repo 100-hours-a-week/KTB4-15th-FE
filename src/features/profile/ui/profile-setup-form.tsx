@@ -117,7 +117,7 @@ export function ProfileSetupForm() {
 
   return (
     <form className={styles.form} noValidate onSubmit={handleFormSubmit}>
-      <section className={styles.section}>
+      <section>
         <div className={styles.sectionHeading}>
           <h3>기본 정보</h3>
         </div>

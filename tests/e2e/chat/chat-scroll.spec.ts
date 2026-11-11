@@ -39,20 +39,19 @@ for (const [position, title] of [
     const button = page.getByRole("button", { name: "새 답변 보기" });
     const sentContent =
       position === "bottom" ? "THRESHOLD".repeat(55) : "새 옷 추천";
-    const gapAboveReply = async (content: string) => {
-      const sentBottom = await page
+    const gapAboveReply = (content: string) =>
+      page
         .getByText(sentContent, { exact: true })
-        .evaluate(
-          (element) =>
-            element.closest("article")!.getBoundingClientRect().bottom,
-        );
-      const replyTop = await page
-        .getByText(content, { exact: true })
-        .evaluate(
-          (element) => element.closest("article")!.getBoundingClientRect().top,
-        );
-      return replyTop - sentBottom;
-    };
+        .or(page.getByText(content, { exact: true }))
+        .evaluateAll(([sent, response]) => {
+          const sentBottom = sent
+            .closest("article")!
+            .getBoundingClientRect().bottom;
+          const replyTop = response
+            .closest("article")!
+            .getBoundingClientRect().top;
+          return replyTop - sentBottom;
+        });
     await input(page).fill(sentContent);
     const before = await page.evaluate(() => scrollY);
     if (position === "bottom") {
