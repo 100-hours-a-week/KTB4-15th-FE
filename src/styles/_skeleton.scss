@@ -32,3 +32,14 @@
     }
   }
 }
+
+@mixin delayed-reveal {
+  opacity: 0;
+  animation: skeleton-reveal 0s 200ms forwards;
+
+  @keyframes skeleton-reveal {
+    to {
+      opacity: 1;
+    }
+  }
+}
