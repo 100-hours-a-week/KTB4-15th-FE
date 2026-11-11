@@ -35,7 +35,11 @@ export function WishlistImage({
   if (imageFailed) {
     return (
       <span className={styles.imageArea}>
-        <span aria-label="상품 이미지 없음" className={styles.imageFallback}>
+        <span
+          aria-label="상품 이미지 없음"
+          className={styles.imageFallback}
+          role="img"
+        >
           {fallback}
         </span>
       </span>

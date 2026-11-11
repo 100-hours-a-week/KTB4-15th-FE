@@ -54,12 +54,9 @@ function OutfitItem({
 }) {
   return (
     <div className={styles.outfitGroup}>
-      <span className={styles.category}>
-        <span className={styles.dot} />
-        {category}
-      </span>
+      <span className={styles.category}>{category}</span>
       <Link
-        aria-label={`피팅할 ${label} 선택하기`}
+        aria-label={`${product?.productName ?? "선택 안 함"}, 피팅할 ${label} 선택하기`}
         className={styles.productRow}
         href={`/fitting/wardrobe?itemType=${itemType}`}
       >

@@ -67,6 +67,7 @@ export function CandidateImage({
   return (
     <span
       aria-label={imageFailed ? "상품 이미지 없음" : undefined}
+      role={imageFailed ? "img" : undefined}
       className={`${styles.imageArea} ${imageFailed ? styles.emptyImageArea : ""}`}
     >
       {imageFailed ? (
@@ -107,7 +108,9 @@ export function EmptyCandidateCard({
       onClick={() => clearProduct(itemType)}
       type="button"
     >
-      <span className={`${styles.imageArea} ${styles.emptyImageArea}`}>
+      <span
+        className={`${styles.imageArea} ${styles.emptyImageArea} ${actionStyles.emptyCandidateImage}`}
+      >
         <ProductIcon />
       </span>
       <span className={styles.productDetails}>

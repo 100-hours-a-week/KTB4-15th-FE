@@ -1,5 +1,9 @@
 import { FittingJobScreen } from "@/features/fitting";
 
+export const metadata = {
+  title: "가상 피팅 진행 | LOOK DDAK",
+};
+
 export default async function FittingJobPage({
   params,
 }: PageProps<"/fitting/jobs/[fittingJobId]">) {
