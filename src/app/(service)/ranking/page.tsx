@@ -9,6 +9,10 @@ import {
 import { Header, HeaderTitle, NotificationLink } from "@/shared/ui/header";
 import styles from "../page-layout.module.scss";
 
+export const metadata = {
+  title: "상품 랭킹 | LOOK DDAK",
+};
+
 export default async function RankingPage() {
   const initialRanking = await getProductRankingsServer("WISH").catch(
     (error: unknown) => {

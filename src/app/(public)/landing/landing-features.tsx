@@ -33,7 +33,9 @@ export function LandingFeatures() {
       data-details
     >
       <div className={styles.detailsHeading}>
-        <p className={styles.eyebrow}>MORE WAYS TO FIND YOUR STYLE.</p>
+        <p className={styles.eyebrow} lang="en">
+          MORE WAYS TO FIND YOUR STYLE.
+        </p>
       </div>
       <div
         aria-label="룩딱 기능 소개, 스크롤하여 다음 소개 보기"
@@ -75,7 +77,7 @@ export function LandingFeatures() {
                 )}
               </div>
               <div className={styles.featureCopy}>
-                <span>{slide.label}</span>
+                <span lang="en">{slide.label}</span>
                 <h3>{slide.title}</h3>
                 <p>{slide.description}</p>
                 <div aria-hidden="true" className={styles.slideProgress}>

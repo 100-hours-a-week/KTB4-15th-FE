@@ -9,6 +9,10 @@ import {
 } from "@/shared/api/server";
 import type { ProductItemType } from "@/shared/schema/product";
 
+export const metadata = {
+  title: "피팅 옷장 | LOOK DDAK",
+};
+
 async function Screen({
   initialFilter,
 }: {

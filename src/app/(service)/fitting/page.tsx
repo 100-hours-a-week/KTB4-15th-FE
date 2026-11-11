@@ -8,6 +8,10 @@ import { redirectOnServerUnauthorized } from "@/shared/api/server";
 import { Header, HeaderTitle, NotificationLink } from "@/shared/ui/header";
 import styles from "./page.module.scss";
 
+export const metadata = {
+  title: "가상 피팅 | LOOK DDAK",
+};
+
 export default async function FittingPage() {
   const fittingJob = await getCurrentFittingJobServer().catch(
     redirectOnServerUnauthorized,

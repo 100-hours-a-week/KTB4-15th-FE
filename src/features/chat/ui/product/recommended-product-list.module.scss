@@ -27,8 +27,8 @@
 
 .pageButton {
   display: grid;
-  width: 18px;
-  height: 18px;
+  width: 24px;
+  height: 24px;
   cursor: pointer;
   place-items: center;
   border: 0;
@@ -40,7 +40,7 @@
   width: 8px;
   height: 8px;
   border-radius: var(--radius-full);
-  background: var(--color-gray-200);
+  background: var(--color-text-secondary);
 }
 
 .pageButton[aria-pressed="true"] .pageDot {

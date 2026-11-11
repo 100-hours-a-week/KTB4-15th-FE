@@ -8,6 +8,10 @@ import {
 import { Header, HeaderTitle, NotificationLink } from "@/shared/ui/header";
 import styles from "../page-layout.module.scss";
 
+export const metadata = {
+  title: "찜 목록 | LOOK DDAK",
+};
+
 export default async function WishlistsPage() {
   const initialPage = await getWishlistsServer().catch((error: unknown) => {
     if (isServerUnauthorizedError(error)) {

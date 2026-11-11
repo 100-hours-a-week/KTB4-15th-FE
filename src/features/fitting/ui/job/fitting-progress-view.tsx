@@ -107,6 +107,7 @@ export function FittingProgressView({
             <strong>{progress}%</strong>
           </div>
           <div
+            aria-label="피팅 이미지 생성 진행률"
             aria-valuemax={100}
             aria-valuemin={0}
             aria-valuenow={progress}
