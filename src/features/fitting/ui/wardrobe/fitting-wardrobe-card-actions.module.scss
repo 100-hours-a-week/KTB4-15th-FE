@@ -4,6 +4,20 @@
   text-align: left;
 }
 
+.button .emptyCandidateImage {
+  width: 68px;
+  height: 68px;
+  justify-self: center;
+  border-radius: var(--radius-medium);
+  background: #65768a;
+  color: var(--color-white);
+
+  svg {
+    width: 22px;
+    height: 22px;
+  }
+}
+
 .selected {
   border-color: var(--color-border-brand);
   background: var(--color-background-selected);

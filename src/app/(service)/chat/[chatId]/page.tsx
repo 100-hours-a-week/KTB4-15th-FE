@@ -2,6 +2,15 @@ import { notFound } from "next/navigation";
 import { ChatHeader, ChatRoomScreen } from "@/features/chat";
 import styles from "../page.module.scss";
 
+export async function generateMetadata({
+  params,
+}: PageProps<"/chat/[chatId]">) {
+  const id = Number((await params).chatId);
+  const title =
+    Number.isInteger(id) && id > 0 ? "채팅 대화" : "페이지를 찾을 수 없음";
+  return { title: `${title} | LOOK DDAK` };
+}
+
 export default async function ChatRoomPage({
   params,
   searchParams,

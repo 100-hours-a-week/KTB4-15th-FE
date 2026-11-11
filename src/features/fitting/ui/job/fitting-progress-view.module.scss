@@ -31,7 +31,7 @@
     background: rgb(17 75 54 / 12%);
     content: "";
     filter: blur(8px);
-    animation: floating-shadow 3.2s ease-in-out infinite;
+    animation: floating-shadow 3.2s ease-in-out;
   }
 }
 
@@ -41,7 +41,7 @@
   width: 140px;
   height: 140px;
   object-fit: contain;
-  animation: floating-object 3.2s ease-in-out infinite;
+  animation: floating-object 3.2s ease-in-out;
 }
 
 .progressCopy {
@@ -196,6 +196,18 @@
   50% {
     opacity: 0.35;
     transform: scaleX(0.82);
+  }
+}
+
+@media (width <= 480px) {
+  .floatingVisual {
+    width: 120px;
+    height: 120px;
+  }
+
+  .floatingImage {
+    width: 112px;
+    height: 112px;
   }
 }
 

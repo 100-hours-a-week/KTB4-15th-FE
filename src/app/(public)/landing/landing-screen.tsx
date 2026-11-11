@@ -354,8 +354,24 @@ export function LandingScreen() {
             window.scrollTo(0, trigger.start + wheelLimit);
           }
         };
+        const scrollWithArrowKey = (event: KeyboardEvent) => {
+          if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey)
+            return;
+          if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+
+          const trigger = featuresTimeline.scrollTrigger!;
+          const position = window.scrollY - trigger.start;
+          const slide = position < 650 ? 0 : position < 1550 ? 1 : 2;
+          const nextSlide = slide + (event.key === "ArrowRight" ? 1 : -1);
+          if (nextSlide < 0 || nextSlide > 2) return;
+
+          event.preventDefault();
+          window.scrollTo(0, trigger.start + [200, 1100, 2000][nextSlide]);
+        };
+        viewport.addEventListener("keydown", scrollWithArrowKey);
         window.addEventListener("wheel", limitWheel, { passive: false });
         return () => {
+          viewport.removeEventListener("keydown", scrollWithArrowKey);
           window.removeEventListener("wheel", limitWheel);
           clearTimeout(wheelTimer);
           section.removeAttribute("data-pinned");
