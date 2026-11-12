@@ -13,7 +13,7 @@
   height: clamp(300px, 40dvh, 360px);
   margin-inline: auto;
   border-radius: var(--radius-large);
-  background: #f1f3f4;
+  background: var(--color-background-fitting-image);
 
   @media (width <= 480px) {
     height: clamp(220px, 32dvh, 280px);
