@@ -84,6 +84,7 @@ export function FittingResultView({
 
       <ImageViewerDialog
         alt="선택한 상품을 착용한 가상 피팅 결과 크게 보기"
+        imageBackground="var(--color-background-fitting-image)"
         onOpenChange={setIsImageOpen}
         open={isImageOpen}
         src={result.resultImageUrl}
