@@ -7,6 +7,7 @@ import styles from "./image-viewer-dialog.module.scss";
 
 type ImageViewerDialogProps = {
   alt: string;
+  imageBackground?: string;
   onError?: () => void;
   onOpenChange: (open: boolean) => void;
   open: boolean;
@@ -15,6 +16,7 @@ type ImageViewerDialogProps = {
 
 export function ImageViewerDialog({
   alt,
+  imageBackground,
   onError,
   onOpenChange,
   open,
@@ -37,7 +39,10 @@ export function ImageViewerDialog({
           <CloseIcon />
         </IconButton>
       </DialogClose>
-      <div className={styles.imageArea}>
+      <div
+        className={styles.imageArea}
+        style={{ backgroundColor: imageBackground }}
+      >
         {/* 원본 비율로 다이얼로그 크기를 잡아 닫기 버튼을 이미지 모서리에 붙인다. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img alt={alt} className={styles.image} onError={onError} src={src} />

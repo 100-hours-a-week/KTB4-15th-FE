@@ -42,6 +42,10 @@ test.describe("대화 조회 실패", () => {
     ).toBeVisible();
     await expect(input(page)).toHaveCount(0);
     await configure(request, { failRoomDetail: false });
+    await expect(page.getByRole("main")).toHaveCount(1);
+    await expect(page.getByRole("main").getByRole("alert")).toHaveText(
+      "잠시 후 다시 시도해 주세요.",
+    );
     await page.getByRole("button", { name: "다시 시도", exact: true }).click();
     await expect(page.getByText("답변 1", { exact: true })).toBeVisible();
     await expect(input(page)).toBeEnabled();

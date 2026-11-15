@@ -2,6 +2,10 @@ import { FittingResultListScreen } from "@/features/fitting";
 import { Header, HeaderIconLink, HeaderTitle } from "@/shared/ui/header";
 import { BackIcon } from "@/shared/ui/icon";
 
+export const metadata = {
+  title: "저장한 가상 피팅 | LOOK DDAK",
+};
+
 export default function FittingResultsPage() {
   return (
     <>

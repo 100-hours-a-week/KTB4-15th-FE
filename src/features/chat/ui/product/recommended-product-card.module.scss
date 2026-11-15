@@ -1,6 +1,7 @@
 @use "@/styles/typography" as type;
 
 .card {
+  container: recommended-product-card / inline-size;
   overflow: hidden;
   width: calc(100% - 28px);
   flex: 0 0 calc(100% - 28px);
@@ -152,4 +153,24 @@
   @include type.label;
 
   padding-inline: var(--space-sm);
+}
+
+.fittingLabelShort {
+  display: none;
+}
+
+@container recommended-product-card (max-width: 320px) {
+  .fittingLabelFull {
+    display: none;
+  }
+
+  .fittingLabelShort {
+    display: inline;
+  }
+}
+
+@container recommended-product-card (max-width: 260px) {
+  .actions {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }

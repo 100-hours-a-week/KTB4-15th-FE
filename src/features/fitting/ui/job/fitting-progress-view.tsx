@@ -107,6 +107,7 @@ export function FittingProgressView({
             <strong>{progress}%</strong>
           </div>
           <div
+            aria-label="피팅 이미지 생성 진행률"
             aria-valuemax={100}
             aria-valuemin={0}
             aria-valuenow={progress}
@@ -118,11 +119,9 @@ export function FittingProgressView({
           </div>
         </section>
 
-        {products.length > 0 && (
-          <div className={styles.productsArea}>
-            <FittingProductCombination compact products={products} />
-          </div>
-        )}
+        <div className={styles.productsArea}>
+          <FittingProductCombination compact products={products} />
+        </div>
 
         <aside className={styles.tipCard}>
           <span aria-hidden="true" className={styles.tipIcon}>

@@ -2,6 +2,10 @@ import { IntroHero } from "@/shared/ui/intro-hero/intro-hero";
 import { SignupForm } from "@/features/auth";
 import styles from "./page.module.scss";
 
+export const metadata = {
+  title: "회원가입 | LOOK DDAK",
+};
+
 export default function SignupPage() {
   return (
     <main className={styles.main}>

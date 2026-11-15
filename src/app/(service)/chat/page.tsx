@@ -9,6 +9,10 @@ import {
 import { formatKoreanDate } from "@/shared/utils/date-format";
 import styles from "./page.module.scss";
 
+export const metadata = {
+  title: "새 채팅 | LOOK DDAK",
+};
+
 async function optionalServerData<T>(request: Promise<T>) {
   try {
     return await request;

@@ -10,7 +10,9 @@ export function LandingHero() {
       data-scene
     >
       <div className={styles.copy}>
-        <p className={styles.eyebrow}>YOUR NEXT LOOK, LOOK DDAK</p>
+        <p className={styles.eyebrow} lang="en">
+          YOUR NEXT LOOK, LOOK DDAK
+        </p>
         <div className={styles.titles}>
           <h1 data-intro id="landing-title">
             말하면 찾아주고,

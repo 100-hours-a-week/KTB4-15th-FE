@@ -1,13 +1,16 @@
 import { Suspense } from "react";
 import { FittingResultSection } from "@/features/fitting";
-import { AccountSection } from "@/features/profile";
+import { AccountDeletion, AccountSection } from "@/features/profile";
 import {
   MemberProfileSection,
   MemberProfileSkeleton,
 } from "@/features/profile/ui/member-profile-section";
 import { Header, HeaderTitle, NotificationLink } from "@/shared/ui/header";
 import styles from "../page-layout.module.scss";
-import { AccountDeletion } from "./account-deletion";
+
+export const metadata = {
+  title: "마이페이지 | LOOK DDAK",
+};
 
 export default function MyPage() {
   return (

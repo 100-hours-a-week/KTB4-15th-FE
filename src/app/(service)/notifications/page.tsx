@@ -2,6 +2,10 @@ import { NotificationScreen } from "@/features/notification";
 import { BackButton, Header, HeaderTitle } from "@/shared/ui/header";
 import styles from "../page-layout.module.scss";
 
+export const metadata = {
+  title: "알림 | LOOK DDAK",
+};
+
 export default function NotificationsPage() {
   return (
     <>

@@ -2,6 +2,8 @@
 
 알림 화면은 `GET /notifications`로 가상 피팅 성공·실패 알림 전체를 조회합니다.
 
+알림 카드 스타일은 `notification-card.module.scss`에, 목록 배치와 로딩·오류·빈 상태 스타일은 `notification-screen.module.scss`에 둡니다.
+
 - 성공 알림은 코디명과 결과 확인 동선을 제공합니다.
 - 성공 알림을 선택하면 `/fitting/jobs/{fittingJobId}/result`로 이동합니다.
 - 실패 알림은 고정 실패 문구만 표시합니다.

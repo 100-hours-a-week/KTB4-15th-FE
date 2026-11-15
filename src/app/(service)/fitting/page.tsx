@@ -10,6 +10,10 @@ import {
 import { Header, HeaderTitle, NotificationLink } from "@/shared/ui/header";
 import styles from "./page.module.scss";
 
+export const metadata = {
+  title: "가상 피팅 | LOOK DDAK",
+};
+
 export default async function FittingPage() {
   // Handle profile rejection immediately, even when redirecting before it finishes.
   const profileResultsPromise = Promise.allSettled([getMemberProfileServer()]);

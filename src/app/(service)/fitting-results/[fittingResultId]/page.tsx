@@ -3,6 +3,17 @@ import { FittingResultDetailScreen } from "@/features/fitting";
 import { Header, HeaderIconLink, HeaderTitle } from "@/shared/ui/header";
 import { BackIcon } from "@/shared/ui/icon";
 
+export async function generateMetadata({
+  params,
+}: PageProps<"/fitting-results/[fittingResultId]">) {
+  const id = Number((await params).fittingResultId);
+  const title =
+    Number.isInteger(id) && id > 0
+      ? "저장한 가상 피팅 상세"
+      : "페이지를 찾을 수 없음";
+  return { title: `${title} | LOOK DDAK` };
+}
+
 export default async function FittingResultDetailPage({
   params,
 }: PageProps<"/fitting-results/[fittingResultId]">) {

@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/shared/ui/button";
-import { LoadingMessage } from "@/shared/ui/loading-message";
 import { productRankingQueryOptions } from "../model/ranking-query";
 import {
   RANKING_RENDER_BATCH_SIZE,
@@ -11,6 +10,7 @@ import {
   type RankingType,
 } from "../schema/ranking";
 import { RankingRow } from "./ranking-row";
+import { RankingSkeleton } from "./ranking-skeleton";
 import styles from "./ranking-screen.module.scss";
 
 const RANKING_TABS: { label: string; type: RankingType }[] = [
@@ -94,11 +94,7 @@ export function RankingScreen({
         })}
       </div>
       <div className={styles.screen}>
-        {isPending && (
-          <LoadingMessage className={styles.state}>
-            랭킹 정보를 불러오고 있어요
-          </LoadingMessage>
-        )}
+        {isPending && <RankingSkeleton />}
         {isError && (
           <div className={styles.state} role="alert">
             <p>랭킹 정보를 불러올 수 없어요.</p>

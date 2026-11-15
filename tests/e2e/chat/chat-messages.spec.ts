@@ -1,5 +1,5 @@
 import { test, expect } from "../fixtures/test";
-import { apiURL, message, partialReply, reply } from "../data/chat";
+import { apiURL, makeRoom, message, partialReply, reply } from "../data/chat";
 import { input, productCard, finishReply, recommend } from "../helpers/chat";
 import { writes } from "../helpers/mock-api";
 
@@ -49,6 +49,55 @@ test("기존 채팅방에서 후속 메시지를 보내 새 답변을 받는다"
       body: { content: followUp },
     },
   ]);
+});
+
+test("기존 페이지가 있어도 전송 성공 후 내역을 재조회하지 않고 입력을 비운다", async ({
+  page,
+  request,
+}) => {
+  const room = makeRoom(1);
+  const reset = await request.post(`${apiURL}/__test/reset`, {
+    data: {
+      rooms: [
+        {
+          ...room,
+          messages: Array.from({ length: 40 }, (_, index) => ({
+            ...room.messages[0],
+            messageId: index + 1,
+            content: `이전 메시지 ${index + 1}`,
+          })),
+        },
+      ],
+    },
+  });
+  expect(reset.ok()).toBeTruthy();
+  const reads: string[] = [];
+  page.on("request", (request) => {
+    const url = new URL(request.url());
+    if (
+      request.method() === "GET" &&
+      url.pathname.endsWith("/chat-rooms/1/messages")
+    )
+      reads.push(url.search);
+  });
+  await page.goto("/chat/1");
+  const log = page.getByRole("log", { name: "채팅 메시지" });
+  await expect(log.locator('[data-message-id="40"]')).toBeInViewport();
+  await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
+  await expect(log).toHaveAttribute("data-loaded-message-count", "40");
+  expect(reads).toHaveLength(2);
+  await input(page).fill(message);
+  await input(page).press("Enter");
+  await expect(log.getByText(message, { exact: true })).toBeVisible();
+  await expect(input(page)).toHaveValue("");
+  await expect(log.getByText(partialReply, { exact: true })).toBeVisible();
+  expect(
+    (await request.post(`${apiURL}/__test/finish-stream`)).ok(),
+  ).toBeTruthy();
+  await expect(log.getByText(reply, { exact: true })).toBeVisible();
+  await expect(input(page)).toBeEnabled();
+  await expect(log).toHaveAttribute("data-loaded-message-count", "42");
+  expect(reads).toHaveLength(2);
 });
 
 test("공백 메시지는 전송하지 않고 전송 중 연속 클릭은 채팅방을 중복 생성하지 않는다", async ({

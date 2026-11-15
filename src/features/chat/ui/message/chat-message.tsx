@@ -1,3 +1,4 @@
+import { memo } from "react";
 import Image from "next/image";
 import type { AIMessageResponse, UserMessageResponse } from "../../schema/chat";
 import aiImage from "@/shared/assets/ai-avatar.webp";
@@ -77,7 +78,7 @@ export function ChatMessageRetry({
   );
 }
 
-export function UserChatMessage({
+export const UserChatMessage = memo(function UserChatMessage({
   canRetry = false,
   highlightKeyword,
   isRetryPending = false,
@@ -106,9 +107,9 @@ export function UserChatMessage({
       )}
     </article>
   );
-}
+});
 
-export function AIChatMessage({
+export const AIChatMessage = memo(function AIChatMessage({
   message,
   highlightKeyword,
 }: AIChatMessageProps) {
@@ -143,4 +144,4 @@ export function AIChatMessage({
       </div>
     </article>
   );
-}
+});
