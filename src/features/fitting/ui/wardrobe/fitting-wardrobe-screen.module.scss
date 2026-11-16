@@ -88,7 +88,17 @@
   > span:last-child {
     color: var(--color-text-secondary);
     font-weight: var(--font-weight-regular);
+    white-space: nowrap;
   }
+}
+
+.selectAllStatus {
+  position: absolute;
+  overflow: hidden;
+  width: 1px;
+  height: 1px;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 .selectAllMark {

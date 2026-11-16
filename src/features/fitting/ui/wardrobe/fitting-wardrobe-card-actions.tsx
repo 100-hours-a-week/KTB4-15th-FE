@@ -11,7 +11,8 @@ import styles from "./fitting-wardrobe-card.module.scss";
 
 export const WardrobeSelectionContext = createContext<{
   isEditing: boolean;
-  selectedForDelete: Set<number>;
+  isSelectingAll: boolean;
+  selectedForDelete: Pick<ReadonlySet<number>, "has">;
   onToggleDelete: (candidateId: number) => void;
 } | null>(null);
 
@@ -24,7 +25,8 @@ export function CandidateSelectButton({
 }) {
   const selection = useContext(WardrobeSelectionContext);
   if (!selection) throw new Error("WardrobeSelectionContext is required");
-  const { isEditing, selectedForDelete, onToggleDelete } = selection;
+  const { isEditing, isSelectingAll, selectedForDelete, onToggleDelete } =
+    selection;
   const selectedProductId = useFittingSelectionStore((state) =>
     product.itemType === "TOP" ? state.top?.productId : state.bottom?.productId,
   );
@@ -38,6 +40,7 @@ export function CandidateSelectButton({
   return (
     <button
       aria-pressed={isSelected}
+      disabled={isSelectingAll}
       className={`${styles.productCard} ${actionStyles.button} ${isSelected ? (isEditing ? actionStyles.selectedForDelete : actionStyles.selected) : ""}`}
       onClick={() =>
         isEditing

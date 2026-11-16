@@ -1,5 +1,6 @@
 import { test, expect } from "../fixtures/test";
 import { productCard, recommend } from "../helpers/chat";
+import { apiURL, createdAt, makeRoom, products } from "../data/chat";
 
 test("추천 상품 버튼은 카드가 좁으면 문구를 줄이고 아주 좁으면 세로로 배치한다", async ({
   page,
@@ -48,4 +49,68 @@ test("추천 상품 버튼은 카드가 좁으면 문구를 줄이고 아주 좁
       ).toBe(true);
     }
   }
+});
+
+test.describe("긴 추천 상품 문구", () => {
+  const product = {
+    ...products[0],
+    productName: "아주 긴 상품 이름 ".repeat(12).trim(),
+    recommendedReason: "추천한 이유를 화면에서 끝까지 읽을 수 있어요. "
+      .repeat(8)
+      .trim(),
+    color: "아주긴색상이름".repeat(8),
+  };
+  const recommendation = { recommendationId: 1, products: [product] };
+
+  test.use({
+    scenario: {
+      rooms: [
+        {
+          ...makeRoom(1),
+          messages: [
+            {
+              messageId: 101,
+              content: "추천 상품을 확인해 주세요.",
+              createdAt,
+              senderType: "AI",
+              generationStatus: null,
+              recommendation,
+            },
+          ],
+        },
+      ],
+    },
+  });
+
+  test("320px 너비에서 긴 추천 상품 정보가 잘리지 않는다", async ({ page }) => {
+    await page.route(
+      (url) => url.href.startsWith(`${apiURL}/chat-rooms/1/messages`),
+      async (route) => {
+        const response = await route.fetch();
+        const body = await response.json();
+        body.data.messages[0].recommendation = recommendation;
+        await route.fulfill({ response, json: body });
+      },
+    );
+    await page.setViewportSize({ width: 320, height: 844 });
+    await page.goto("/chat/1");
+    const card = page.getByRole("article", {
+      name: `추천 상품 1: ${product.productName}`,
+    });
+    for (const text of [
+      product.productName,
+      product.recommendedReason,
+      product.color,
+    ]) {
+      const content = card.getByText(text, { exact: true });
+      await expect(content).toBeVisible();
+      expect(
+        await content.evaluate(
+          (element) =>
+            element.scrollHeight <= element.clientHeight &&
+            element.scrollWidth <= element.clientWidth,
+        ),
+      ).toBe(true);
+    }
+  });
 });

@@ -103,7 +103,7 @@ export function FittingProgressView({
           className={styles.progressStatus}
         >
           <div className={styles.progressMeta}>
-            <span>{progressMessage}</span>
+            <span role="status">{progressMessage}</span>
             <strong>{progress}%</strong>
           </div>
           <div
