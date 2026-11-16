@@ -21,13 +21,12 @@ export async function warmUpFullBodyImage() {
   }
 }
 
-export async function validateFullBodyImage(image: File, signal: AbortSignal) {
+export async function validateFullBodyImage(image: File) {
   const formData = new FormData();
   formData.append("image", image);
 
   const response = await apiClient.post("full-body-image/validate", {
     body: formData,
-    signal,
     timeout: FULL_BODY_IMAGE_VALIDATION_TIMEOUT_MS,
     throwHttpErrors: false,
   });
