@@ -11,12 +11,14 @@ type GetFittingCandidatesParams = {
   cursor?: number;
   itemType?: ProductItemType;
   size: number;
+  signal?: AbortSignal;
 };
 
 export async function getFittingCandidates({
   cursor,
   itemType,
   size,
+  signal,
 }: GetFittingCandidatesParams) {
   const searchParams = new URLSearchParams();
 
@@ -28,6 +30,7 @@ export async function getFittingCandidates({
 
   const response = await apiClient.get("fitting-candidates", {
     searchParams,
+    signal,
   });
 
   return parseResponse(response, fittingCandidateListResponse);

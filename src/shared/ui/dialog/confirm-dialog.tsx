@@ -1,13 +1,16 @@
 "use client";
 
+import type { ComponentProps, ReactNode } from "react";
 import { Button } from "@/shared/ui/button";
 import { Dialog, DialogClose, DialogDescription, DialogTitle } from "./dialog";
 import styles from "./confirm-dialog.module.scss";
 
 type ConfirmDialogProps = {
+  children?: ReactNode;
   confirmLabel: string;
-  description: string;
+  description: ReactNode;
   isLoading?: boolean;
+  onCloseAutoFocus?: ComponentProps<typeof Dialog>["onCloseAutoFocus"];
   onConfirm: () => void;
   onExit?: () => void;
   onOpenChange: (open: boolean) => void;
@@ -16,9 +19,11 @@ type ConfirmDialogProps = {
 };
 
 export function ConfirmDialog({
+  children,
   confirmLabel,
   description,
   isLoading = false,
+  onCloseAutoFocus,
   onConfirm,
   onExit,
   onOpenChange,
@@ -28,6 +33,7 @@ export function ConfirmDialog({
   return (
     <Dialog
       className={styles.dialog}
+      onCloseAutoFocus={onCloseAutoFocus}
       onExit={onExit}
       onOpenChange={onOpenChange}
       open={open}
@@ -36,6 +42,7 @@ export function ConfirmDialog({
       <DialogDescription className={styles.description}>
         {description}
       </DialogDescription>
+      {children}
       <div className={styles.actions}>
         <DialogClose asChild>
           <Button fullWidth size="medium" variant="secondary">

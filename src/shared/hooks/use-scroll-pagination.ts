@@ -21,7 +21,11 @@ export function useScrollPagination({
     let requested = false;
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (!entry.isIntersecting || requested) return;
+        if (!entry.isIntersecting) {
+          requested = false;
+          return;
+        }
+        if (requested) return;
         requested = true;
         void fetchNextPage();
       },

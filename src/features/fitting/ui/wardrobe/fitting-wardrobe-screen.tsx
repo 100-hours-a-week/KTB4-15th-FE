@@ -1,8 +1,9 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import { PaginationStatus } from "@/shared/ui/pagination-status";
 import { Button } from "@/shared/ui/button";
+import { ConfirmDialog } from "@/shared/ui/dialog";
 import { Header, HeaderIconLink, HeaderTitle } from "@/shared/ui/header";
 import { BackIcon, CheckIcon, DeleteIcon, InfoIcon } from "@/shared/ui/icon";
 import {
@@ -35,6 +36,9 @@ export function FittingWardrobeScreen({
   initialCandidates,
   initialCards,
 }: FittingWardrobeScreenProps) {
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const editButtonRef = useRef<HTMLButtonElement>(null);
+  const deleteButtonRef = useRef<HTMLButtonElement>(null);
   const {
     filter,
     changeFilter,
@@ -47,14 +51,27 @@ export function FittingWardrobeScreen({
     totalCount,
     selectedCount,
     selectedForDelete,
-    isAllVisibleSelected,
+    selectedInFilterCount,
+    isAllSelected,
+    isSelectingAll,
+    selectAllFailed,
     toggleDeleteCandidate,
-    toggleAllVisible,
+    toggleAll,
     deleteSelectedCandidates,
     deleteMutation,
     loadMoreRef,
     completeSelection,
   } = useFittingWardrobe(initialFilter, initialCandidates);
+
+  const deleteSummary = FILTERS.filter((item) => item.value !== "ALL")
+    .map((item) => {
+      const count = [...selectedForDelete.values()].filter(
+        (product) => product.itemType === item.value,
+      ).length;
+      return count > 0 ? `${item.label} ${count}개` : undefined;
+    })
+    .filter(Boolean)
+    .join(" · ");
 
   const showServerCards =
     initialCards != null &&
@@ -77,7 +94,9 @@ export function FittingWardrobeScreen({
         right={
           <button
             className={styles.editButton}
+            disabled={isSelectingAll}
             onClick={toggleEditing}
+            ref={editButtonRef}
             type="button"
           >
             {isEditing ? "완료" : "편집"}
@@ -100,6 +119,7 @@ export function FittingWardrobeScreen({
           {FILTERS.map((item) => (
             <button
               aria-pressed={filter === item.value}
+              disabled={isSelectingAll}
               className={
                 filter === item.value ? styles.activeFilter : undefined
               }
@@ -113,25 +133,39 @@ export function FittingWardrobeScreen({
         </div>
 
         {isEditing && (
-          <button
-            aria-pressed={isAllVisibleSelected}
-            className={styles.selectAllButton}
-            onClick={toggleAllVisible}
-            type="button"
-          >
-            <span className={styles.selectAllMark}>
-              {isAllVisibleSelected && <CheckIcon />}
+          <>
+            <button
+              aria-describedby="wardrobe-selected-count"
+              aria-disabled={isSelectingAll || totalCount === 0}
+              aria-label="전체 선택"
+              aria-pressed={isAllSelected}
+              className={styles.selectAllButton}
+              onClick={() => void toggleAll()}
+              type="button"
+            >
+              <span aria-hidden="true" className={styles.selectAllMark}>
+                {isAllSelected && <CheckIcon />}
+              </span>
+              <strong>전체 선택</strong>
+              <span id="wardrobe-selected-count">
+                선택 {selectedInFilterCount}개
+              </span>
+            </button>
+            <span className={styles.selectAllStatus} role="status">
+              {isSelectingAll && "선택할 상품을 불러오고 있어요."}
             </span>
-            <strong>
-              전체 선택 ({selectedForDelete.size}/{totalCount})
-            </strong>
-            <span>선택 {selectedForDelete.size}개</span>
-          </button>
+            {selectAllFailed && (
+              <p className={styles.deleteError} role="alert">
+                전체 상품을 불러오지 못했어요. 다시 시도해 주세요.
+              </p>
+            )}
+          </>
         )}
 
         <WardrobeSelectionContext
           value={{
             isEditing,
+            isSelectingAll,
             selectedForDelete,
             onToggleDelete: toggleDeleteCandidate,
           }}
@@ -205,11 +239,14 @@ export function FittingWardrobeScreen({
             className={isEditing ? styles.deleteButton : styles.completeButton}
             disabled={
               isEditing &&
-              (selectedForDelete.size === 0 || deleteMutation.isPending)
+              (isSelectingAll ||
+                selectedForDelete.size === 0 ||
+                deleteMutation.isPending)
             }
             onClick={() =>
-              isEditing ? deleteSelectedCandidates() : completeSelection()
+              isEditing ? setIsDeleteOpen(true) : completeSelection()
             }
+            ref={deleteButtonRef}
             type="button"
           >
             {isEditing ? (
@@ -223,11 +260,40 @@ export function FittingWardrobeScreen({
               `선택 완료 (${selectedCount}/2)`
             )}
           </button>
-          {deleteMutation.isError && (
-            <p className={styles.deleteError}>상품을 삭제하지 못했어요.</p>
-          )}
         </div>
       </main>
+      <ConfirmDialog
+        confirmLabel="삭제하기"
+        description={
+          <>
+            {deleteSummary}
+            <br />
+            삭제한 상품은 옷장에서 사라집니다.
+          </>
+        }
+        isLoading={deleteMutation.isPending}
+        onCloseAutoFocus={(event) => {
+          event.preventDefault();
+          (selectedForDelete.size > 0
+            ? deleteButtonRef
+            : editButtonRef
+          ).current?.focus();
+        }}
+        onConfirm={() => deleteSelectedCandidates(() => setIsDeleteOpen(false))}
+        onOpenChange={(open) => {
+          if (deleteMutation.isPending) return;
+          setIsDeleteOpen(open);
+          if (!open) deleteMutation.reset();
+        }}
+        open={isDeleteOpen}
+        title={`선택한 상품 ${selectedForDelete.size}개를 삭제할까요?`}
+      >
+        {deleteMutation.isError && (
+          <p className={styles.deleteError} role="alert">
+            상품을 삭제하지 못했어요.
+          </p>
+        )}
+      </ConfirmDialog>
     </>
   );
 }
