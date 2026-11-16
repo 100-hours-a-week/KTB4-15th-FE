@@ -19,6 +19,7 @@ export function useFullBodyPhoto({
 }: UseFullBodyPhotoOptions) {
   const [isPreparing, setIsPreparing] = useState(false);
   const preparingRef = useRef(false);
+  const validationControllerRef = useRef<AbortController>(null);
   const [photoUrl, setPhotoUrl] = useState<string>();
   const [errorMessage, setErrorMessage] = useState<string>();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -26,19 +27,23 @@ export function useFullBodyPhoto({
   const warmupRequestedRef = useRef(false);
   const validationMutation = useValidateFullBodyImageMutation();
 
-  const validatePhoto = (file: File) => {
-    validationMutation.mutate(file, {
-      onSuccess: (result) => {
-        if (!result.isValid) {
-          setErrorMessage(result.message);
-          return;
-        }
+  const validatePhoto = (file: File, signal: AbortSignal) => {
+    validationMutation.mutate(
+      { file, signal },
+      {
+        onSuccess: (result) => {
+          if (signal.aborted) return;
+          if (!result.isValid) {
+            setErrorMessage(result.message);
+            return;
+          }
 
-        setErrorMessage(undefined);
-        onValidationChange(result.data.validationId);
-        setPhotoUrl(result.data.fullBodyImageUrl);
+          setErrorMessage(undefined);
+          onValidationChange(result.data.validationId);
+          setPhotoUrl(result.data.fullBodyImageUrl);
+        },
       },
-    });
+    );
   };
   const displayedErrorMessage =
     errorMessage ??
@@ -55,6 +60,16 @@ export function useFullBodyPhoto({
     };
   }, [photoUrl]);
 
+  const cancelPhotoValidation = () => {
+    validationControllerRef.current?.abort();
+    preparingRef.current = false;
+    filePickerLockedRef.current = false;
+    setIsPreparing(false);
+    validationMutation.reset();
+    setPhotoUrl(undefined);
+    setErrorMessage("사진 등록이 취소되었습니다.");
+  };
+
   const handlePhotoChange = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file || preparingRef.current || validationMutation.isPending) return;
@@ -66,15 +81,19 @@ export function useFullBodyPhoto({
 
     validationMutation.reset();
     onValidationChange(undefined);
+    const controller = new AbortController();
+    validationControllerRef.current = controller;
     preparingRef.current = true;
     setIsPreparing(true);
     setPhotoUrl(undefined);
     setErrorMessage(undefined);
     try {
       const prepared = await preparePhotoForUpload(file);
+      if (controller.signal.aborted) return;
       setPhotoUrl(URL.createObjectURL(prepared));
-      validatePhoto(prepared);
+      validatePhoto(prepared, controller.signal);
     } catch (error) {
+      if (controller.signal.aborted) return;
       setErrorMessage(
         error instanceof Error
           ? error.message
@@ -82,8 +101,10 @@ export function useFullBodyPhoto({
       );
       input.value = "";
     } finally {
-      preparingRef.current = false;
-      setIsPreparing(false);
+      if (!controller.signal.aborted) {
+        preparingRef.current = false;
+        setIsPreparing(false);
+      }
     }
   };
 
@@ -134,6 +155,7 @@ export function useFullBodyPhoto({
   };
 
   return {
+    cancelPhotoValidation,
     displayedErrorMessage,
     fileInputRef,
     handlePhotoChange,

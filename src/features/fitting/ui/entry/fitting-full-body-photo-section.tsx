@@ -1,7 +1,7 @@
 "use client";
 
 import Image, { type ImageLoaderProps } from "next/image";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useFullBodyPhoto } from "@/features/profile/hooks/use-full-body-photo";
 import {
@@ -22,8 +22,10 @@ function passthroughImageLoader({ src }: ImageLoaderProps) {
 
 export function FittingFullBodyPhotoSection() {
   const { data: memberProfile } = useQuery(memberProfileQueryOptions);
+  const photoButtonRef = useRef<HTMLButtonElement>(null);
   const updatePhotoMutation = useUpdateFullBodyImageMutation();
   const {
+    cancelPhotoValidation,
     displayedErrorMessage,
     fileInputRef,
     handlePhotoChange,
@@ -106,10 +108,13 @@ export function FittingFullBodyPhotoSection() {
           type="file"
         />
         <Button
+          aria-disabled={isPhotoPending || undefined}
           className={`${styles.photoAction} ${styles.changePhotoButton}`}
-          isLoading={isPhotoPending}
           leadingIcon={<RefreshIcon />}
-          onClick={openPhotoPicker}
+          onClick={() => {
+            if (!isPhotoPending) openPhotoPicker();
+          }}
+          ref={photoButtonRef}
           size="small"
           type="button"
           variant="outlined"
@@ -124,13 +129,20 @@ export function FittingFullBodyPhotoSection() {
       >
         {displayedErrorMessage}
       </p>
+      <p role="status" className={styles.photoStatus}>
+        {updatePhotoMutation.isPending && "전신 사진을 저장하고 있어요."}
+      </p>
       <Dialog
-        aria-busy="true"
         className={styles.processingDialog}
-        onEscapeKeyDown={(event) => event.preventDefault()}
-        onOpenChange={() => undefined}
+        onCloseAutoFocus={(event) => {
+          event.preventDefault();
+          photoButtonRef.current?.focus();
+        }}
+        onOpenChange={(open) => {
+          if (!open) cancelPhotoValidation();
+        }}
         onPointerDownOutside={(event) => event.preventDefault()}
-        open={isPhotoPending}
+        open={isValidationPending}
       >
         <DialogTitle className={styles.processingTitle}>
           사진을 확인하고 있어요
@@ -139,6 +151,14 @@ export function FittingFullBodyPhotoSection() {
         <DialogDescription className={styles.processingDescription}>
           처리가 끝날 때까지 잠시만 기다려 주세요.
         </DialogDescription>
+        <Button
+          className={styles.processingCancel}
+          onClick={cancelPhotoValidation}
+          size="small"
+          variant="secondary"
+        >
+          사진 검증 취소
+        </Button>
       </Dialog>
     </section>
   );

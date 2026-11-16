@@ -10,6 +10,7 @@ export const fullBodyImageMutationKey = [
 export function useValidateFullBodyImageMutation() {
   return useMutation({
     mutationKey: [...fullBodyImageMutationKey, "validate"],
-    mutationFn: validateFullBodyImage,
+    mutationFn: ({ file, signal }: { file: File; signal: AbortSignal }) =>
+      validateFullBodyImage(file, signal),
   });
 }
