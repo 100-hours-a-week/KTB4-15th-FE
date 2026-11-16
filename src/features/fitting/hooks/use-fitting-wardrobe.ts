@@ -1,9 +1,10 @@
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { useScrollPagination } from "@/shared/hooks/use-scroll-pagination";
 import type { ProductItemType } from "@/shared/schema/product";
 import {
+  fittingCandidatesForSelectionQueryOptions,
   fittingCandidatesQueryOptions,
   useDeleteFittingCandidatesMutation,
 } from "../model/fitting-query";
@@ -19,13 +20,21 @@ export function useFittingWardrobe(
 ) {
   useRestoreFittingSelection();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [filter, setFilter] = useState<WardrobeFilter>(initialFilter);
-  const [isEditing, setIsEditing] = useState(false);
-  const [selectedForDelete, setSelectedForDelete] = useState<Set<number>>(
-    new Set(),
+  const searchParams = useSearchParams();
+  const isEditing = searchParams.get("edit") === "true";
+  const [isSelectingAll, setIsSelectingAll] = useState(false);
+  const [selectAllFailed, setSelectAllFailed] = useState(false);
+  const selectedForDelete = useFittingSelectionStore(
+    (state) => state.selectedForDelete,
   );
+  const setSelectedForDelete = useFittingSelectionStore(
+    (state) => state.setSelectedForDelete,
+  );
+  const itemType = filter === "ALL" ? undefined : filter;
   const query = useInfiniteQuery({
-    ...fittingCandidatesQueryOptions(filter === "ALL" ? undefined : filter),
+    ...fittingCandidatesQueryOptions(itemType),
     initialData:
       filter === initialFilter && initialCandidates
         ? { pages: [initialCandidates], pageParams: [undefined] }
@@ -34,6 +43,47 @@ export function useFittingWardrobe(
       filter === initialFilter && initialCandidates ? 30_000 : undefined,
   });
   const { data, fetchNextPage, hasNextPage, isError } = query;
+  useEffect(() => {
+    if (!isEditing || !data || data.pages.at(-1)?.hasNext !== false) return;
+    const availableIds = new Set(
+      data.pages.flatMap((page) =>
+        page.items.map((product) => product.fittingCandidateId),
+      ),
+    );
+    const selected = useFittingSelectionStore.getState().selectedForDelete;
+    const remaining = new Map(
+      [...selected].filter(
+        ([id, product]) =>
+          (itemType !== undefined && product.itemType !== itemType) ||
+          availableIds.has(id),
+      ),
+    );
+    if (remaining.size !== selected.size) setSelectedForDelete(remaining);
+  }, [data, isEditing, itemType, setSelectedForDelete]);
+  useEffect(() => {
+    if (isEditing && hasNextPage) {
+      void queryClient
+        .fetchQuery(fittingCandidatesForSelectionQueryOptions(itemType))
+        .then((candidates) => {
+          const availableIds = new Set(
+            candidates.map((product) => product.fittingCandidateId),
+          );
+          const selected =
+            useFittingSelectionStore.getState().selectedForDelete;
+          const remaining = new Map(
+            [...selected].filter(
+              ([id, product]) =>
+                (itemType !== undefined && product.itemType !== itemType) ||
+                availableIds.has(id),
+            ),
+          );
+          if (remaining.size !== selected.size) setSelectedForDelete(remaining);
+        })
+        .catch(() => {
+          // 선택용 조회 실패는 전체 선택을 누를 때 안내하고 재시도한다.
+        });
+    }
+  }, [hasNextPage, isEditing, itemType, queryClient, setSelectedForDelete]);
   const loadMoreRef = useScrollPagination({
     enabled: Boolean(hasNextPage) && !isError,
     isFetching: query.isFetching,
@@ -43,7 +93,14 @@ export function useFittingWardrobe(
   const bottom = useFittingSelectionStore((state) => state.bottom);
   const clearProduct = useFittingSelectionStore((state) => state.clearProduct);
 
-  const deleteMutation = useDeleteFittingCandidatesMutation();
+  const deleteMutation = useDeleteFittingCandidatesMutation((candidates) => {
+    const availableIds = new Set(
+      candidates.map((product) => product.fittingCandidateId),
+    );
+    setSelectedForDelete(
+      (current) => new Map([...current].filter(([id]) => availableIds.has(id))),
+    );
+  });
   const selectedCount = Number(Boolean(top)) + Number(Boolean(bottom));
   const products = data?.pages.flatMap((page) => page.items) ?? [];
   const firstImageCandidateId = products.find(
@@ -51,55 +108,87 @@ export function useFittingWardrobe(
   )?.fittingCandidateId;
   const isInitialError = isError && data == null;
   const totalCount = data?.pages[0]?.totalCount ?? products.length;
-  const visibleCandidateIds = products.map(
-    (product) => product.fittingCandidateId,
+  const selectedInFilter = [...selectedForDelete.values()].filter(
+    (product) => filter === "ALL" || product.itemType === filter,
   );
-  const isAllVisibleSelected =
-    visibleCandidateIds.length > 0 &&
-    visibleCandidateIds.every((id) => selectedForDelete.has(id));
+  const isAllSelected =
+    totalCount > 0 &&
+    selectedInFilter.length === totalCount &&
+    products.every((product) =>
+      selectedForDelete.has(product.fittingCandidateId),
+    );
 
   const changeFilter = (nextFilter: WardrobeFilter) => {
+    setSelectAllFailed(false);
     setFilter(nextFilter);
-    router.replace(
-      nextFilter === "ALL"
-        ? "/fitting/wardrobe"
-        : `/fitting/wardrobe?itemType=${nextFilter}`,
-      { scroll: false },
-    );
+    const url = new URL(window.location.href);
+    if (nextFilter === "ALL") url.searchParams.delete("itemType");
+    else url.searchParams.set("itemType", nextFilter);
+    window.history.replaceState(null, "", url);
   };
 
   const toggleEditing = () => {
-    setIsEditing((editing) => !editing);
-    setSelectedForDelete(new Set());
+    setSelectAllFailed(false);
+    const url = new URL(window.location.href);
+    if (isEditing) url.searchParams.delete("edit");
+    else url.searchParams.set("edit", "true");
+    window.history.replaceState(null, "", url);
+    setSelectedForDelete(new Map());
   };
 
   const toggleDeleteCandidate = (candidateId: number) => {
+    const product = products.find(
+      (item) => item.fittingCandidateId === candidateId,
+    );
+    if (!product) return;
+
     setSelectedForDelete((current) => {
-      const next = new Set(current);
+      const next = new Map(current);
 
       if (next.has(candidateId)) next.delete(candidateId);
-      else next.add(candidateId);
+      else next.set(candidateId, product);
 
       return next;
     });
   };
 
-  const toggleAllVisible = () => {
-    setSelectedForDelete((current) => {
-      const next = new Set(current);
+  const toggleAll = async () => {
+    if (isSelectingAll || totalCount === 0) return;
+    setSelectAllFailed(false);
+    if (isAllSelected) {
+      setSelectedForDelete((current) => {
+        const next = new Map(current);
+        selectedInFilter.forEach((product) =>
+          next.delete(product.fittingCandidateId),
+        );
+        return next;
+      });
+      return;
+    }
 
-      if (isAllVisibleSelected) {
-        visibleCandidateIds.forEach((id) => next.delete(id));
-      } else {
-        visibleCandidateIds.forEach((id) => next.add(id));
-      }
-
-      return next;
-    });
+    setIsSelectingAll(true);
+    try {
+      const candidates = data?.pages.at(-1)?.hasNext
+        ? await queryClient.fetchQuery(
+            fittingCandidatesForSelectionQueryOptions(itemType),
+          )
+        : products;
+      setSelectedForDelete((current) => {
+        const next = new Map(current);
+        candidates.forEach((product) =>
+          next.set(product.fittingCandidateId, product),
+        );
+        return next;
+      });
+    } catch {
+      setSelectAllFailed(true);
+    } finally {
+      setIsSelectingAll(false);
+    }
   };
 
-  const deleteSelectedCandidates = () => {
-    const candidateIds = [...selectedForDelete];
+  const deleteSelectedCandidates = (onSuccess: () => void) => {
+    const candidateIds = [...selectedForDelete.keys()];
     if (candidateIds.length === 0) return;
 
     deleteMutation.mutate(candidateIds, {
@@ -110,7 +199,8 @@ export function useFittingWardrobe(
         if (bottom && candidateIds.includes(bottom.fittingCandidateId)) {
           clearProduct("BOTTOM");
         }
-        setSelectedForDelete(new Set());
+        setSelectedForDelete(new Map());
+        onSuccess();
       },
     });
   };
@@ -127,9 +217,12 @@ export function useFittingWardrobe(
     totalCount,
     selectedCount,
     selectedForDelete,
-    isAllVisibleSelected,
+    selectedInFilterCount: selectedInFilter.length,
+    isAllSelected,
+    isSelectingAll,
+    selectAllFailed,
     toggleDeleteCandidate,
-    toggleAllVisible,
+    toggleAll,
     deleteSelectedCandidates,
     deleteMutation,
     loadMoreRef,
