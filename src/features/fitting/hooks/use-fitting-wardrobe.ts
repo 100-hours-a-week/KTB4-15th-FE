@@ -44,12 +44,46 @@ export function useFittingWardrobe(
   });
   const { data, fetchNextPage, hasNextPage, isError } = query;
   useEffect(() => {
+    if (!isEditing || !data || data.pages.at(-1)?.hasNext !== false) return;
+    const availableIds = new Set(
+      data.pages.flatMap((page) =>
+        page.items.map((product) => product.fittingCandidateId),
+      ),
+    );
+    const selected = useFittingSelectionStore.getState().selectedForDelete;
+    const remaining = new Map(
+      [...selected].filter(
+        ([id, product]) =>
+          (itemType !== undefined && product.itemType !== itemType) ||
+          availableIds.has(id),
+      ),
+    );
+    if (remaining.size !== selected.size) setSelectedForDelete(remaining);
+  }, [data, isEditing, itemType, setSelectedForDelete]);
+  useEffect(() => {
     if (isEditing && hasNextPage) {
-      void queryClient.prefetchQuery(
-        fittingCandidatesForSelectionQueryOptions(itemType),
-      );
+      void queryClient
+        .fetchQuery(fittingCandidatesForSelectionQueryOptions(itemType))
+        .then((candidates) => {
+          const availableIds = new Set(
+            candidates.map((product) => product.fittingCandidateId),
+          );
+          const selected =
+            useFittingSelectionStore.getState().selectedForDelete;
+          const remaining = new Map(
+            [...selected].filter(
+              ([id, product]) =>
+                (itemType !== undefined && product.itemType !== itemType) ||
+                availableIds.has(id),
+            ),
+          );
+          if (remaining.size !== selected.size) setSelectedForDelete(remaining);
+        })
+        .catch(() => {
+          // 선택용 조회 실패는 전체 선택을 누를 때 안내하고 재시도한다.
+        });
     }
-  }, [hasNextPage, isEditing, itemType, queryClient]);
+  }, [hasNextPage, isEditing, itemType, queryClient, setSelectedForDelete]);
   const loadMoreRef = useScrollPagination({
     enabled: Boolean(hasNextPage) && !isError,
     isFetching: query.isFetching,
@@ -59,7 +93,14 @@ export function useFittingWardrobe(
   const bottom = useFittingSelectionStore((state) => state.bottom);
   const clearProduct = useFittingSelectionStore((state) => state.clearProduct);
 
-  const deleteMutation = useDeleteFittingCandidatesMutation();
+  const deleteMutation = useDeleteFittingCandidatesMutation((candidates) => {
+    const availableIds = new Set(
+      candidates.map((product) => product.fittingCandidateId),
+    );
+    setSelectedForDelete(
+      (current) => new Map([...current].filter(([id]) => availableIds.has(id))),
+    );
+  });
   const selectedCount = Number(Boolean(top)) + Number(Boolean(bottom));
   const products = data?.pages.flatMap((page) => page.items) ?? [];
   const firstImageCandidateId = products.find(

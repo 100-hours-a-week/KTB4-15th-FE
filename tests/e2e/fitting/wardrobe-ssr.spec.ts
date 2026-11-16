@@ -604,3 +604,124 @@ test("다른 필터에서 선택한 삭제 대상도 새로고침 후 복원하�
     page.getByRole("button", { name: "0개 삭제하기" }),
   ).toBeDisabled();
 });
+
+test("만료된 목록에서 편집하면 첫 페이지부터 최신 전체 상품을 조회한다", async ({
+  page,
+  request,
+}) => {
+  const candidates = Array.from({ length: 25 }, (_, index) => ({
+    ...products[0],
+    productId: 2000 + index,
+    productName: `캐시 상품 ${index + 1}`,
+  }));
+  await request.post(`${apiURL}/__test/scenario`, {
+    data: { fittingCandidates: candidates },
+  });
+  const initialTime = Date.now();
+  await page.clock.setFixedTime(new Date(initialTime));
+  await page.goto("/fitting/wardrobe?itemType=TOP");
+  await expect(page.getByRole("button", { name: /캐시 상품/ })).toHaveCount(10);
+  await page.getByRole("button", { name: "편집", exact: true }).click();
+  await page.getByRole("button", { name: "전체 선택", exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "25개 삭제하기" }),
+  ).toBeEnabled();
+  await page.getByRole("button", { name: "완료", exact: true }).click();
+  await request.post(`${apiURL}/__test/scenario`, {
+    data: {
+      fittingCandidates: [
+        { ...products[0], productId: 3000, productName: "새로 추가한 상의" },
+        ...candidates,
+      ],
+    },
+  });
+  await page.clock.setFixedTime(new Date(initialTime + 120_000));
+  const refreshed = page.waitForResponse((response) => {
+    const url = new URL(response.url());
+    return (
+      url.pathname === "/fitting-candidates" &&
+      url.searchParams.get("size") === "100" &&
+      !url.searchParams.has("cursor")
+    );
+  });
+  await page.getByRole("button", { name: "편집", exact: true }).click();
+  await refreshed;
+  await page.getByRole("button", { name: "전체 선택", exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "26개 삭제하기" }),
+  ).toBeEnabled();
+});
+
+test("복원한 선택에서 다른 탭이 이미 삭제한 상품을 정리한다", async ({
+  page,
+  request,
+}) => {
+  for (const product of products) {
+    await request.post(`${apiURL}/fitting-candidates`, {
+      data: { productId: product.productId },
+    });
+  }
+  await page.goto("/fitting/wardrobe");
+  await page.getByRole("button", { name: "편집", exact: true }).click();
+  await page.getByRole("button", { name: "전체 선택", exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "2개 삭제하기" }),
+  ).toBeEnabled();
+  await request.delete(`${apiURL}/fitting-candidates`, {
+    data: { fittingCandidateIds: [products[0].productId] },
+  });
+  await page.reload();
+  await expect(
+    page.getByRole("button", { name: "1개 삭제하기" }),
+  ).toBeEnabled();
+  await expect(
+    page.getByRole("button", { name: "전체 선택", exact: true }),
+  ).toHaveAccessibleDescription("선택 1개");
+});
+
+test("삭제 확인 뒤 다른 탭에서 상품이 삭제돼도 남은 선택으로 재시도한다", async ({
+  page,
+  request,
+}) => {
+  for (const product of products) {
+    await request.post(`${apiURL}/fitting-candidates`, {
+      data: { productId: product.productId },
+    });
+  }
+  await page.goto("/fitting/wardrobe");
+  await page.getByRole("button", { name: "편집", exact: true }).click();
+  await page.getByRole("button", { name: "전체 선택", exact: true }).click();
+  await page.getByRole("button", { name: "2개 삭제하기" }).click();
+  await request.delete(`${apiURL}/fitting-candidates`, {
+    data: { fittingCandidateIds: [products[0].productId] },
+  });
+  let attempts = 0;
+  await page.route(`${apiURL}/fitting-candidates`, async (route) => {
+    if (route.request().method() === "DELETE" && attempts++ === 0) {
+      await route.fulfill({
+        status: 404,
+        json: {
+          code: "FITTING_CANDIDATE_NOT_FOUND",
+          message: "피팅 후보를 찾을 수 없습니다.",
+          data: null,
+        },
+      });
+      return;
+    }
+    await route.continue();
+  });
+  const dialog = page.getByRole("dialog");
+  const confirm = dialog.getByRole("button", { name: "삭제하기", exact: true });
+  await confirm.click();
+  await expect(dialog).toHaveAccessibleName("선택한 상품 1개를 삭제할까요?");
+  await expect(confirm).toBeEnabled();
+  const retry = page.waitForRequest(
+    (req) =>
+      req.method() === "DELETE" && req.url() === `${apiURL}/fitting-candidates`,
+  );
+  await confirm.click();
+  expect((await retry).postDataJSON()).toEqual({
+    fittingCandidateIds: [products[1].productId],
+  });
+  await expect(dialog).toBeHidden();
+});

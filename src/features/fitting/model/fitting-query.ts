@@ -16,6 +16,7 @@ import {
   deleteFittingCandidates,
   getFittingCandidates,
 } from "../api/fitting-candidate";
+import { ApiError } from "@/shared/api/error";
 import type { ProductItemType } from "@/shared/schema/product";
 import {
   getCurrentFittingJob,
@@ -134,7 +135,9 @@ export const fittingCandidatesForSelectionQueryOptions = (
           queryKey,
         );
       const pages =
-        !cached?.isInvalidated && cached?.data
+        !cached?.isInvalidated &&
+        cached?.data &&
+        Date.now() - cached.dataUpdatedAt < SELECTION_STALE_TIME
           ? cached.data.pages
           : [
               await getFittingCandidates({
@@ -233,11 +236,39 @@ export function useCreateFittingCandidateMutation() {
   });
 }
 
-export function useDeleteFittingCandidatesMutation() {
+export function useDeleteFittingCandidatesMutation(
+  onSelectionRefresh: (candidates: FittingCandidate[]) => void,
+) {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: deleteFittingCandidates,
+    onError: async (error) => {
+      if (
+        !(error instanceof ApiError) ||
+        error.code !== "FITTING_CANDIDATE_NOT_FOUND"
+      )
+        return;
+      await queryClient.cancelQueries({
+        queryKey: fittingQueryKeys.candidateListRoot,
+      });
+      await queryClient.invalidateQueries({
+        queryKey: fittingQueryKeys.candidateListRoot,
+        refetchType: "none",
+      });
+      try {
+        const candidates = await queryClient.fetchQuery(
+          fittingCandidatesForSelectionQueryOptions(),
+        );
+        onSelectionRefresh(candidates);
+        await queryClient.invalidateQueries({
+          queryKey: fittingQueryKeys.candidateListRoot,
+          predicate: (query) => query.queryKey.at(-1) !== "selection",
+        });
+      } catch {
+        // 재조회가 실패하면 선택을 유지하고 다음 수동 재시도에서 다시 확인한다.
+      }
+    },
     onSuccess: async () => {
       await queryClient.cancelQueries({
         queryKey: fittingQueryKeys.candidateListRoot,
