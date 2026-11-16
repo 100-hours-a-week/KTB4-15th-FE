@@ -110,6 +110,8 @@ test("피팅 진행률은 이름과 현재 값을 제공한다", async ({ page }
   });
   await expect(progress).toBeVisible();
   await expect(progress).toHaveAttribute("aria-valuenow", /\d+/);
+  const stage = page.getByRole("status").filter({ hasText: "있어요" });
+  await expect(stage).toHaveText(/선택한 옷|체형에 맞게|피팅 이미지를 완성/);
 });
 
 test("피팅 링크는 선택한 상품명을 포함하고 변경 링크 대비를 확보한다", async ({
