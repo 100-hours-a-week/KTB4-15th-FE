@@ -1,4 +1,4 @@
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { useScrollPagination } from "@/shared/hooks/use-scroll-pagination";
@@ -8,10 +8,7 @@ import {
   fittingCandidatesQueryOptions,
   useDeleteFittingCandidatesMutation,
 } from "../model/fitting-query";
-import {
-  type FittingCandidate,
-  type FittingCandidateListResponse,
-} from "../schema/fitting-candidate";
+import { type FittingCandidateListResponse } from "../schema/fitting-candidate";
 import { useFittingSelectionStore } from "../store/fitting-selection-store";
 import { useRestoreFittingSelection } from "../store/use-restore-fitting-selection";
 
@@ -25,12 +22,16 @@ export function useFittingWardrobe(
   const router = useRouter();
   const queryClient = useQueryClient();
   const [filter, setFilter] = useState<WardrobeFilter>(initialFilter);
-  const [isEditing, setIsEditing] = useState(false);
+  const searchParams = useSearchParams();
+  const isEditing = searchParams.get("edit") === "true";
   const [isSelectingAll, setIsSelectingAll] = useState(false);
   const [selectAllFailed, setSelectAllFailed] = useState(false);
-  const [selectedForDelete, setSelectedForDelete] = useState<
-    Map<number, FittingCandidate>
-  >(new Map());
+  const selectedForDelete = useFittingSelectionStore(
+    (state) => state.selectedForDelete,
+  );
+  const setSelectedForDelete = useFittingSelectionStore(
+    (state) => state.setSelectedForDelete,
+  );
   const itemType = filter === "ALL" ? undefined : filter;
   const query = useInfiniteQuery({
     ...fittingCandidatesQueryOptions(itemType),
@@ -79,18 +80,18 @@ export function useFittingWardrobe(
   const changeFilter = (nextFilter: WardrobeFilter) => {
     setSelectAllFailed(false);
     setFilter(nextFilter);
-    window.history.replaceState(
-      null,
-      "",
-      nextFilter === "ALL"
-        ? "/fitting/wardrobe"
-        : `/fitting/wardrobe?itemType=${nextFilter}`,
-    );
+    const url = new URL(window.location.href);
+    if (nextFilter === "ALL") url.searchParams.delete("itemType");
+    else url.searchParams.set("itemType", nextFilter);
+    window.history.replaceState(null, "", url);
   };
 
   const toggleEditing = () => {
     setSelectAllFailed(false);
-    setIsEditing((editing) => !editing);
+    const url = new URL(window.location.href);
+    if (isEditing) url.searchParams.delete("edit");
+    else url.searchParams.set("edit", "true");
+    window.history.replaceState(null, "", url);
     setSelectedForDelete(new Map());
   };
 

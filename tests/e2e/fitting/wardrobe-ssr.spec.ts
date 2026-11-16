@@ -540,3 +540,67 @@ test("추가 목록을 붙여도 스크롤 위치를 유지하고 다시 내려�
   await page.waitForTimeout(1500);
   expect(requests).toBe(2);
 });
+
+test("편집 모드와 필터는 새로고침 후에도 유지되고 완료하면 해제된다", async ({
+  page,
+}) => {
+  await page.goto("/fitting/wardrobe?itemType=TOP");
+  await page.getByRole("button", { name: "편집", exact: true }).click();
+  await expect(page).toHaveURL(/itemType=TOP&edit=true/);
+  await page.reload();
+  await expect(
+    page.getByRole("button", { name: "완료", exact: true }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "하의", exact: true }).click();
+  await expect(page).toHaveURL(/itemType=BOTTOM&edit=true/);
+  await page.reload();
+  await expect(
+    page.getByRole("button", { name: "하의", exact: true }),
+  ).toHaveAttribute("aria-pressed", "true");
+  await page.getByRole("button", { name: "완료", exact: true }).click();
+  await page.reload();
+  await expect(
+    page.getByRole("button", { name: "편집", exact: true }),
+  ).toBeVisible();
+  await expect(page).toHaveURL(/itemType=BOTTOM$/);
+});
+
+test("다른 필터에서 선택한 삭제 대상도 새로고침 후 복원하고 완료하면 정리한다", async ({
+  page,
+  request,
+}) => {
+  for (const product of products) {
+    await request.post(`${apiURL}/fitting-candidates`, {
+      data: { productId: product.productId },
+    });
+  }
+  await page.goto("/fitting/wardrobe");
+  await page.getByRole("button", { name: "편집", exact: true }).click();
+  await page.getByRole("button", { name: "전체 선택", exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "2개 삭제하기" }),
+  ).toBeEnabled();
+  await page.getByRole("button", { name: "상의", exact: true }).click();
+  await page.reload();
+  const selectAll = page.getByRole("button", {
+    name: "전체 선택",
+    exact: true,
+  });
+  await expect(selectAll).toHaveAccessibleDescription("선택 1개");
+  await expect(
+    page.getByRole("button", { name: "2개 삭제하기" }),
+  ).toBeEnabled();
+  await page
+    .getByRole("button", { name: new RegExp(products[0].productName) })
+    .click();
+  await page.reload();
+  await expect(selectAll).toHaveAccessibleDescription("선택 0개");
+  await page.getByRole("button", { name: "하의", exact: true }).click();
+  await expect(selectAll).toHaveAccessibleDescription("선택 1개");
+  await page.getByRole("button", { name: "완료", exact: true }).click();
+  await page.reload();
+  await page.getByRole("button", { name: "편집", exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "0개 삭제하기" }),
+  ).toBeDisabled();
+});
