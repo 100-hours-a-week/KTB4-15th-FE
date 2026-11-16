@@ -50,6 +50,10 @@
   min-height: 24px;
 }
 
+.spinner {
+  color: var(--color-border-brand);
+}
+
 .newReply {
   position: fixed;
   z-index: var(--z-sticky);

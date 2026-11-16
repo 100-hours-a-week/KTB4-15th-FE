@@ -244,7 +244,10 @@ export function ChatMessageList({
         />
         {isLoadingPreviousMessages && (
           <div className={styles.previousMessagesLoading}>
-            <Spinner label="이전 메시지를 불러오는 중" />
+            <Spinner
+              className={styles.spinner}
+              label="이전 메시지를 불러오는 중"
+            />
           </div>
         )}
         <div>
