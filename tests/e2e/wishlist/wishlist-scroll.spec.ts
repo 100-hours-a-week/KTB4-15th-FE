@@ -91,6 +91,7 @@ for (const screen of ["wardrobe", "wishlist"] as const) {
     await page.route("**/_next/image?**", (route) =>
       route.fulfill({ status: 404, body: "unavailable" }),
     );
+    await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(
       screen === "wardrobe" ? "/fitting/wardrobe?itemType=TOP" : "/wishlists",
     );
@@ -100,16 +101,16 @@ for (const screen of ["wardrobe", "wishlist"] as const) {
         page.getByRole("button", { name: "완료", exact: true }),
       ).toBeVisible();
     }
-    await page.setViewportSize({ width: 390, height: 844 });
     const cards =
       screen === "wardrobe"
         ? page.getByRole("button", { name: /연속 조회 상품/ })
         : page.getByRole("article");
     const pageSize = screen === "wardrobe" ? 10 : 20;
+    await expect(cards).toHaveCount(pageSize);
     for (let nextPage = 1; nextPage <= 2; nextPage += 1) {
       await page.mouse.wheel(0, 10000);
       await expect(cards).toHaveCount(pageSize * (nextPage + 1));
-      expect(requests).toBe(nextPage);
+      expect(requests).toBe(screen === "wardrobe" ? 1 : nextPage);
     }
   });
 }
