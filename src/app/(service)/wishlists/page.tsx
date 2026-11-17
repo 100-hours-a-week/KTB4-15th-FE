@@ -1,12 +1,18 @@
 import { getWishlistsServer } from "@/features/wishlist/api/wishlist-server";
-import { WishlistScreen } from "@/features/wishlist";
+import { WishlistScreen } from "@/features/wishlist/ui/wishlist-screen";
 import { WishlistCard } from "@/features/wishlist/ui/wishlist-card";
 import {
   isServerUnauthorizedError,
   redirectOnServerUnauthorized,
 } from "@/shared/api/server";
-import { Header, HeaderTitle, NotificationLink } from "@/shared/ui/header";
+import { Header } from "@/shared/ui/header/header";
+import { HeaderTitle } from "@/shared/ui/header/header-title";
+import { NotificationLink } from "@/shared/ui/header/header-actions";
 import styles from "../page-layout.module.scss";
+
+export const metadata = {
+  title: "찜 목록 | LOOK DDAK",
+};
 
 export default async function WishlistsPage() {
   const initialPage = await getWishlistsServer().catch((error: unknown) => {

@@ -8,11 +8,12 @@ import {
   useCreateWishlistMutation,
   useDeleteWishlistMutation,
 } from "@/features/wishlist/model/wishlist-query";
-import { recordPurchaseLinkClick } from "@/features/product";
+import { recordPurchaseLinkClick } from "@/features/product/api/product";
 import { ApiError, getApiErrorMessage } from "@/shared/api/error";
-import { Button, IconButton } from "@/shared/ui/button";
-import { HeartIcon } from "@/shared/ui/icon";
-import { showToast } from "@/shared/ui/toast";
+import { Button } from "@/shared/ui/button/button";
+import { IconButton } from "@/shared/ui/button/icon-button";
+import { HeartIcon } from "@/shared/ui/icon/interface-icons";
+import { showToast } from "@/shared/ui/toast/show-toast";
 import { formatPrice } from "@/shared/utils/price-format";
 import { useCreateFittingCandidateMutation } from "@/features/fitting/model/fitting-query";
 import { useFittingSelectionStore } from "@/features/fitting/store/fitting-selection-store";
@@ -235,6 +236,7 @@ export function RecommendedProductCard({
           </a>
           {isFittingCandidate ? (
             <Button
+              aria-label="피팅룸에서 입어보기"
               className={styles.fittingLink}
               fullWidth
               isLoading={isEnteringFitting}
@@ -242,7 +244,13 @@ export function RecommendedProductCard({
               size="small"
               variant="primary"
             >
-              피팅룸에서 입어보기 <span aria-hidden="true">→</span>
+              <span aria-hidden="true" className={styles.fittingLabelFull}>
+                피팅룸에서 입어보기
+              </span>
+              <span aria-hidden="true" className={styles.fittingLabelShort}>
+                입어보기
+              </span>{" "}
+              <span aria-hidden="true">→</span>
             </Button>
           ) : (
             <Button

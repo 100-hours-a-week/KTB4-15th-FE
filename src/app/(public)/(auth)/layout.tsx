@@ -1,5 +1,5 @@
 import { cookies } from "next/headers";
-import { AuthenticatedUserRedirect } from "@/features/auth";
+import { AuthenticatedUserRedirect } from "@/features/auth/guard/authenticated-user-redirect";
 
 export default async function AuthLayout({ children }: LayoutProps<"/">) {
   const hasAccessToken = (await cookies()).has("accessToken");

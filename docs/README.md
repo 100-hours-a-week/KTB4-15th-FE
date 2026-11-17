@@ -16,13 +16,15 @@ LOOK DDAK 프론트엔드의 구조와 개발 기준을 관리합니다.
 | [브라우저 테스트](./testing.md)              | 실행 방법, 고정 API 데이터, 검증 범위   | 테스트 환경이나 시나리오가 변경될 때         |
 | [프로젝트 결정 사항](./project-decisions.md) | 핵심 결정과 보류 항목                   | 새로운 결정을 내리거나 보류 항목을 확정할 때 |
 
+- [화면별 CSS 분리](./performance/css-splitting.md): 공통 import·Turbopack CSS 병합 분리와 전체 경로 전후 용량 비교
 - [피팅 옷장 CSS graph 실험](./performance/fitting-wardrobe.md): 기본 설정과 graph의 CSS 용량·요청 수 및 간이 표시 시간 비교
 - [랜딩 화면](./screens/landing.md): 화면 구성, 스크롤 연출과 반응형 기준
-- [채팅 스크롤 성능 개선 기록](./performance/chat-scroll.md): CPU 4배 감속과 1,000개 누적 로딩에서 포맷터 재사용과 메시지 memo 전후 비교
+- [채팅 런타임 성능 요약](./performance/chat-scroll.md): 포맷터·memo·가상화 및 20,000개 검증의 핵심 결과와 측정 조건
 - [랭킹 성능 개선 기록](./performance/ranking.md): 단계별 측정 결과, 실험과 한계
 
-- [채팅방 초기 로딩 LCP](./performance/chat-lcp.md): 프로덕션 빌드와 고정 모바일 조건에서 5회 측정한 초기 기준선
+- [WCAG 2.2 AA 평가 (2026-11-10)](./accessibility/wcag-2.2-aa-2026-11-10.md): 전체 55개 기준의 판정, 확인된 문제와 검증 한계
 
+- [채팅방 초기 로딩 LCP](./performance/chat-lcp.md): 프로덕션 빌드와 고정 모바일 조건의 단계별 측정 기록
 - [239번 채팅방 상품 이미지 로딩](./performance/chat-room239-images.md): 실제 메시지와 이미지 고정 후 요청 경쟁 전후 비교
 
 ## 관리 원칙

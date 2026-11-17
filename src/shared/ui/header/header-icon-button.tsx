@@ -1,4 +1,7 @@
-import { IconButton, type IconButtonProps } from "@/shared/ui/button";
+import {
+  IconButton,
+  type IconButtonProps,
+} from "@/shared/ui/button/icon-button";
 import styles from "./header-icon-button.module.scss";
 
 export type HeaderIconButtonProps = Omit<IconButtonProps, "size" | "variant">;

@@ -1,6 +1,10 @@
 import Link from "next/link";
 import styles from "./global-error.module.scss";
 
+export const metadata = {
+  title: "페이지를 찾을 수 없음 | LOOK DDAK",
+};
+
 export default function NotFound() {
   return (
     <main className={styles.main}>

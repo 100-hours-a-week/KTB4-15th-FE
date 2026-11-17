@@ -2,9 +2,13 @@
 
 import Link from "next/link";
 import { useScrollPagination } from "@/shared/hooks/use-scroll-pagination";
-import { PaginationStatus } from "@/shared/ui/pagination-status";
+import { PaginationStatus } from "@/shared/ui/pagination-status/pagination-status";
 import { getApiErrorMessage } from "@/shared/api/error";
-import { ChevronRightIcon, ClearIcon, SearchIcon } from "@/shared/ui/icon";
+import {
+  ChevronRightIcon,
+  ClearIcon,
+  SearchIcon,
+} from "@/shared/ui/icon/interface-icons";
 import { HighlightedChatText } from "./ui/message/highlighted-chat-text";
 import { useChatSearch } from "./hooks/use-chat-search";
 import styles from "./chat-search-screen.module.scss";

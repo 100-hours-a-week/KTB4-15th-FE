@@ -1,7 +1,18 @@
 import { notFound } from "next/navigation";
-import { FittingTempResultScreen } from "@/features/fitting";
-import { Header, HeaderIconLink, HeaderTitle } from "@/shared/ui/header";
-import { BackIcon } from "@/shared/ui/icon";
+import { FittingTempResultScreen } from "@/features/fitting/ui/result/fitting-temp-result-screen";
+import { Header } from "@/shared/ui/header/header";
+import { HeaderIconLink } from "@/shared/ui/header/header-icon-link";
+import { HeaderTitle } from "@/shared/ui/header/header-title";
+import { BackIcon } from "@/shared/ui/icon/interface-icons";
+
+export async function generateMetadata({
+  params,
+}: PageProps<"/fitting/jobs/[fittingJobId]/result">) {
+  const id = Number((await params).fittingJobId);
+  const title =
+    Number.isInteger(id) && id > 0 ? "가상 피팅 결과" : "페이지를 찾을 수 없음";
+  return { title: `${title} | LOOK DDAK` };
+}
 
 export default async function FittingTempResultPage({
   params,

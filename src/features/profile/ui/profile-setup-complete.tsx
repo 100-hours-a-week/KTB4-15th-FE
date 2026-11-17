@@ -1,5 +1,5 @@
 import Image from "next/image";
-import styles from "./profile-setup-form.module.scss";
+import styles from "./profile-setup-complete.module.scss";
 
 export function ProfileSetupComplete() {
   return (

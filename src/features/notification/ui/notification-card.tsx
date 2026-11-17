@@ -3,12 +3,12 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { getCurrentFittingJob } from "@/features/fitting/api/fitting-job";
-import { useMarkFittingResultViewedMutation } from "@/features/fitting";
-import { Button } from "@/shared/ui/button";
-import { showToast } from "@/shared/ui/toast";
+import { useMarkFittingResultViewedMutation } from "@/features/fitting/model/fitting-query";
+import { Button } from "@/shared/ui/button/button";
+import { showToast } from "@/shared/ui/toast/show-toast";
 import { formatKoreanNumericDateTime } from "@/shared/utils/date-format";
 import type { NotificationItem } from "../schema/notification";
-import styles from "./notification-screen.module.scss";
+import styles from "./notification-card.module.scss";
 
 export function NotificationCard({
   item,

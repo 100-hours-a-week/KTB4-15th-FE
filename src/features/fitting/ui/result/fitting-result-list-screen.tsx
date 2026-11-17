@@ -3,10 +3,10 @@
 import Image, { type ImageLoaderProps } from "next/image";
 import Link from "next/link";
 import { useScrollPagination } from "@/shared/hooks/use-scroll-pagination";
-import { PaginationStatus } from "@/shared/ui/pagination-status";
+import { PaginationStatus } from "@/shared/ui/pagination-status/pagination-status";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { Button } from "@/shared/ui/button";
-import { LoadingMessage } from "@/shared/ui/loading-message";
+import { Button } from "@/shared/ui/button/button";
+import { LoadingMessage } from "@/shared/ui/loading-message/loading-message";
 import { formatKoreanNumericDateTime } from "@/shared/utils/date-format";
 import { fittingResultListQueryOptions } from "../../model/fitting-query";
 import styles from "./fitting-result-list-screen.module.scss";

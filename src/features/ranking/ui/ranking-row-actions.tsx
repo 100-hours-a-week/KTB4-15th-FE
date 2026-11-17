@@ -3,11 +3,13 @@
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useState, type ReactNode } from "react";
-import { recordPurchaseLinkClick } from "@/features/product";
+import { recordPurchaseLinkClick } from "@/features/product/api/product";
 import styles from "./ranking-row-actions.module.scss";
 
 const ImageViewerDialog = dynamic(() =>
-  import("@/shared/ui/dialog").then((module) => module.ImageViewerDialog),
+  import("@/shared/ui/dialog/image-viewer-dialog").then(
+    (module) => module.ImageViewerDialog,
+  ),
 );
 
 export function RankingImage({
@@ -27,7 +29,11 @@ export function RankingImage({
   if (imageFailed) {
     return (
       <span className={styles.imageArea}>
-        <span aria-label="상품 이미지 없음" className={styles.imageFallback}>
+        <span
+          aria-label="상품 이미지 없음"
+          className={styles.imageFallback}
+          role="img"
+        >
           {fallback}
         </span>
       </span>

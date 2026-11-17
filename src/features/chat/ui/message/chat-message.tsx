@@ -3,8 +3,8 @@ import Image from "next/image";
 import type { AIMessageResponse, UserMessageResponse } from "../../schema/chat";
 import aiImage from "@/shared/assets/ai-avatar.webp";
 import { formatKoreanTime } from "@/shared/utils/date-format";
-import { Button } from "@/shared/ui/button";
-import { InfoIcon, RetryIcon } from "@/shared/ui/icon";
+import { Button } from "@/shared/ui/button/button";
+import { InfoIcon, RetryIcon } from "@/shared/ui/icon/interface-icons";
 import styles from "./chat-message.module.scss";
 import { RecommendedProductList } from "../product/recommended-product-list";
 

@@ -54,7 +54,7 @@ src/
 - 라우트에서만 쓰는 코드는 `app`에 둡니다.
 - 비즈니스 기능에 속하는 UI, API 타입, Schema와 Store는 `features/<domain>`에 둡니다.
 - 둘 이상의 Feature에서 동일하게 사용하는 UI와 Utility만 `shared`로 올립니다.
-- 공통 UI는 컴포넌트별 폴더에 스타일과 함께 배치하고 `index.ts`를 통해 공개합니다.
+- 공통 UI는 컴포넌트별 폴더에 스타일과 함께 배치하고 구현 파일에서 직접 import합니다.
 
 ### Feature 내부 코드 배치
 
@@ -64,7 +64,7 @@ TanStack Query를 사용하는 Feature는 서버 상태의 책임을 다음처�
 - `hooks/`: 한 Feature 안에서 UI 상태와 사용자 흐름을 조율하는 Hook을 둡니다.
 - `model/`: Query key, `queryOptions`, mutation hook과 캐시 동기화를 둡니다.
 - `ui/`: Query option을 `useQuery`나 `useInfiniteQuery`로 실행하고, 사용자 입력과 화면 상태를 처리합니다.
-- `index.ts`: 다른 Feature에서 필요한 Query option, Hook과 컴포넌트만 공개합니다. 같은 Feature 내부에서는 상대 경로 import를 사용할 수 있습니다.
+- Query option, Hook과 컴포넌트는 실제 구현 파일에서 직접 import합니다. 재수출용 `index.ts`는 두지 않으며 같은 Feature 내부에서는 상대 경로 import를 사용할 수 있습니다.
 
 Query option은 재사용할 설정과 key를 한곳에 모으고, `useQuery`는 해당 option을 실행하는 역할만 맡깁니다. 캐시 무효화처럼 여러 화면에 영향을 주는 서버 상태 동기화는 model hook에서 처리하고, 토스트·라우팅·완료 화면 같은 UI 효과는 화면에 남깁니다.
 

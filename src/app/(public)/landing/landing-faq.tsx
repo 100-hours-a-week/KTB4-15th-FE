@@ -27,7 +27,7 @@ export function LandingFaq() {
   return (
     <section aria-labelledby="faq-title" className={styles.faq}>
       <div className={styles.heading}>
-        <p>BEFORE YOU START</p>
+        <p lang="en">BEFORE YOU START</p>
         <h2 id="faq-title">궁금한 점이 있나요?</h2>
         <span>룩딱을 시작하기 전에, 가볍게 확인해보세요.</span>
       </div>

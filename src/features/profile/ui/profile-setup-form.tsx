@@ -2,8 +2,8 @@
 
 import { useState, type KeyboardEvent } from "react";
 import { useForm } from "react-hook-form";
-import { Button, Toggle } from "@/shared/ui/button";
-import { InputField } from "@/shared/ui/input-field";
+import { Button } from "@/shared/ui/button/button";
+import { InputField } from "@/shared/ui/input-field/input-field";
 import {
   normalizeName,
   sanitizeDecimalInput,
@@ -25,7 +25,6 @@ type ProfileSetupFormValues = {
 };
 
 export function ProfileSetupForm() {
-  const [isNotificationEnabled, setIsNotificationEnabled] = useState(true);
   const [isPhotoValidationPending, setIsPhotoValidationPending] =
     useState(false);
   const [photoValidationId, setPhotoValidationId] = useState<number>();
@@ -57,7 +56,7 @@ export function ProfileSetupForm() {
       fullBodyImageValidationId: photoValidationId,
       height: values.height ? Number(values.height) : undefined,
       name: values.name,
-      priceAlertEnabled: isNotificationEnabled,
+      priceAlertEnabled: false,
       weight: values.weight ? Number(values.weight) : undefined,
     });
   };
@@ -117,7 +116,7 @@ export function ProfileSetupForm() {
 
   return (
     <form className={styles.form} noValidate onSubmit={handleFormSubmit}>
-      <section className={styles.section}>
+      <section>
         <div className={styles.sectionHeading}>
           <h3>기본 정보</h3>
         </div>
@@ -183,6 +182,7 @@ export function ProfileSetupForm() {
         validationId={photoValidationId}
       />
 
+      {/* 가격 하락 알림 동의 UI를 다시 활성화할 때 토글 상태를 요청에 연결합니다.
       <section className={styles.notificationSection}>
         <div>
           <h3>가격 하락 알림</h3>
@@ -194,6 +194,7 @@ export function ProfileSetupForm() {
           onCheckedChange={setIsNotificationEnabled}
         />
       </section>
+      */}
 
       <Button
         className={styles.submitButton}

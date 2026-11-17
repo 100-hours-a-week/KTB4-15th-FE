@@ -9,26 +9,20 @@
   padding-top: 4px;
 }
 
-.list[data-initial-positioned="false"] {
-  visibility: hidden;
-}
-
 .messageWindow {
-  position: relative;
+  display: flow-root;
 }
 
-.virtualRow {
-  position: absolute;
-  top: 0;
-  width: 100%;
+.messageRow,
+.pendingReply {
   padding-bottom: 28px;
 }
 
 .firstDate,
-.virtualRow:has(.dateDivider) {
+.messageRow:has(.dateDivider) {
   display: flex;
   justify-content: center;
-  padding-bottom: 12px;
+  padding-bottom: 16px;
 }
 
 .dateDivider {
@@ -77,4 +71,8 @@
   color: var(--color-text-brand);
   box-shadow: 0 2px 8px rgb(0 0 0 / 12%);
   pointer-events: auto;
+}
+
+.list[data-initial-positioned="false"] {
+  visibility: hidden;
 }

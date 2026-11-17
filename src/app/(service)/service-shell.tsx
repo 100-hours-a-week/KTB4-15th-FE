@@ -4,12 +4,10 @@ import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { NotificationProvider } from "@/features/notification/notification-provider";
 import type { NotificationUnreadStatus } from "@/features/notification/schema/notification";
-import {
-  NavigationBar,
-  NavigationVisibilityProvider,
-  TabPageTransition,
-} from "@/shared/ui/navigation";
-import { PageShell } from "@/shared/ui/page-shell";
+import { NavigationBar } from "@/shared/ui/navigation/navigation-bar";
+import { NavigationVisibilityProvider } from "@/shared/ui/navigation/navigation-visibility";
+import { TabPageTransition } from "@/shared/ui/navigation/tab-page-transition";
+import { PageShell } from "@/shared/ui/page-shell/page-shell";
 
 function hasNavigation(pathname: string) {
   return (

@@ -4,10 +4,10 @@ import { useState } from "react";
 import dynamic from "next/dynamic";
 import {
   ChatRoomListButton,
-  Header,
-  HeaderTitle,
   NotificationLink,
-} from "@/shared/ui/header";
+} from "@/shared/ui/header/header-actions";
+import { Header } from "@/shared/ui/header/header";
+import { HeaderTitle } from "@/shared/ui/header/header-title";
 import styles from "./chat-header.module.scss";
 
 const ChatSidebar = dynamic(() =>

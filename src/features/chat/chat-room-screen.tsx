@@ -11,9 +11,9 @@ import styles from "./chat-room-screen.module.scss";
 import { ChatComposer } from "./ui/composer/chat-composer";
 import { ChatMessageList } from "./ui/message/chat-message-list";
 import { ApiError, getApiErrorMessage } from "@/shared/api/error";
-import { Button } from "@/shared/ui/button";
-import { useNavigationVisibility } from "@/shared/ui/navigation";
-import { showToast } from "@/shared/ui/toast";
+import { Button } from "@/shared/ui/button/button";
+import { useNavigationVisibility } from "@/shared/ui/navigation/navigation-visibility";
+import { showToast } from "@/shared/ui/toast/show-toast";
 
 function showSendChatMessageError(error: Error) {
   const message =
@@ -125,10 +125,10 @@ export function ChatRoomScreen({
 
   if (initialError != null) {
     return (
-      <main className={styles.errorState} role="alert">
+      <div className={styles.errorState}>
         <div className={styles.errorContent}>
           <h1>채팅방을 확인하지 못했어요</h1>
-          <p>
+          <p role="alert">
             {isChatRoomMissingOrForbidden
               ? "존재하지 않거나 접근할 수 없는 채팅방이에요."
               : isAnchorMissing
@@ -156,7 +156,7 @@ export function ChatRoomScreen({
                 : "다시 시도"}
           </Button>
         </div>
-      </main>
+      </div>
     );
   }
 

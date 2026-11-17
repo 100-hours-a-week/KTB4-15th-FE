@@ -1,5 +1,5 @@
 import { formatPrice } from "@/shared/utils/price-format";
-import { BottomIcon, TopIcon } from "@/shared/ui/icon";
+import { BottomIcon, TopIcon } from "@/shared/ui/icon/interface-icons";
 import type { FittingCandidate } from "../../schema/fitting-candidate";
 import {
   CandidateImage,

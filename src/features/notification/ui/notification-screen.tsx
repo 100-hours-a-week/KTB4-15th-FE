@@ -1,9 +1,9 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { Button } from "@/shared/ui/button";
-import { LoadingMessage } from "@/shared/ui/loading-message";
-import { showToast } from "@/shared/ui/toast";
+import { Button } from "@/shared/ui/button/button";
+import { LoadingMessage } from "@/shared/ui/loading-message/loading-message";
+import { showToast } from "@/shared/ui/toast/show-toast";
 import {
   notificationListQueryOptions,
   useMarkAllNotificationsAsReadMutation,

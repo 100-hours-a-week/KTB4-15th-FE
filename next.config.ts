@@ -39,6 +39,9 @@ const nextConfig: NextConfig = {
       { source: "/onboarding", destination: "/", permanent: true },
     ];
   },
+  experimental: {
+    cssChunking: { type: "graph", requestCost: 1000 },
+  },
   images: {
     remotePatterns: [
       {

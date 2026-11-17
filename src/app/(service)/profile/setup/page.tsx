@@ -1,6 +1,10 @@
-import { ProfileSetupForm } from "@/features/profile";
-import { IntroHero } from "@/shared/ui/intro-hero";
+import { ProfileSetupForm } from "@/features/profile/ui/profile-setup-form";
+import { IntroHero } from "@/shared/ui/intro-hero/intro-hero";
 import styles from "./page.module.scss";
+
+export const metadata = {
+  title: "기본 정보 입력 | LOOK DDAK",
+};
 
 export default function ProfileSetupPage() {
   return (

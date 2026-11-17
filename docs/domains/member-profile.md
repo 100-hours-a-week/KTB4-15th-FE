@@ -28,7 +28,7 @@
 1. 이름을 입력하고, 필요하면 나이, 키와 몸무게를 입력합니다.
 2. 전신 사진을 선택한 경우 먼저 브라우저에서 형식과 크기를 확인합니다.
 3. `POST /full-body-image/validate`로 촬영 적합성을 검증합니다.
-4. 검증된 `validationId`와 입력값, 가격 알림 설정으로 `POST /members/me/profile`을 요청합니다.
+4. 검증된 `validationId`와 입력값, `priceAlertEnabled: false`로 `POST /members/me/profile`을 요청합니다.
 5. 성공하면 프로필 Query를 무효화하고 완료 화면을 표시합니다.
 6. 1.7초 후 회원 상태 Cache를 완료로 바꾸고 `/chat`으로 이동합니다.
 
@@ -42,7 +42,7 @@
 | 나이           | 선택 입력, 만 나이 기준 정수, 1~100                   |
 | 키             | 선택 입력, 숫자, 100~250cm, 소수점 첫째 자리까지 가능 |
 | 몸무게         | 선택 입력, 숫자, 30~200kg, 소수점 첫째 자리까지 가능  |
-| 가격 하락 알림 | 기본값 활성화                                         |
+| 가격 하락 알림 | 등록 화면에서 동의를 받지 않음                        |
 
 나이, 키와 몸무게 입력은 숫자와 소수점 입력만 남기도록 정리합니다. 나이는 정수로 검증하고, 키와 몸무게는 소수점 첫째 자리까지 허용합니다. API 요청 시 모두 숫자로 변환합니다.
 
@@ -102,7 +102,7 @@ HEIC/HEIF는 선택 시에만 `heic-to/csp`를 지연 로드해 브라우저에�
 
 - `src/features/member`: 회원 상태 API와 Schema
 - `src/features/profile`: Profile 등록·조회와 화면 UI
-- `src/features/profile`: Profile 등록과 전신 사진 선택·검증·촬영 가이드
+- `src/features/profile/ui`: 등록 폼, 전신 사진 섹션과 등록 완료 화면의 UI 및 컴포넌트별 SCSS 모듈
 - `src/shared/utils/profile-validation.ts`: Profile 입력 검증
 - `src/app/(service)/profile/setup`: 등록 Route
 - `src/app/(service)/mypage`: 조회 Route
@@ -115,4 +115,4 @@ HEIC/HEIF는 선택 시에만 `heic-to/csp`를 지연 로드해 브라우저에�
 
 ## 회원 탈퇴 안내
 
-마이페이지 계정 카드 아래 오른쪽의 작은 회원 탈퇴 버튼으로 공통 Dialog를 엽니다. `master@lookddak.com` 문의와 가입 이메일 기재를 안내하며, 메일 링크는 메일 앱을 엽니다. 화면에서 탈퇴 API를 호출하거나 계정을 삭제하지 않습니다.
+프로필 기능의 [회원 탈퇴 버튼](../../src/features/profile/ui/account-deletion.tsx)은 마이페이지 계정 카드 아래 오른쪽에 배치하며, 누르면 공통 Dialog를 엽니다. `master@lookddak.com` 문의와 가입 이메일 기재를 안내하며, 메일 링크는 메일 앱을 엽니다. 화면에서 탈퇴 API를 호출하거나 계정을 삭제하지 않습니다.

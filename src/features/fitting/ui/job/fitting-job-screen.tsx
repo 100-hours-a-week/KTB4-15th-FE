@@ -4,9 +4,10 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getApiErrorMessage } from "@/shared/api/error";
-import { Button } from "@/shared/ui/button";
-import { Header, HeaderTitle } from "@/shared/ui/header";
-import { showToast } from "@/shared/ui/toast";
+import { Button } from "@/shared/ui/button/button";
+import { Header } from "@/shared/ui/header/header";
+import { HeaderTitle } from "@/shared/ui/header/header-title";
+import { showToast } from "@/shared/ui/toast/show-toast";
 import {
   fittingJobQueryOptions,
   useMarkFittingResultViewedMutation,

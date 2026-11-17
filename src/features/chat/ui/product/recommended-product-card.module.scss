@@ -1,6 +1,7 @@
 @use "@/styles/typography" as type;
 
 .card {
+  container: recommended-product-card / inline-size;
   overflow: hidden;
   width: calc(100% - 28px);
   flex: 0 0 calc(100% - 28px);
@@ -62,25 +63,19 @@
   h3 {
     @include type.body-large;
 
-    display: -webkit-box;
-    overflow: hidden;
-    height: 3rem;
+    min-height: 3rem;
+    overflow-wrap: anywhere;
     margin: var(--space-sm) 0 0;
     color: var(--color-text-primary);
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
   }
 
   p {
     @include type.body-medium;
 
-    display: -webkit-box;
-    overflow: hidden;
-    height: 2.5rem;
+    min-height: 2.5rem;
+    overflow-wrap: anywhere;
     margin: var(--space-sm) 0 0;
     color: var(--color-text-secondary);
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
   }
 }
 
@@ -94,10 +89,8 @@
 .color {
   @include type.body-medium;
 
-  overflow: hidden;
+  overflow-wrap: anywhere;
   color: var(--color-text-secondary);
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .price {
@@ -152,4 +145,24 @@
   @include type.label;
 
   padding-inline: var(--space-sm);
+}
+
+.fittingLabelShort {
+  display: none;
+}
+
+@container recommended-product-card (max-width: 320px) {
+  .fittingLabelFull {
+    display: none;
+  }
+
+  .fittingLabelShort {
+    display: inline;
+  }
+}
+
+@container recommended-product-card (max-width: 280px) {
+  .actions {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }

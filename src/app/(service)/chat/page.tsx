@@ -1,5 +1,6 @@
 import { connection } from "next/server";
-import { ChatHeader, NewChatScreen } from "@/features/chat";
+import { ChatHeader } from "@/features/chat/ui/header/chat-header";
+import { NewChatScreen } from "@/features/chat/new-chat-screen";
 import { getMemberProfileServer } from "@/features/profile/api/member-profile-server";
 import { getWishlistCountServer } from "@/features/wishlist/api/wishlist-server";
 import {
@@ -8,6 +9,10 @@ import {
 } from "@/shared/api/server";
 import { formatKoreanDate } from "@/shared/utils/date-format";
 import styles from "./page.module.scss";
+
+export const metadata = {
+  title: "새 채팅 | LOOK DDAK",
+};
 
 async function optionalServerData<T>(request: Promise<T>) {
   try {

@@ -1,5 +1,5 @@
-import { CloseIcon } from "@/shared/ui/icon";
-import { Button } from "@/shared/ui/button";
+import { CloseIcon } from "@/shared/ui/icon/interface-icons";
+import { Button } from "@/shared/ui/button/button";
 import styles from "./toast.module.scss";
 
 type ToastType = "success" | "error";

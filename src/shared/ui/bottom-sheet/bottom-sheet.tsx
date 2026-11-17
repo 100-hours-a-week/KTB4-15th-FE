@@ -2,8 +2,8 @@
 
 import * as Dialog from "@radix-ui/react-dialog";
 import { useEffect, useRef, type ReactNode } from "react";
-import { IconButton } from "@/shared/ui/button";
-import { CloseIcon } from "@/shared/ui/icon";
+import { IconButton } from "@/shared/ui/button/icon-button";
+import { CloseIcon } from "@/shared/ui/icon/interface-icons";
 import styles from "./bottom-sheet.module.scss";
 
 type BottomSheetSize = "content" | "large";

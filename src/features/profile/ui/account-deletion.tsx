@@ -1,13 +1,14 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { Button, ButtonBase } from "@/shared/ui/button";
+import { Button } from "@/shared/ui/button/button";
+import { ButtonBase } from "@/shared/ui/button/button-base";
 import {
   Dialog,
   DialogClose,
   DialogDescription,
   DialogTitle,
-} from "@/shared/ui/dialog";
+} from "@/shared/ui/dialog/dialog";
 import styles from "./account-deletion.module.scss";
 
 export function AccountDeletion() {

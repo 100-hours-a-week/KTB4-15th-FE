@@ -4,8 +4,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { memberProfileQueryOptions } from "@/features/profile";
-import { Header, HeaderTitle } from "@/shared/ui/header";
+import { memberProfileQueryOptions } from "@/features/profile/model/member-profile-query";
+import { Header } from "@/shared/ui/header/header";
+import { HeaderTitle } from "@/shared/ui/header/header-title";
 import { currentFittingJobQueryOptions } from "../../model/fitting-query";
 import { FittingProductCombination } from "../fitting-product-combination";
 import styles from "./fitting-progress-view.module.scss";
@@ -103,10 +104,11 @@ export function FittingProgressView({
           className={styles.progressStatus}
         >
           <div className={styles.progressMeta}>
-            <span>{progressMessage}</span>
+            <span role="status">{progressMessage}</span>
             <strong>{progress}%</strong>
           </div>
           <div
+            aria-label="피팅 이미지 생성 진행률"
             aria-valuemax={100}
             aria-valuemin={0}
             aria-valuenow={progress}
@@ -118,11 +120,9 @@ export function FittingProgressView({
           </div>
         </section>
 
-        {products.length > 0 && (
-          <div className={styles.productsArea}>
-            <FittingProductCombination compact products={products} />
-          </div>
-        )}
+        <div className={styles.productsArea}>
+          <FittingProductCombination compact products={products} />
+        </div>
 
         <aside className={styles.tipCard}>
           <span aria-hidden="true" className={styles.tipIcon}>

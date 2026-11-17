@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { showToast } from "@/shared/ui/toast";
+import { showToast } from "@/shared/ui/toast/show-toast";
 
 export function SessionExpiredToast({ enabled }: { enabled: boolean }) {
   useEffect(() => {

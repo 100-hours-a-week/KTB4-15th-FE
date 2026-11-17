@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import type { ChatMessageResponse } from "../schema/chat";
-import { showToast } from "@/shared/ui/toast";
+import { showToast } from "@/shared/ui/toast/show-toast";
 import {
   chatRoomOlderQueryOptions,
   chatRoomQueryOptions,

@@ -1,8 +1,8 @@
 "use client";
 
 import { useRef, useState, type FormEvent } from "react";
-import { Button } from "@/shared/ui/button";
-import { ClearIcon } from "@/shared/ui/icon";
+import { Button } from "@/shared/ui/button/button";
+import { ClearIcon } from "@/shared/ui/icon/interface-icons";
 import { Dialog, DialogClose, DialogDescription, DialogTitle } from "./dialog";
 import styles from "./rename-dialog.module.scss";
 

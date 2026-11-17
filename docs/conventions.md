@@ -14,7 +14,7 @@
 - Route, Layout, Page와 해당 라우트에서만 쓰는 코드는 `app`에 둡니다.
 - 도메인 기능 코드는 `features/<domain>`에 둡니다.
 - 둘 이상의 Feature에서 재사용하는 UI와 Utility만 `shared`에 둡니다.
-- 공통 UI는 `index.ts`로 외부에 공개하고 사용하는 쪽은 공개 경로에서 가져옵니다.
+- 공통 UI와 Feature는 구현 파일에서 직접 import합니다. 재수출용 `index.ts`는 만들지 않으며 컴포넌트 구현 파일도 컴포넌트 이름으로 명명합니다.
 - 확정되지 않은 추상화나 빈 폴더를 미리 만들지 않습니다.
 
 구체적인 구조는 [아키텍처](./architecture.md)를 참고합니다.

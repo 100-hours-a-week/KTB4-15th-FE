@@ -7,7 +7,7 @@ import {
   type FormEvent,
   type KeyboardEvent,
 } from "react";
-import { IconButton } from "@/shared/ui/button";
+import { IconButton } from "@/shared/ui/button/icon-button";
 import styles from "./chat-composer.module.scss";
 
 const MAX_LENGTH = 500;
