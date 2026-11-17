@@ -15,8 +15,8 @@ import {
 import styles from "./chat-message-list.module.scss";
 import { useChatMessageScroll } from "../../hooks/use-chat-message-scroll";
 import type { ChatMessageResponse } from "../../schema/chat";
-import { Spinner } from "@/shared/ui/spinner";
-import { Button } from "@/shared/ui/button";
+import { Spinner } from "@/shared/ui/spinner/spinner";
+import { Button } from "@/shared/ui/button/button";
 import { formatKoreanDate } from "@/shared/utils/date-format";
 
 const messageDateLabels = new WeakMap<ChatMessageResponse, string>();

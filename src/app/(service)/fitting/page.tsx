@@ -1,11 +1,11 @@
 import { redirect } from "next/navigation";
 import { getCurrentFittingJobServer } from "@/features/fitting/api/fitting-job-server";
-import {
-  FittingFullBodyPhotoSection,
-  FittingOutfitSection,
-} from "@/features/fitting";
+import { FittingFullBodyPhotoSection } from "@/features/fitting/ui/entry/fitting-full-body-photo-section";
+import { FittingOutfitSection } from "@/features/fitting/ui/entry/fitting-outfit-section";
 import { redirectOnServerUnauthorized } from "@/shared/api/server";
-import { Header, HeaderTitle, NotificationLink } from "@/shared/ui/header";
+import { Header } from "@/shared/ui/header/header";
+import { HeaderTitle } from "@/shared/ui/header/header-title";
+import { NotificationLink } from "@/shared/ui/header/header-actions";
 import styles from "./page.module.scss";
 
 export const metadata = {

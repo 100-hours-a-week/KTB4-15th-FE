@@ -16,6 +16,7 @@ LOOK DDAK 프론트엔드의 구조와 개발 기준을 관리합니다.
 | [브라우저 테스트](./testing.md)              | 실행 방법, 고정 API 데이터, 검증 범위   | 테스트 환경이나 시나리오가 변경될 때         |
 | [프로젝트 결정 사항](./project-decisions.md) | 핵심 결정과 보류 항목                   | 새로운 결정을 내리거나 보류 항목을 확정할 때 |
 
+- [화면별 CSS 분리](./performance/css-splitting.md): 공통 import·Turbopack CSS 병합 분리와 전체 경로 전후 용량 비교
 - [피팅 옷장 CSS graph 실험](./performance/fitting-wardrobe.md): 기본 설정과 graph의 CSS 용량·요청 수 및 간이 표시 시간 비교
 - [랜딩 화면](./screens/landing.md): 화면 구성, 스크롤 연출과 반응형 기준
 - [채팅 런타임 성능 요약](./performance/chat-scroll.md): 포맷터·memo·가상화 및 20,000개 검증의 핵심 결과와 측정 조건

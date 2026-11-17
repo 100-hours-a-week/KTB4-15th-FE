@@ -1,16 +1,18 @@
 "use client";
 
-import { PaginationStatus } from "@/shared/ui/pagination-status";
+import { PaginationStatus } from "@/shared/ui/pagination-status/pagination-status";
 import { useScrollPagination } from "@/shared/hooks/use-scroll-pagination";
 
 import * as Dialog from "@radix-ui/react-dialog";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useRef, useState } from "react";
-import { Button, IconButton } from "@/shared/ui/button";
-import { ConfirmDialog, RenameDialog } from "@/shared/ui/dialog";
-import { Dropdown, DropdownItem } from "@/shared/ui/dropdown";
-import { showToast } from "@/shared/ui/toast";
+import { Button } from "@/shared/ui/button/button";
+import { IconButton } from "@/shared/ui/button/icon-button";
+import { ConfirmDialog } from "@/shared/ui/dialog/confirm-dialog";
+import { RenameDialog } from "@/shared/ui/dialog/rename-dialog";
+import { Dropdown, DropdownItem } from "@/shared/ui/dropdown/dropdown";
+import { showToast } from "@/shared/ui/toast/show-toast";
 import { getApiErrorMessage } from "@/shared/api/error";
 import {
   CloseIcon,
@@ -19,7 +21,7 @@ import {
   MoreIcon,
   PlusIcon,
   SearchIcon,
-} from "@/shared/ui/icon";
+} from "@/shared/ui/icon/interface-icons";
 import { formatKoreanRelativeDateTime } from "@/shared/utils/date-format";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { CHAT_ROOM_TITLE_MAX_LENGTH } from "../../schema/chat";

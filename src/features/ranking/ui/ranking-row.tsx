@@ -1,4 +1,9 @@
-import { BottomIcon, EyeIcon, HeartIcon, TopIcon } from "@/shared/ui/icon";
+import {
+  BottomIcon,
+  HeartIcon,
+  TopIcon,
+} from "@/shared/ui/icon/interface-icons";
+import { EyeIcon } from "@/shared/ui/icon/eye";
 import { formatCompactNumber } from "@/shared/utils/number-format";
 import { formatPrice } from "@/shared/utils/price-format";
 import type { RankingProduct, RankingType } from "../schema/ranking";

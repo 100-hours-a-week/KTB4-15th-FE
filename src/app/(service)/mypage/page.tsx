@@ -1,11 +1,14 @@
 import { Suspense } from "react";
-import { FittingResultSection } from "@/features/fitting";
-import { AccountDeletion, AccountSection } from "@/features/profile";
+import { FittingResultSection } from "@/features/fitting/ui/result/fitting-result-section";
+import { AccountDeletion } from "@/features/profile/ui/account-deletion";
+import { AccountSection } from "@/features/profile/ui/account-section";
 import {
   MemberProfileSection,
   MemberProfileSkeleton,
 } from "@/features/profile/ui/member-profile-section";
-import { Header, HeaderTitle, NotificationLink } from "@/shared/ui/header";
+import { Header } from "@/shared/ui/header/header";
+import { HeaderTitle } from "@/shared/ui/header/header-title";
+import { NotificationLink } from "@/shared/ui/header/header-actions";
 import styles from "../page-layout.module.scss";
 
 export const metadata = {

@@ -2,10 +2,10 @@
 
 import Image from "next/image";
 import { type ReactNode, useState } from "react";
-import { recordPurchaseLinkClick } from "@/features/product";
+import { recordPurchaseLinkClick } from "@/features/product/api/product";
 import aiImage from "@/shared/assets/ai-avatar.png";
-import { ImageViewerDialog } from "@/shared/ui/dialog";
-import { SearchIcon } from "@/shared/ui/icon";
+import { ImageViewerDialog } from "@/shared/ui/dialog/image-viewer-dialog";
+import { SearchIcon } from "@/shared/ui/icon/interface-icons";
 import type { FittingTempResult } from "../../schema/fitting-job";
 import type { FittingResultDetail } from "../../schema/fitting-result";
 import { FittingProductCombination } from "../fitting-product-combination";

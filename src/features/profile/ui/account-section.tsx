@@ -1,10 +1,10 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useLogoutMutation } from "@/features/auth";
-import { ButtonBase } from "@/shared/ui/button";
+import { useLogoutMutation } from "@/features/auth/model/auth-mutation";
+import { ButtonBase } from "@/shared/ui/button/button-base";
 import { getApiErrorMessage } from "@/shared/api/error";
-import { showToast } from "@/shared/ui/toast";
+import { showToast } from "@/shared/ui/toast/show-toast";
 import styles from "./account-section.module.scss";
 
 export function AccountSection() {

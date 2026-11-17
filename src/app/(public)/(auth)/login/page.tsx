@@ -1,5 +1,6 @@
-import { LoginForm, SessionExpiredToast } from "@/features/auth";
-import { IntroHero } from "@/shared/ui/intro-hero";
+import { LoginForm } from "@/features/auth/ui/login-form";
+import { SessionExpiredToast } from "@/features/auth/ui/session-expired-toast";
+import { IntroHero } from "@/shared/ui/intro-hero/intro-hero";
 import { normalizeReturnTo } from "@/app/bff/auth/_lib/return-to";
 import styles from "./page.module.scss";
 

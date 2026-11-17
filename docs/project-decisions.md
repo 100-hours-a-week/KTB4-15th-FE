@@ -96,3 +96,9 @@
 - `develop`과 `hotfix/**` push에서는 FE 이미지를 한 번만 빌드하고, 빌드 결과의 immutable digest를 V2 ECS와 V3 EKS 배포에 함께 사용합니다.
 - V2는 기존 ECS Task Definition 갱신을 유지합니다. V3는 GitHub App installation token으로 GitOps 저장소에 `dev-image-published` 이벤트를 보내며, GitOps CI와 Auto Merge, Argo CD Auto Sync가 배포를 담당합니다.
 - 종료된 V1 EC2 개발 배포 job은 제거합니다. 수동 rollback은 기존 V2 ECS 흐름에만 적용하고 V3 배포 승격은 새 이미지가 빌드되는 push 이벤트에서만 수행합니다.
+
+- 기능 간 데이터·mutation 참조와 페이지 UI 참조는 여러 화면을 재수출하는 feature index 대신 실제 파일로 연결합니다. Turbopack CSS는 graph/requestCost 1000으로 경로 간 합침을 줄입니다. 설정 업그레이드 시 `pnpm build`와 `pnpm test:css`로 확인하며 요청 수 증가와 성능 한계는 [화면별 CSS 분리](./performance/css-splitting.md)에 기록합니다.
+
+## 직접 import 통일 (2026-11-17)
+
+- 사용자 결정에 따라 Feature와 공통 UI의 `index.ts` 재수출을 제거하고 모든 사용처를 실제 구현 파일로 연결합니다. 구현을 담고 있던 `pagination-status/index.tsx`는 `pagination-status.tsx`로 변경합니다. index 삭제 자체의 추가 LCP 개선은 측정하지 않았습니다.

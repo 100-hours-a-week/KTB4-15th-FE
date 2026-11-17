@@ -1,5 +1,7 @@
-import { NotificationScreen } from "@/features/notification";
-import { BackButton, Header, HeaderTitle } from "@/shared/ui/header";
+import { NotificationScreen } from "@/features/notification/ui/notification-screen";
+import { BackButton } from "@/shared/ui/header/header-actions";
+import { Header } from "@/shared/ui/header/header";
+import { HeaderTitle } from "@/shared/ui/header/header-title";
 import styles from "../page-layout.module.scss";
 
 export const metadata = {

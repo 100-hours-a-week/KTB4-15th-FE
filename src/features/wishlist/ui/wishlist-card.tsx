@@ -1,4 +1,4 @@
-import { BottomIcon, TopIcon } from "@/shared/ui/icon";
+import { BottomIcon, TopIcon } from "@/shared/ui/icon/interface-icons";
 import { formatPrice } from "@/shared/utils/price-format";
 import { getPriceChangeText } from "../lib/wishlist-display";
 import type { WishlistItem } from "../schema/wishlist";

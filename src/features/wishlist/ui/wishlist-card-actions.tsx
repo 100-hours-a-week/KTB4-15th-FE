@@ -4,11 +4,11 @@ import dynamic from "next/dynamic";
 import Image from "next/image";
 import type { ReactNode } from "react";
 import { useState } from "react";
-import { recordPurchaseLinkClick } from "@/features/product";
+import { recordPurchaseLinkClick } from "@/features/product/api/product";
 import { getApiErrorMessage } from "@/shared/api/error";
-import { IconButton } from "@/shared/ui/button";
-import { HeartIcon } from "@/shared/ui/icon";
-import { showToast } from "@/shared/ui/toast";
+import { IconButton } from "@/shared/ui/button/icon-button";
+import { HeartIcon } from "@/shared/ui/icon/interface-icons";
+import { showToast } from "@/shared/ui/toast/show-toast";
 import {
   useCreateWishlistMutation,
   useDeleteWishlistMutation,
@@ -17,7 +17,9 @@ import type { WishlistItem } from "../schema/wishlist";
 import styles from "./wishlist-card-actions.module.scss";
 
 const ImageViewerDialog = dynamic(() =>
-  import("@/shared/ui/dialog").then((module) => module.ImageViewerDialog),
+  import("@/shared/ui/dialog/image-viewer-dialog").then(
+    (module) => module.ImageViewerDialog,
+  ),
 );
 
 export function WishlistImage({

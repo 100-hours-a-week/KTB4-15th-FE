@@ -8,8 +8,8 @@ import styles from "./new-chat-screen.module.scss";
 import { ChatComposer } from "./ui/composer/chat-composer";
 import { ChatIntro } from "./ui/intro/chat-intro";
 import { ApiError, getApiErrorMessage } from "@/shared/api/error";
-import { useNavigationVisibility } from "@/shared/ui/navigation";
-import { showToast } from "@/shared/ui/toast";
+import { useNavigationVisibility } from "@/shared/ui/navigation/navigation-visibility";
+import { showToast } from "@/shared/ui/toast/show-toast";
 
 function showSendChatMessageError(error: Error) {
   showToast.error(

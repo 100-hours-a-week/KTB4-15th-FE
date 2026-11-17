@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { BottomSheet } from "@/shared/ui/bottom-sheet";
-import { Button } from "@/shared/ui/button";
-import { InfoIcon } from "@/shared/ui/icon";
+import { BottomSheet } from "@/shared/ui/bottom-sheet/bottom-sheet";
+import { Button } from "@/shared/ui/button/button";
+import { InfoIcon } from "@/shared/ui/icon/interface-icons";
 import { useFullBodyPhoto } from "../hooks/use-full-body-photo";
 import { FullBodyImageGuide } from "./full-body-image-guide";
 import styles from "./profile-photo-section.module.scss";

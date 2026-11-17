@@ -1,7 +1,9 @@
 import { notFound } from "next/navigation";
-import { FittingTempResultScreen } from "@/features/fitting";
-import { Header, HeaderIconLink, HeaderTitle } from "@/shared/ui/header";
-import { BackIcon } from "@/shared/ui/icon";
+import { FittingTempResultScreen } from "@/features/fitting/ui/result/fitting-temp-result-screen";
+import { Header } from "@/shared/ui/header/header";
+import { HeaderIconLink } from "@/shared/ui/header/header-icon-link";
+import { HeaderTitle } from "@/shared/ui/header/header-title";
+import { BackIcon } from "@/shared/ui/icon/interface-icons";
 
 export async function generateMetadata({
   params,

@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import type { MouseEventHandler } from "react";
-import { BackIcon } from "@/shared/ui/icon";
+import { BackIcon } from "@/shared/ui/icon/interface-icons";
 import styles from "./header-action.module.scss";
 import { ChatRoomListIcon, NotificationIcon } from "./header-icons";
 import { HeaderIconButton } from "./header-icon-button";

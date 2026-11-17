@@ -5,11 +5,17 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getApiErrorMessage } from "@/shared/api/error";
-import { Button, IconButton } from "@/shared/ui/button";
-import { ConfirmDialog, RenameDialog } from "@/shared/ui/dialog";
-import { DeleteIcon, EditIcon, RefreshIcon } from "@/shared/ui/icon";
-import { LoadingMessage } from "@/shared/ui/loading-message";
-import { showToast } from "@/shared/ui/toast";
+import { Button } from "@/shared/ui/button/button";
+import { IconButton } from "@/shared/ui/button/icon-button";
+import { ConfirmDialog } from "@/shared/ui/dialog/confirm-dialog";
+import { RenameDialog } from "@/shared/ui/dialog/rename-dialog";
+import {
+  DeleteIcon,
+  EditIcon,
+  RefreshIcon,
+} from "@/shared/ui/icon/interface-icons";
+import { LoadingMessage } from "@/shared/ui/loading-message/loading-message";
+import { showToast } from "@/shared/ui/toast/show-toast";
 import {
   fittingResultDetailQueryOptions,
   useDeleteFittingResultMutation,
