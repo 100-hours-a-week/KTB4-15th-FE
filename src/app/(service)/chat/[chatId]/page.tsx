@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
-import { ChatHeader, ChatRoomScreen } from "@/features/chat";
+import { ChatHeader } from "@/features/chat/ui/header/chat-header";
+import { ChatRoomScreen } from "@/features/chat/chat-room-screen";
 import styles from "../page.module.scss";
 
 export async function generateMetadata({

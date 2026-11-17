@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Button } from "@/shared/ui/button";
+import { Button } from "@/shared/ui/button/button";
 import { productRankingQueryOptions } from "../model/ranking-query";
 import {
   RANKING_RENDER_BATCH_SIZE,

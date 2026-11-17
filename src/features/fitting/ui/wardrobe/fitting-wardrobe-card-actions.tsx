@@ -3,7 +3,11 @@
 import Image from "next/image";
 import { createContext, useContext, useState, type ReactNode } from "react";
 import type { ProductItemType } from "@/shared/schema/product";
-import { BottomIcon, CheckIcon, TopIcon } from "@/shared/ui/icon";
+import {
+  BottomIcon,
+  CheckIcon,
+  TopIcon,
+} from "@/shared/ui/icon/interface-icons";
 import type { FittingCandidate } from "../../schema/fitting-candidate";
 import { useFittingSelectionStore } from "../../store/fitting-selection-store";
 import actionStyles from "./fitting-wardrobe-card-actions.module.scss";

@@ -1,5 +1,7 @@
-import { Header, HeaderIconLink, HeaderTitle } from "@/shared/ui/header";
-import { BackIcon } from "@/shared/ui/icon";
+import { Header } from "@/shared/ui/header/header";
+import { HeaderIconLink } from "@/shared/ui/header/header-icon-link";
+import { HeaderTitle } from "@/shared/ui/header/header-title";
+import { BackIcon } from "@/shared/ui/icon/interface-icons";
 import cardStyles from "./fitting-wardrobe-card.module.scss";
 import skeletonStyles from "./fitting-wardrobe-skeleton.module.scss";
 import styles from "./fitting-wardrobe-screen.module.scss";

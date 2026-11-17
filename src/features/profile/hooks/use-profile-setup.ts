@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
-import { memberMeQueryOptions } from "@/features/member";
+import { memberMeQueryOptions } from "@/features/member/model/member-query";
 import { getApiErrorMessage } from "@/shared/api/error";
-import { showToast } from "@/shared/ui/toast";
+import { showToast } from "@/shared/ui/toast/show-toast";
 import type { MemberProfileCreateRequest } from "../schema/member-profile";
 import { useCreateMemberProfileMutation } from "../model/member-profile-query";
 

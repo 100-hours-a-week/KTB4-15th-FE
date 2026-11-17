@@ -1,7 +1,7 @@
 "use client";
 
-import { Button } from "@/shared/ui/button";
-import { Spinner } from "@/shared/ui/spinner";
+import { Button } from "@/shared/ui/button/button";
+import { Spinner } from "@/shared/ui/spinner/spinner";
 import styles from "./pagination-status.module.scss";
 
 type PaginationStatusProps = {

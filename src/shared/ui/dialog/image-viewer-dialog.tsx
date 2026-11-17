@@ -1,7 +1,7 @@
 "use client";
 
-import { IconButton } from "@/shared/ui/button";
-import { CloseIcon } from "@/shared/ui/icon";
+import { IconButton } from "@/shared/ui/button/icon-button";
+import { CloseIcon } from "@/shared/ui/icon/interface-icons";
 import { Dialog, DialogClose, DialogTitle } from "./dialog";
 import styles from "./image-viewer-dialog.module.scss";
 

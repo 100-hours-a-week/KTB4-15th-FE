@@ -1,7 +1,7 @@
 "use client";
 
 import type { ComponentProps, ReactNode } from "react";
-import { Button } from "@/shared/ui/button";
+import { Button } from "@/shared/ui/button/button";
 import { Dialog, DialogClose, DialogDescription, DialogTitle } from "./dialog";
 import styles from "./confirm-dialog.module.scss";
 

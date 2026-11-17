@@ -7,14 +7,15 @@ import { getCurrentFittingJob } from "@/features/fitting/api/fitting-job";
 import {
   useCreateWishlistMutation,
   useDeleteWishlistMutation,
-} from "@/features/wishlist";
-import { recordPurchaseLinkClick } from "@/features/product";
+} from "@/features/wishlist/model/wishlist-query";
+import { recordPurchaseLinkClick } from "@/features/product/api/product";
 import { ApiError, getApiErrorMessage } from "@/shared/api/error";
-import { Button, IconButton } from "@/shared/ui/button";
-import { HeartIcon } from "@/shared/ui/icon";
-import { showToast } from "@/shared/ui/toast";
+import { Button } from "@/shared/ui/button/button";
+import { IconButton } from "@/shared/ui/button/icon-button";
+import { HeartIcon } from "@/shared/ui/icon/interface-icons";
+import { showToast } from "@/shared/ui/toast/show-toast";
 import { formatPrice } from "@/shared/utils/price-format";
-import { useCreateFittingCandidateMutation } from "@/features/fitting";
+import { useCreateFittingCandidateMutation } from "@/features/fitting/model/fitting-query";
 import { useFittingSelectionStore } from "@/features/fitting/store/fitting-selection-store";
 import type { RecommendedProductResponse } from "../../schema/chat";
 import { ChatProductState } from "./chat-product-state";

@@ -1,5 +1,5 @@
-import { Button } from "@/shared/ui/button";
-import { InfoFilledIcon } from "@/shared/ui/icon";
+import { Button } from "@/shared/ui/button/button";
+import { InfoFilledIcon } from "@/shared/ui/icon/interface-icons";
 import styles from "./full-body-image-guide.module.scss";
 
 type FullBodyImageGuideProps = {

@@ -5,11 +5,11 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ApiError, getApiErrorMessage } from "@/shared/api/error";
-import { Button } from "@/shared/ui/button";
-import { RefreshIcon } from "@/shared/ui/icon";
-import { InputField } from "@/shared/ui/input-field";
-import { LoadingMessage } from "@/shared/ui/loading-message";
-import { showToast } from "@/shared/ui/toast";
+import { Button } from "@/shared/ui/button/button";
+import { RefreshIcon } from "@/shared/ui/icon/interface-icons";
+import { InputField } from "@/shared/ui/input-field/input-field";
+import { LoadingMessage } from "@/shared/ui/loading-message/loading-message";
+import { showToast } from "@/shared/ui/toast/show-toast";
 import {
   fittingTempResultQueryOptions,
   useCreateFittingResultMutation,

@@ -1,5 +1,7 @@
 import { ChatSearchScreen } from "@/features/chat/chat-search-screen";
-import { BackButton, Header, HeaderTitle } from "@/shared/ui/header";
+import { BackButton } from "@/shared/ui/header/header-actions";
+import { Header } from "@/shared/ui/header/header";
+import { HeaderTitle } from "@/shared/ui/header/header-title";
 import styles from "../../page-layout.module.scss";
 
 export const metadata = {

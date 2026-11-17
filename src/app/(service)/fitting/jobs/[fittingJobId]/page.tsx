@@ -1,4 +1,4 @@
-import { FittingJobScreen } from "@/features/fitting";
+import { FittingJobScreen } from "@/features/fitting/ui/job/fitting-job-screen";
 
 export const metadata = {
   title: "가상 피팅 진행 | LOOK DDAK",

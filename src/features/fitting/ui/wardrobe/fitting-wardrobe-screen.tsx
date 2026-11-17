@@ -1,11 +1,18 @@
 "use client";
 
 import { useRef, useState, type ReactNode } from "react";
-import { PaginationStatus } from "@/shared/ui/pagination-status";
-import { Button } from "@/shared/ui/button";
-import { ConfirmDialog } from "@/shared/ui/dialog";
-import { Header, HeaderIconLink, HeaderTitle } from "@/shared/ui/header";
-import { BackIcon, CheckIcon, DeleteIcon, InfoIcon } from "@/shared/ui/icon";
+import { PaginationStatus } from "@/shared/ui/pagination-status/pagination-status";
+import { Button } from "@/shared/ui/button/button";
+import { ConfirmDialog } from "@/shared/ui/dialog/confirm-dialog";
+import { Header } from "@/shared/ui/header/header";
+import { HeaderIconLink } from "@/shared/ui/header/header-icon-link";
+import { HeaderTitle } from "@/shared/ui/header/header-title";
+import {
+  BackIcon,
+  CheckIcon,
+  DeleteIcon,
+  InfoIcon,
+} from "@/shared/ui/icon/interface-icons";
 import {
   useFittingWardrobe,
   type WardrobeFilter,

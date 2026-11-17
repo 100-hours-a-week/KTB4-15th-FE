@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "sonner/dist/styles.css";
-import { AppToaster } from "@/shared/ui/toast";
+import { AppToaster } from "@/shared/ui/toast/app-toaster";
 import styles from "./layout.module.scss";
 import "./globals.scss";
 import { ClarityAnalytics } from "./clarity-analytics";

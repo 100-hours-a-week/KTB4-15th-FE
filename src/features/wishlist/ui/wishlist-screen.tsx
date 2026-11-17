@@ -3,8 +3,8 @@
 import type { ReactNode } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useScrollPagination } from "@/shared/hooks/use-scroll-pagination";
-import { PaginationStatus } from "@/shared/ui/pagination-status";
-import { Button } from "@/shared/ui/button";
+import { PaginationStatus } from "@/shared/ui/pagination-status/pagination-status";
+import { Button } from "@/shared/ui/button/button";
 import { wishlistListQueryOptions } from "../model/wishlist-query";
 import type { WishlistList } from "../schema/wishlist";
 import { WishlistCard } from "./wishlist-card";

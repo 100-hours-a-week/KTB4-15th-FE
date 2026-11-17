@@ -2,8 +2,8 @@
 
 import { useState, type KeyboardEvent } from "react";
 import { useForm } from "react-hook-form";
-import { Button } from "@/shared/ui/button";
-import { InputField } from "@/shared/ui/input-field";
+import { Button } from "@/shared/ui/button/button";
+import { InputField } from "@/shared/ui/input-field/input-field";
 import {
   normalizeName,
   sanitizeDecimalInput,

@@ -11,9 +11,9 @@ import styles from "./chat-room-screen.module.scss";
 import { ChatComposer } from "./ui/composer/chat-composer";
 import { ChatMessageList } from "./ui/message/chat-message-list";
 import { ApiError, getApiErrorMessage } from "@/shared/api/error";
-import { Button } from "@/shared/ui/button";
-import { useNavigationVisibility } from "@/shared/ui/navigation";
-import { showToast } from "@/shared/ui/toast";
+import { Button } from "@/shared/ui/button/button";
+import { useNavigationVisibility } from "@/shared/ui/navigation/navigation-visibility";
+import { showToast } from "@/shared/ui/toast/show-toast";
 
 function showSendChatMessageError(error: Error) {
   const message =

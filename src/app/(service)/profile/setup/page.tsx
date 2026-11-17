@@ -1,5 +1,5 @@
-import { ProfileSetupForm } from "@/features/profile";
-import { IntroHero } from "@/shared/ui/intro-hero";
+import { ProfileSetupForm } from "@/features/profile/ui/profile-setup-form";
+import { IntroHero } from "@/shared/ui/intro-hero/intro-hero";
 import styles from "./page.module.scss";
 
 export const metadata = {

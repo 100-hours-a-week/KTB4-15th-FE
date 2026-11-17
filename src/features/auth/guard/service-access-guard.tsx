@@ -3,7 +3,7 @@
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { memberMeQueryOptions } from "@/features/member";
+import { memberMeQueryOptions } from "@/features/member/model/member-query";
 import type { MemberMe } from "@/features/member/schema/member";
 import { RefreshUnauthorizedError } from "@/shared/api/client";
 import { useSessionExpiration } from "../session/use-session-expiration";

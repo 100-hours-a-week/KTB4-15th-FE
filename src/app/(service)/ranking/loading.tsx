@@ -1,6 +1,8 @@
 import rankingStyles from "@/features/ranking/ui/ranking-screen.module.scss";
 import { RankingSkeleton } from "@/features/ranking/ui/ranking-skeleton";
-import { Header, HeaderTitle, NotificationLink } from "@/shared/ui/header";
+import { Header } from "@/shared/ui/header/header";
+import { HeaderTitle } from "@/shared/ui/header/header-title";
+import { NotificationLink } from "@/shared/ui/header/header-actions";
 import styles from "../page-layout.module.scss";
 
 export default function RankingLoading() {

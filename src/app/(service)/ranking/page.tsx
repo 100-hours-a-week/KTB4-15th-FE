@@ -1,4 +1,4 @@
-import { RankingScreen } from "@/features/ranking";
+import { RankingScreen } from "@/features/ranking/ui/ranking-screen";
 import { getProductRankingsServer } from "@/features/ranking/api/ranking-server";
 import { RANKING_RENDER_BATCH_SIZE } from "@/features/ranking/schema/ranking";
 import { RankingRow } from "@/features/ranking/ui/ranking-row";
@@ -6,7 +6,9 @@ import {
   isServerUnauthorizedError,
   redirectOnServerUnauthorized,
 } from "@/shared/api/server";
-import { Header, HeaderTitle, NotificationLink } from "@/shared/ui/header";
+import { Header } from "@/shared/ui/header/header";
+import { HeaderTitle } from "@/shared/ui/header/header-title";
+import { NotificationLink } from "@/shared/ui/header/header-actions";
 import styles from "../page-layout.module.scss";
 
 export const metadata = {

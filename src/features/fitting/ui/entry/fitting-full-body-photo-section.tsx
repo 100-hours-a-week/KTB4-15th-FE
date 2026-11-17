@@ -9,11 +9,15 @@ import {
   useUpdateFullBodyImageMutation,
 } from "@/features/profile/model/member-profile-query";
 import { getApiErrorMessage } from "@/shared/api/error";
-import { Button } from "@/shared/ui/button";
-import { Dialog, DialogDescription, DialogTitle } from "@/shared/ui/dialog";
-import { RefreshIcon } from "@/shared/ui/icon";
-import { LoadingDots } from "@/shared/ui/loading-message";
-import { showToast } from "@/shared/ui/toast";
+import { Button } from "@/shared/ui/button/button";
+import {
+  Dialog,
+  DialogDescription,
+  DialogTitle,
+} from "@/shared/ui/dialog/dialog";
+import { RefreshIcon } from "@/shared/ui/icon/interface-icons";
+import { LoadingDots } from "@/shared/ui/loading-message/loading-dots";
+import { showToast } from "@/shared/ui/toast/show-toast";
 import styles from "./fitting-full-body-photo-section.module.scss";
 
 function passthroughImageLoader({ src }: ImageLoaderProps) {

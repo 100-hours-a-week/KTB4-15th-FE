@@ -1,5 +1,7 @@
 import { WishlistSkeleton } from "@/features/wishlist/ui/wishlist-skeleton";
-import { Header, HeaderTitle, NotificationLink } from "@/shared/ui/header";
+import { Header } from "@/shared/ui/header/header";
+import { HeaderTitle } from "@/shared/ui/header/header-title";
+import { NotificationLink } from "@/shared/ui/header/header-actions";
 import styles from "../page-layout.module.scss";
 
 export default function WishlistLoading() {

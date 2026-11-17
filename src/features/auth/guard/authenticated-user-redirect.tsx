@@ -3,7 +3,7 @@
 import { useEffect, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { memberMeQueryOptions } from "@/features/member";
+import { memberMeQueryOptions } from "@/features/member/model/member-query";
 
 export function AuthenticatedUserRedirect({
   children,
