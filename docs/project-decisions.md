@@ -102,3 +102,9 @@
 ## 직접 import 통일 (2026-11-17)
 
 - 사용자 결정에 따라 Feature와 공통 UI의 `index.ts` 재수출을 제거하고 모든 사용처를 실제 구현 파일로 연결합니다. 구현을 담고 있던 `pagination-status/index.tsx`는 `pagination-status.tsx`로 변경합니다. index 삭제 자체의 추가 LCP 개선은 측정하지 않았습니다.
+
+## 개발 배포 Single Dev 전환 (2026-11-20)
+
+- V2 ECS·V3 EKS 인프라가 삭제되어 개발 배포 대상을 Single Dev EC2(Docker Compose)로 바꿉니다. 위 "개발 배포 (2026-11-08)"의 V2·V3 흐름과 prod CD는 더 이상 사용하지 않습니다.
+- `develop` push에서만 ARM64 이미지를 빌드해 ECR에 올리고, SSM Document `lookddak-dev-single-update-nextjs`로 EC2의 FE 컨테이너만 교체합니다. 무중단 배포는 하지 않으며 healthy가 되지 않으면 이전 digest로 되돌립니다.
+- 수동 rollback은 `workflow_dispatch`에 기존 이미지 태그(7자리 SHA)를 넣어 빌드 없이 교체합니다.
